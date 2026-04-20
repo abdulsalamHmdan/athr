@@ -15,13 +15,11 @@ router.get('/stats', requireAdmin, async (req, res) => {
 
   let totalDonations = 0;
   const baseUrl = `http://localhost:${process.env.PORT || 3000}`;
-  for (const amb of ambassadors) {
-    try {
-      const r = await fetch(`${baseUrl}/api/donations/${amb.referralCode}`);
-      const d = await r.json();
-      totalDonations += d.total || 0;
-    } catch (e) {}
-  }
+  try {
+    const r = await fetch(`${baseUrl}/api/donations-all`);
+    const d = await r.json();
+    totalDonations = d.total || 0;
+  } catch (e) {}
 
   res.json({
     totalDonations,
