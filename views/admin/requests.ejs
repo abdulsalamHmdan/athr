@@ -1,0 +1,86 @@
+<%- include('../partials/head') %>
+<%- include('../partials/nav-admin') %>
+
+<div class="card">
+  <h2>طلبات صرف الجوائز</h2>
+  <div class="filters">
+    <a href="#" data-f="" class="filter active">الكل</a>
+    <a href="#" data-f="pending" class="filter">قيد المراجعة</a>
+    <a href="#" data-f="approved" class="filter">المقبولة</a>
+    <a href="#" data-f="rejected" class="filter">المرفوضة</a>
+  </div>
+
+  <%- include('../partials/loader') %>
+
+  <div class="table-wrap" data-content style="display:none;">
+    <table>
+      <thead><tr>
+        <th>التاريخ</th><th>السفير</th><th>الجوال</th><th>المبلغ</th><th>الحالة</th><th>إجراء</th>
+      </tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script src="/js/app.js"></script>
+<script>
+const statusMap = { pending: 'قيد المراجعة', approved: 'مقبولة', rejected: 'مرفوضة' };
+let currentFilter = '';
+
+async function load() {
+  App.showLoader();
+  const url = currentFilter ? `/admin/requests-api?status=${currentFilter}` : '/admin/requests-api';
+  const r = await fetch(url);
+  if (r.status === 401) { location.href = '/admin/login'; return; }
+  const d = await r.json();
+  const tb = document.getElementById('tbody');
+  tb.innerHTML = '';
+  if (!d.requests.length) {
+    tb.innerHTML = '<tr><td colspan="6" class="center small">لا يوجد طلبات</td></tr>';
+  } else {
+    for (const r of d.requests) {
+      const tr = document.createElement('tr');
+      const actions = r.status === 'pending'
+        ? `<div class="row-actions">
+             <button class="btn ok sm" data-id="${r._id}" data-a="approve">قبول</button>
+             <button class="btn err sm" data-id="${r._id}" data-a="reject">رفض</button>
+           </div>`
+        : '-';
+      tr.innerHTML = `
+        <td>${new Date(r.createdAt).toLocaleDateString('ar-EG')}</td>
+        <td>${r.ambassador?.name || '-'}</td>
+        <td>${r.ambassador?.phone || '-'}</td>
+        <td>${r.amount.toLocaleString('ar-EG')} ريال</td>
+        <td><span class="badge ${r.status}">${statusMap[r.status]}</span></td>
+        <td>${actions}</td>`;
+      tb.appendChild(tr);
+    }
+  }
+  App.showContent();
+}
+
+document.addEventListener('click', async (e) => {
+  const f = e.target.closest('.filter');
+  if (f) {
+    e.preventDefault();
+    document.querySelectorAll('.filter').forEach(x => x.classList.remove('active'));
+    f.classList.add('active');
+    currentFilter = f.dataset.f;
+    load();
+    return;
+  }
+  const btn = e.target.closest('button[data-a]');
+  if (btn) {
+    const note = prompt('ملاحظة (اختياري)') || '';
+    btn.disabled = true;
+    await fetch(`/admin/requests/${btn.dataset.id}/${btn.dataset.a}`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ note }),
+    });
+    load();
+  }
+});
+load();
+</script>
+
+<%- include('../partials/foot') %>

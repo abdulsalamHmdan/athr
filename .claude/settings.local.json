@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rm -f public/index.html public/signup.html public/login.html public/referral.html public/ambassador/home.html public/ambassador/prizes.html public/admin/login.html public/admin/dashboard.html public/admin/requests.html)",
+      "Bash(rmdir public/ambassador public/admin)"
+    ]
+  }
+}

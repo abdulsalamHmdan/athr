@@ -1,0 +1,56 @@
+<%- include('../partials/head') %>
+<%- include('../partials/nav-admin') %>
+
+<%- include('../partials/loader') %>
+
+<div data-content style="display:none;">
+  <div class="card">
+    <h2>ملخص عام</h2>
+    <div class="stat-grid">
+      <div class="stat"><div class="v" id="s_total">0</div><div class="l">مجموع التبرعات (ريال)</div></div>
+      <div class="stat"><div class="v" id="s_prizes">0</div><div class="l">مجموع الجوائز المصروفة (ريال)</div></div>
+      <div class="stat"><div class="v" id="s_amb">0</div><div class="l">عدد السفراء</div></div>
+      <div class="stat"><div class="v" id="s_mem">0</div><div class="l">من منسوبي الجمعية</div></div>
+      <div class="stat"><div class="v" id="s_non">0</div><div class="l">من خارج الجمعية</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>قائمة السفراء</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>الاسم</th><th>الجوال</th><th>منسوب</th><th>الجهة</th><th>الرمز</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script src="/js/app.js"></script>
+<script>
+(async function () {
+  const r = await fetch('/admin/stats');
+  if (r.status === 401) { location.href = '/admin/login'; return; }
+  const d = await r.json();
+  document.getElementById('s_total').textContent = d.totalDonations.toLocaleString('ar-EG');
+  document.getElementById('s_prizes').textContent = d.totalPrizes.toLocaleString('ar-EG');
+  document.getElementById('s_amb').textContent = d.ambassadorsCount;
+  document.getElementById('s_mem').textContent = d.members;
+  document.getElementById('s_non').textContent = d.nonMembers;
+  const tb = document.getElementById('tbody');
+  tb.innerHTML = '';
+  if (!d.ambassadors.length) {
+    tb.innerHTML = '<tr><td colspan="6" class="center small">لا يوجد سفراء بعد</td></tr>';
+  } else {
+    d.ambassadors.forEach((a, i) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${i+1}</td><td>${a.name}</td><td>${a.phone}</td>
+        <td>${a.isMember ? 'نعم' : 'لا'}</td><td>${a.entity || '-'}</td><td>${a.referralCode}</td>`;
+      tb.appendChild(tr);
+    });
+  }
+  App.showContent();
+})();
+</script>
+
+<%- include('../partials/foot') %>

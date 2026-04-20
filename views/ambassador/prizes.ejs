@@ -1,0 +1,74 @@
+<%- include('../partials/head') %>
+<%- include('../partials/nav-ambassador') %>
+
+<%- include('../partials/loader') %>
+
+<div data-content style="display:none;">
+  <div class="card">
+    <h2>صرف جائزة</h2>
+    <p class="small">تستطيع صرف جائزة واحدة عن كل 3000 ريال من التبرعات عبر رابطك.</p>
+    <div class="stat-grid">
+      <div class="stat"><div class="v" id="s_avail">0</div><div class="l">جوائز متاحة للصرف</div></div>
+      <div class="stat"><div class="v" id="s_paid">0</div><div class="l">تم صرفها (ريال)</div></div>
+    </div>
+    <button class="btn block ok" id="claimBtn" style="margin-top:16px;">طلب صرف جائزة (3000 ريال)</button>
+    <div class="msg" id="msg"></div>
+  </div>
+
+  <div class="card">
+    <h2>طلباتي</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>التاريخ</th><th>المبلغ</th><th>الحالة</th><th>ملاحظة</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script src="/js/app.js"></script>
+<script>
+const statusMap = { pending: 'قيد المراجعة', approved: 'مقبولة', rejected: 'مرفوضة' };
+
+async function load() {
+  const me = await fetch('/ambassador/me');
+  if (me.status === 401) { location.href = '/login'; return; }
+  const d = await me.json();
+  document.getElementById('s_avail').textContent = d.stats.availablePrizes;
+  document.getElementById('s_paid').textContent = d.stats.paid.toLocaleString('ar-EG');
+
+  const rr = await fetch('/ambassador/requests');
+  const rd = await rr.json();
+  const tb = document.getElementById('tbody');
+  tb.innerHTML = '';
+  if (!rd.requests.length) {
+    tb.innerHTML = '<tr><td colspan="4" class="center small">لا توجد طلبات بعد</td></tr>';
+  } else {
+    for (const r of rd.requests) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${new Date(r.createdAt).toLocaleDateString('ar-EG')}</td>
+        <td>${r.amount.toLocaleString('ar-EG')} ريال</td>
+        <td><span class="badge ${r.status}">${statusMap[r.status]}</span></td>
+        <td>${r.note || '-'}</td>`;
+      tb.appendChild(tr);
+    }
+  }
+  App.showContent();
+}
+document.getElementById('claimBtn').onclick = async () => {
+  const msg = document.getElementById('msg');
+  msg.textContent = '';
+  const btn = document.getElementById('claimBtn');
+  btn.disabled = true; btn.textContent = 'جاري الإرسال...';
+  const r = await fetch('/ambassador/requests', { method: 'POST' });
+  const d = await r.json();
+  btn.disabled = false; btn.textContent = 'طلب صرف جائزة (3000 ريال)';
+  if (!r.ok) { msg.className = 'msg err'; msg.textContent = d.error; return; }
+  msg.className = 'msg ok'; msg.textContent = 'تم إرسال طلب الصرف بنجاح';
+  load();
+};
+load();
+</script>
+
+<%- include('../partials/foot') %>

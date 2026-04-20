@@ -1,0 +1,38 @@
+<%- include('partials/head') %>
+
+<div class="card">
+  <h2>تسجيل الدخول</h2>
+  <form id="form">
+    <label>رقم الجوال</label>
+    <input name="phone" type="tel" inputmode="numeric" required pattern="[1-9][0-9]{8}" maxlength="9" minlength="9" placeholder="5XXXXXXXX" title="9 أرقام فقط، بدون صفر في البداية وبدون رمز الدولة">
+    <div class="small">9 أرقام فقط، بدون الصفر في البداية وبدون رمز الدولة</div>
+    <label>كلمة السر</label>
+    <input name="password" type="password" required>
+    <button class="btn block" type="submit" style="margin-top:16px;">دخول</button>
+    <div class="msg err" id="msg"></div>
+  </form>
+  <p class="small center" style="margin-top:14px;">ليس لديك حساب؟ <a href="/signup">تسجيل جديد</a></p>
+</div>
+
+<script>
+document.getElementById('form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = e.target.querySelector('button[type=submit]');
+  btn.disabled = true; btn.textContent = 'جاري الدخول...';
+  const body = Object.fromEntries(new FormData(e.target).entries());
+  if (!/^[1-9][0-9]{8}$/.test(body.phone)) {
+    btn.disabled = false; btn.textContent = 'دخول';
+    document.getElementById('msg').textContent = 'رقم الجوال يجب أن يكون 9 أرقام بدون صفر أو رمز الدولة';
+    return;
+  }
+  const r = await fetch('/auth/login', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  const d = await r.json();
+  if (!r.ok) { btn.disabled = false; btn.textContent = 'دخول'; document.getElementById('msg').textContent = d.error; return; }
+  location.href = '/ambassador/home';
+});
+</script>
+
+<%- include('partials/foot') %>

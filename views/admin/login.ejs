@@ -1,0 +1,31 @@
+<%- include('../partials/head') %>
+
+<div class="card">
+  <h2>تسجيل دخول الإدارة</h2>
+  <form id="form">
+    <label>رقم الجوال</label>
+    <input name="phone" type="tel" inputmode="numeric" required>
+    <label>كلمة السر</label>
+    <input name="password" type="password" required>
+    <button class="btn block" type="submit" style="margin-top:16px;">دخول</button>
+    <div class="msg err" id="msg"></div>
+  </form>
+</div>
+
+<script>
+document.getElementById('form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = e.target.querySelector('button[type=submit]');
+  btn.disabled = true; btn.textContent = 'جاري الدخول...';
+  const body = Object.fromEntries(new FormData(e.target).entries());
+  const r = await fetch('/auth/admin/login', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  const d = await r.json();
+  if (!r.ok) { btn.disabled = false; btn.textContent = 'دخول'; document.getElementById('msg').textContent = d.error; return; }
+  location.href = '/admin/dashboard';
+});
+</script>
+
+<%- include('../partials/foot') %>

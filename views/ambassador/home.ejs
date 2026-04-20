@@ -1,0 +1,78 @@
+<%- include('../partials/head') %>
+<%- include('../partials/nav-ambassador') %>
+
+<%- include('../partials/loader') %>
+
+<div data-content style="display:none;">
+  <div class="card">
+    <h2 id="hello">أهلاً بك</h2>
+    <p class="small">طريقة المنافسة: عن كل <b>3000 ريال</b> من التبرعات عبر رابطك الخاص، تحصل على جائزة قابلة للصرف من خلال صفحة "صرف الجوائز".</p>
+    <div>
+      <label>رابطك الخاص</label>
+      <div class="link-box"><span id="link"></span><button class="btn" id="copyBtn" type="button">نسخ</button></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>تقدمك</h2>
+    <div class="progress"><div id="bar" style="width:0%"></div></div>
+    <div class="small" id="progressLbl"></div>
+
+    <div class="stat-grid" style="margin-top:16px;">
+      <div class="stat"><div class="v" id="s_total">0</div><div class="l">مجموع التبرعات (ريال)</div></div>
+      <div class="stat"><div class="v" id="s_paid">0</div><div class="l">صُرف كمكافأة (ريال)</div></div>
+      <div class="stat"><div class="v" id="s_avail">0</div><div class="l">جوائز متاحة</div></div>
+      <div class="stat"><div class="v" id="s_next">0</div><div class="l">الهدف القادم (ريال)</div></div>
+    </div>
+  </div>
+
+  <div class="card" id="goalsCard" style="display:none;">
+    <h2>الصناديق</h2>
+    <table class="tbl">
+      <thead>
+        <tr><th>الاسم</th><th>المجموع (ريال)</th><th>الهدف (ريال)</th></tr>
+      </thead>
+      <tbody id="goalsBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script src="/js/app.js"></script>
+<script>
+(async function () {
+  const r = await fetch('/ambassador/me');
+  if (r.status === 401) { location.href = '/login'; return; }
+  const d = await r.json();
+  document.getElementById('hello').textContent = 'أهلاً ' + d.ambassador.name;
+  document.getElementById('link').textContent = d.ambassador.referralLink;
+  document.getElementById('copyBtn').onclick = () => {
+    navigator.clipboard.writeText(d.ambassador.referralLink);
+    document.getElementById('copyBtn').textContent = 'تم النسخ ✓';
+  };
+  const s = d.stats;
+  document.getElementById('s_total').textContent = s.totalDonations.toLocaleString('ar-EG');
+  document.getElementById('s_paid').textContent = s.paid.toLocaleString('ar-EG');
+  document.getElementById('s_avail').textContent = s.availablePrizes;
+  document.getElementById('s_next').textContent = s.nextMilestone.toLocaleString('ar-EG');
+  const pct = Math.min(100, (s.totalDonations / s.nextMilestone) * 100);
+  document.getElementById('bar').style.width = pct + '%';
+  document.getElementById('progressLbl').textContent =
+    `${s.totalDonations.toLocaleString('ar-EG')} من ${s.nextMilestone.toLocaleString('ar-EG')} ريال للجائزة القادمة`;
+
+  if (Array.isArray(s.goals) && s.goals.length) {
+    const body = document.getElementById('goalsBody');
+    body.innerHTML = s.goals.map(g => `
+      <tr>
+        <td>${g.name || '-'}</td>
+        <td>${(g.total || 0).toLocaleString('ar-EG')}</td>
+        <td>${g.goal ? g.goal.toLocaleString('ar-EG') : '-'}</td>
+      </tr>
+    `).join('');
+    document.getElementById('goalsCard').style.display = '';
+  }
+
+  App.showContent();
+})();
+</script>
+
+<%- include('../partials/foot') %>
