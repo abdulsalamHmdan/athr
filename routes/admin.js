@@ -10,7 +10,7 @@ router.get('/stats', requireAdmin, async (req, res) => {
   const members = ambassadors.filter((a) => a.isMember).length;
   const nonMembers = ambassadors.length - members;
 
-  const approved = await PrizeRequest.find({ status: 'approved' });
+  const approved = await PrizeRequest.find({ status: { $in: ['approved', 'paid'] } });
   const totalPrizes = approved.reduce((s, r) => s + r.amount, 0);
 
   let totalDonations = 0;
@@ -62,6 +62,16 @@ router.post('/requests/:id/reject', requireAdmin, async (req, res) => {
   const r = await PrizeRequest.findByIdAndUpdate(
     req.params.id,
     { status: 'rejected', note: req.body.note || '' },
+    { new: true }
+  );
+  if (!r) return res.status(404).json({ error: 'غير موجود' });
+  res.json({ ok: true, request: r });
+});
+
+router.post('/requests/:id/paid', requireAdmin, async (req, res) => {
+  const r = await PrizeRequest.findByIdAndUpdate(
+    req.params.id,
+    { status: 'paid', note: req.body.note || '' },
     { new: true }
   );
   if (!r) return res.status(404).json({ error: 'غير موجود' });

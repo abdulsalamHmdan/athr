@@ -17,8 +17,14 @@
 
   <div class="card">
     <h2>قائمة السفراء</h2>
-    <div class="table-wrap">
-      <table>
+    <div class="toolbar">
+      <div class="search">
+        <input type="search" id="amb_search" placeholder="ابحث باسم السفير…" autocomplete="off">
+      </div>
+      <button class="btn export" id="amb_export" type="button">تصدير Excel</button>
+    </div>
+    <div class="table-wrap has-cards">
+      <table class="table-cards">
         <thead><tr><th>#</th><th>الاسم</th><th>الجوال</th><th>منسوب</th><th>الجهة</th><th>الرمز</th></tr></thead>
         <tbody id="tbody"></tbody>
       </table>
@@ -26,8 +32,57 @@
   </div>
 </div>
 
+<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 <script src="/js/app.js"></script>
 <script>
+let ambassadors = [];
+
+function renderAmbassadors(list) {
+  const tb = document.getElementById('tbody');
+  tb.innerHTML = '';
+  if (!list.length) {
+    tb.innerHTML = '<tr><td colspan="6" class="center small">لا يوجد سفراء</td></tr>';
+    return;
+  }
+  list.forEach((a, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td data-label="#">${i+1}</td>
+      <td data-label="الاسم">${a.name}</td>
+      <td data-label="الجوال">${a.phone}</td>
+      <td data-label="منسوب">${a.isMember ? 'نعم' : 'لا'}</td>
+      <td data-label="الجهة">${a.entity || '-'}</td>
+      <td data-label="الرمز">${a.referralCode}</td>`;
+    tb.appendChild(tr);
+  });
+}
+
+function filterAmbassadors() {
+  const q = document.getElementById('amb_search').value.trim().toLowerCase();
+  if (!q) return ambassadors;
+  return ambassadors.filter(a => (a.name || '').toLowerCase().includes(q));
+}
+
+function exportAmbassadors() {
+  const list = filterAmbassadors();
+  if (!list.length) { alert('لا توجد بيانات للتصدير'); return; }
+  const rows = list.map((a, i) => ({
+    '#': i + 1,
+    'الاسم': a.name,
+    'الجوال': a.phone,
+    'منسوب': a.isMember ? 'نعم' : 'لا',
+    'الجهة': a.entity || '-',
+    'الرمز': a.referralCode,
+  }));
+  const ws = XLSX.utils.json_to_sheet(rows);
+  if (!ws['!views']) ws['!views'] = [{}];
+  ws['!views'][0].RTL = true;
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'السفراء');
+  const today = new Date().toISOString().slice(0, 10);
+  XLSX.writeFile(wb, `ambassadors-${today}.xlsx`);
+}
+
 (async function () {
   const r = await fetch('/admin/stats');
   if (r.status === 401) { location.href = '/admin/login'; return; }
@@ -37,20 +92,15 @@
   document.getElementById('s_amb').textContent = d.ambassadorsCount;
   document.getElementById('s_mem').textContent = d.members;
   document.getElementById('s_non').textContent = d.nonMembers;
-  const tb = document.getElementById('tbody');
-  tb.innerHTML = '';
-  if (!d.ambassadors.length) {
-    tb.innerHTML = '<tr><td colspan="6" class="center small">لا يوجد سفراء بعد</td></tr>';
-  } else {
-    d.ambassadors.forEach((a, i) => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${i+1}</td><td>${a.name}</td><td>${a.phone}</td>
-        <td>${a.isMember ? 'نعم' : 'لا'}</td><td>${a.entity || '-'}</td><td>${a.referralCode}</td>`;
-      tb.appendChild(tr);
-    });
-  }
+  ambassadors = d.ambassadors || [];
+  renderAmbassadors(ambassadors);
   App.showContent();
 })();
+
+document.getElementById('amb_search').addEventListener('input', () => {
+  renderAmbassadors(filterAmbassadors());
+});
+document.getElementById('amb_export').addEventListener('click', exportAmbassadors);
 </script>
 
 <%- include('../partials/foot') %>

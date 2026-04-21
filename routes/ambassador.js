@@ -20,7 +20,7 @@ async function getStats(amb) {
     totalDonations = 0;
   }
 
-  const approved = await PrizeRequest.find({ ambassador: amb._id, status: 'approved' });
+  const approved = await PrizeRequest.find({ ambassador: amb._id, status: { $in: ['approved', 'paid'] } });
   const paid = approved.reduce((s, r) => s + r.amount, 0);
   const pending = await PrizeRequest.find({ ambassador: amb._id, status: 'pending' });
   const pendingAmount = pending.reduce((s, r) => s + r.amount, 0);

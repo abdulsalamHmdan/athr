@@ -7,13 +7,21 @@
     <a href="#" data-f="" class="filter active">الكل</a>
     <a href="#" data-f="pending" class="filter">قيد المراجعة</a>
     <a href="#" data-f="approved" class="filter">المقبولة</a>
+    <a href="#" data-f="paid" class="filter">تم الصرف</a>
     <a href="#" data-f="rejected" class="filter">المرفوضة</a>
+  </div>
+
+  <div class="toolbar">
+    <div class="search">
+      <input type="search" id="req_search" placeholder="ابحث باسم السفير…" autocomplete="off">
+    </div>
+    <button class="btn export" id="req_export" type="button">تصدير Excel</button>
   </div>
 
   <%- include('../partials/loader') %>
 
-  <div class="table-wrap" data-content style="display:none;">
-    <table>
+  <div class="table-wrap has-cards" data-content style="display:none;">
+    <table class="table-cards">
       <thead><tr>
         <th>التاريخ</th><th>السفير</th><th>الجوال</th><th>المبلغ</th><th>الحالة</th><th>إجراء</th>
       </tr></thead>
@@ -22,10 +30,68 @@
   </div>
 </div>
 
+<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 <script src="/js/app.js"></script>
 <script>
-const statusMap = { pending: 'قيد المراجعة', approved: 'مقبولة', rejected: 'مرفوضة' };
+const statusMap = {
+  pending: 'قيد المراجعة',
+  approved: 'مقبولة',
+  rejected: 'مرفوضة',
+  paid: 'تم الصرف',
+};
 let currentFilter = '';
+let allRequests = [];
+let approvedByAmb = {};
+
+function buildWhatsappLink(phone, name, count) {
+  const cleanPhone = String(phone || '').replace(/\D/g, '');
+  const intl = cleanPhone.startsWith('966') ? cleanPhone : '966' + cleanPhone;
+  const text = `مرحبا ${name}، لديك ${count} ${count === 1 ? 'جائزة' : count === 2 ? 'جائزتان' : 'جوائز'} بانتظار الشحن، يُرجى إرسال موقع الشحن.`;
+  return `https://wa.me/${intl}?text=${encodeURIComponent(text)}`;
+}
+
+function filterRequests() {
+  const q = document.getElementById('req_search').value.trim().toLowerCase();
+  if (!q) return allRequests;
+  return allRequests.filter(r => (r.ambassador?.name || '').toLowerCase().includes(q));
+}
+
+function renderRequests(list) {
+  const tb = document.getElementById('tbody');
+  tb.innerHTML = '';
+  if (!list.length) {
+    tb.innerHTML = '<tr><td colspan="6" class="center small">لا يوجد طلبات</td></tr>';
+    return;
+  }
+  for (const r of list) {
+    const tr = document.createElement('tr');
+    let actions = '-';
+    if (r.status === 'pending') {
+      actions = `<div class="row-actions">
+        <button class="btn ok sm" data-id="${r._id}" data-a="approve">قبول</button>
+        <button class="btn err sm" data-id="${r._id}" data-a="reject">رفض</button>
+      </div>`;
+    } else if (r.status === 'approved') {
+      const ambId = r.ambassador?._id;
+      const waitingCount = ambId ? (approvedByAmb[ambId] || 1) : 1;
+      const waLink = buildWhatsappLink(r.ambassador?.phone, r.ambassador?.name || 'السفير', waitingCount);
+      actions = `<div class="row-actions">
+        <button class="btn ok sm" data-id="${r._id}" data-a="paid">تأكيد الصرف</button>
+        <a class="btn secondary sm" href="${waLink}" target="_blank" rel="noopener">
+          <span>واتساب</span>
+        </a>
+      </div>`;
+    }
+    tr.innerHTML = `
+      <td data-label="التاريخ">${new Date(r.createdAt).toLocaleDateString('ar-EG')}</td>
+      <td data-label="السفير">${r.ambassador?.name || '-'}</td>
+      <td data-label="الجوال">${r.ambassador?.phone || '-'}</td>
+      <td data-label="المبلغ">${r.amount.toLocaleString('ar-EG')} ريال</td>
+      <td data-label="الحالة"><span class="badge ${r.status}">${statusMap[r.status]}</span></td>
+      <td data-label="إجراء">${actions}</td>`;
+    tb.appendChild(tr);
+  }
+}
 
 async function load() {
   App.showLoader();
@@ -33,30 +99,42 @@ async function load() {
   const r = await fetch(url);
   if (r.status === 401) { location.href = '/admin/login'; return; }
   const d = await r.json();
-  const tb = document.getElementById('tbody');
-  tb.innerHTML = '';
-  if (!d.requests.length) {
-    tb.innerHTML = '<tr><td colspan="6" class="center small">لا يوجد طلبات</td></tr>';
-  } else {
-    for (const r of d.requests) {
-      const tr = document.createElement('tr');
-      const actions = r.status === 'pending'
-        ? `<div class="row-actions">
-             <button class="btn ok sm" data-id="${r._id}" data-a="approve">قبول</button>
-             <button class="btn err sm" data-id="${r._id}" data-a="reject">رفض</button>
-           </div>`
-        : '-';
-      tr.innerHTML = `
-        <td>${new Date(r.createdAt).toLocaleDateString('ar-EG')}</td>
-        <td>${r.ambassador?.name || '-'}</td>
-        <td>${r.ambassador?.phone || '-'}</td>
-        <td>${r.amount.toLocaleString('ar-EG')} ريال</td>
-        <td><span class="badge ${r.status}">${statusMap[r.status]}</span></td>
-        <td>${actions}</td>`;
-      tb.appendChild(tr);
+
+  approvedByAmb = {};
+  try {
+    const ar = await fetch('/admin/requests-api?status=approved');
+    const ad = await ar.json();
+    for (const req of ad.requests) {
+      const id = req.ambassador?._id;
+      if (!id) continue;
+      approvedByAmb[id] = (approvedByAmb[id] || 0) + 1;
     }
-  }
+  } catch (e) {}
+
+  allRequests = d.requests || [];
+  renderRequests(filterRequests());
   App.showContent();
+}
+
+function exportRequests() {
+  const list = filterRequests();
+  if (!list.length) { alert('لا توجد بيانات للتصدير'); return; }
+  const rows = list.map((r) => ({
+    'التاريخ': new Date(r.createdAt).toLocaleDateString('ar-EG'),
+    'السفير': r.ambassador?.name || '-',
+    'الجوال': r.ambassador?.phone || '-',
+    'المبلغ (ريال)': r.amount,
+    'الحالة': statusMap[r.status] || r.status,
+    'ملاحظة': r.note || '',
+  }));
+  const ws = XLSX.utils.json_to_sheet(rows);
+  if (!ws['!views']) ws['!views'] = [{}];
+  ws['!views'][0].RTL = true;
+  const wb = XLSX.utils.book_new();
+  const sheetName = currentFilter ? (statusMap[currentFilter] || 'الطلبات') : 'الطلبات';
+  XLSX.utils.book_append_sheet(wb, ws, sheetName);
+  const today = new Date().toISOString().slice(0, 10);
+  XLSX.writeFile(wb, `prize-requests-${currentFilter || 'all'}-${today}.xlsx`);
 }
 
 document.addEventListener('click', async (e) => {
@@ -71,15 +149,24 @@ document.addEventListener('click', async (e) => {
   }
   const btn = e.target.closest('button[data-a]');
   if (btn) {
-    const note = prompt('ملاحظة (اختياري)') || '';
+    const action = btn.dataset.a;
+    const confirmMsg = action === 'paid' ? 'تأكيد أن الجائزة تم صرفها؟' : null;
+    if (confirmMsg && !confirm(confirmMsg)) return;
+    const note = action === 'paid' ? '' : (prompt('ملاحظة (اختياري)') || '');
     btn.disabled = true;
-    await fetch(`/admin/requests/${btn.dataset.id}/${btn.dataset.a}`, {
+    await fetch(`/admin/requests/${btn.dataset.id}/${action}`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ note }),
     });
     load();
   }
 });
+
+document.getElementById('req_search').addEventListener('input', () => {
+  renderRequests(filterRequests());
+});
+document.getElementById('req_export').addEventListener('click', exportRequests);
+
 load();
 </script>
 

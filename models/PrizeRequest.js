@@ -4,7 +4,7 @@ const PrizeRequestSchema = new mongoose.Schema(
   {
     ambassador: { type: mongoose.Schema.Types.ObjectId, ref: 'Ambassador', required: true },
     amount: { type: Number, required: true },
-    status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
+    status: { type: String, enum: ['pending', 'approved', 'rejected', 'paid'], default: 'pending' },
     note: { type: String, default: '' },
   },
   { timestamps: true }
