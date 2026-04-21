@@ -1,0 +1,121 @@
+<%- include('../partials/head') %>
+<%- include('../partials/nav-ambassador') %>
+
+<%- include('../partials/loader') %>
+
+<div data-content style="display:none;">
+  <!-- حالة: لا يوجد حساب على المنصة -->
+  <div class="card" id="noAccountCard" style="display:none;">
+    <h2>تحتاج إلى حساب على المنصة</h2>
+    <p class="small">لإنشاء صندوق جديد، يجب أن يكون لديك حساب على منصة التبرع أولاً. اضغط الزر أدناه للانتقال للمنصة وإنشاء حسابك.</p>
+    <a id="platformLink" class="btn block ok" href="#" target="_blank" rel="noopener">الذهاب إلى المنصة لإنشاء حساب</a>
+  </div>
+
+  <!-- حالة: عنده حساب — يظهر النموذج -->
+  <div class="card" id="formCard" style="display:none;">
+    <h2>إنشاء صندوق جديد</h2>
+    <p class="small">عبّئ بيانات الصندوق ثم اضغط "إنشاء".</p>
+
+    <form id="fundForm">
+      <div>
+        <label for="name">اسم الصندوق</label>
+        <input type="text" id="name" name="name" required placeholder="مثل. عن فلان الفلاني -رحمه الله- أو مشاركة فريق كذا أو مجموعة كذا .. ">
+      </div>
+
+      <div>
+        <label for="targetAmount">القيمة المستهدفة للحملة</label>
+        <select id="targetAmount" name="targetAmount" required>
+          <option value="">— اختر عدد الأسهم —</option>
+          <option value="800">سهم واحد — 800 ريال</option>
+          <option value="1600">سهمان — 1,600 ريال</option>
+          <option value="4000">5 أسهم — 4,000 ريال</option>
+          <option value="8000">10 أسهم — 8,000 ريال</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="waqfType">مجال التبرع</label>
+        <select id="waqfType" name="waqfType" required>
+          <option value="">— اختر مجال التبرع —</option>
+          <option value="تعليمي">تعليمي</option>
+          <option value="صحي">صحي</option>
+          <option value="اجتماعي">اجتماعي</option>
+          <option value="دعوي">دعوي</option>
+          <option value="عام">عام</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="fundType">نوع الصندوق</label>
+        <label style="display:flex; align-items:center; gap:8px; font-weight:normal;">
+          <input type="checkbox" id="fundType" name="fundType" style="width:auto; margin:0;">
+          <span> نشرها مع قائمة الصناديق الأكثر تفاعلاً .</span>
+        </label>
+        <p class="small" style="margin-top:8px;">ملاحظة: سيتاح استقبال التبرعات حتى بعد الوصول للمستهدف.</p>
+      </div>
+
+      <button class="btn block ok" id="submitBtn" type="submit" style="margin-top:16px;">إنشاء الصندوق</button>
+      <div class="msg" id="msg"></div>
+    </form>
+  </div>
+</div>
+
+<script src="/js/app.js"></script>
+<script>
+(async function () {
+  const me = await fetch('/ambassador/me');
+  if (me.status === 401) { location.href = '/login'; return; }
+  const d = await me.json();
+  const phone = d.ambassador.phone;
+
+  const check = await fetch('/api/platform/check-account/' + encodeURIComponent(phone));
+  const cd = await check.json();
+
+  if (!cd.hasAccount) {
+    document.getElementById('platformLink').href = cd.platformUrl;
+    document.getElementById('noAccountCard').style.display = '';
+  } else {
+    document.getElementById('formCard').style.display = '';
+
+    const form = document.getElementById('fundForm');
+    const msg = document.getElementById('msg');
+    const btn = document.getElementById('submitBtn');
+
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+      msg.textContent = '';
+      msg.className = 'msg';
+      btn.disabled = true; btn.textContent = 'جاري الإرسال...';
+
+      const body = {
+        name: document.getElementById('name').value.trim(),
+        targetAmount: document.getElementById('targetAmount').value,
+        waqfType: document.getElementById('waqfType').value,
+        acceptAfterTarget: document.getElementById('fundType').checked,
+        phone,
+      };
+
+      const r = await fetch('/api/platform/create-fund', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const rd = await r.json();
+      btn.disabled = false; btn.textContent = 'إنشاء الصندوق';
+
+      if (!r.ok) {
+        msg.className = 'msg err';
+        msg.textContent = rd.error || 'حدث خطأ، حاول مرة أخرى';
+        return;
+      }
+      msg.className = 'msg ok';
+      msg.textContent = 'تم إنشاء الصندوق بنجاح ✓';
+      form.reset();
+    };
+  }
+
+  App.showContent();
+})();
+</script>
+
+<%- include('../partials/foot') %>

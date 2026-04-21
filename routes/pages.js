@@ -14,6 +14,10 @@ router.get('/ambassador/prizes', (req, res) => {
   if (!req.session.ambassadorId) return res.redirect('/login');
   res.render('ambassador/prizes', { title: 'صرف الجوائز', active: 'prizes' });
 });
+router.get('/ambassador/create-fund', (req, res) => {
+  if (!req.session.ambassadorId) return res.redirect('/login');
+  res.render('ambassador/create-fund', { title: 'إنشاء صندوق', active: 'create-fund' });
+});
 
 router.get('/admin/login', (req, res) => res.render('admin/login', { title: 'دخول الإدارة' }));
 router.get('/admin/dashboard', (req, res) => {

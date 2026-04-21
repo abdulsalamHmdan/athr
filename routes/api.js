@@ -44,4 +44,40 @@ router.get('/donations/:phone', async (req, res) => {
   }
 });
 
+// ===== بيانات وهمية مؤقتة — استبدلها بالـ API الحقيقي لاحقاً =====
+const PLATFORM_URL = 'https://donate.utq.org.sa/';
+
+// التحقق إن كان السفير عنده حساب على المنصة
+router.get('/platform/check-account/:phone', async (req, res) => {
+  const phone = req.params.phone;
+  // بيانات وهمية: أي رقم ينتهي بـ 0 يُعتبر بدون حساب
+  const hasAccount = !phone.endsWith('0');
+  res.json({
+    phone,
+    hasAccount,
+    platformUrl: PLATFORM_URL,
+  });
+});
+
+// إنشاء صندوق جديد على المنصة
+router.post('/platform/create-fund', async (req, res) => {
+  const { name, targetAmount, waqfType, acceptAfterTarget, phone } = req.body || {};
+  if (!name || !targetAmount || !waqfType) {
+    return res.status(400).json({ error: 'جميع الحقول مطلوبة' });
+  }
+  // بيانات وهمية — لاحقاً يُرسل الطلب إلى API المنصة الحقيقي
+  res.json({
+    ok: true,
+    fund: {
+      id: 'mock-' + Date.now(),
+      name,
+      targetAmount: Number(targetAmount),
+      waqfType,
+      acceptAfterTarget: !!acceptAfterTarget,
+      phone,
+      createdAt: new Date().toISOString(),
+    },
+  });
+});
+
 module.exports = router;
