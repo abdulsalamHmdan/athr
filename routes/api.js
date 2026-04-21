@@ -29,7 +29,7 @@ router.get('/donations/:phone', async (req, res) => {
           pk: it.pk,
           name: it.name,  
           total: it.total || 0,
-          goal: it.goal || 0,
+          goal: it.goal || 800,
         }))
       : [];
     res.json({
@@ -45,7 +45,7 @@ router.get('/donations/:phone', async (req, res) => {
 });
 
 // ===== بيانات وهمية مؤقتة — استبدلها بالـ API الحقيقي لاحقاً =====
-const PLATFORM_URL = 'https://donate.utq.org.sa/';
+const PLATFORM_URL = 'https://donate.utq.org.sa/clients/otp_login';
 
 // التحقق إن كان السفير عنده حساب على المنصة
 router.get('/platform/check-account/:phone', async (req, res) => {
