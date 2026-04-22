@@ -1,6 +1,7 @@
 const express = require('express');
 const Ambassador = require('../models/Ambassador');
 const PrizeRequest = require('../models/PrizeRequest');
+const Fund = require('../models/Fund');
 const { requireAmbassador } = require('../middleware/auth');
 
 const router = express.Router();
@@ -19,6 +20,25 @@ async function getStats(amb) {
   } catch (e) {
     totalDonations = 0;
   }
+
+  try {
+    const localFunds = await Fund.find({ ambassador: amb._id }).sort({ createdAt: -1 }).lean();
+    const existingKeys = new Set(
+      goals.map((g) => String(g.pk || g.name || '').trim()).filter(Boolean)
+    );
+    for (const f of localFunds) {
+      const key = String(f.externalId || f.name || '').trim();
+      if (existingKeys.has(key) || existingKeys.has(String(f.name).trim())) continue;
+      goals.push({
+        pk: f.externalId || String(f._id),
+        name: f.name,
+        total: 0,
+        goal: f.targetAmount || 0,
+        local: true,
+        ownerPhone: f.ownerPhone || '',
+      });
+    }
+  } catch (e) {}
 
   const approved = await PrizeRequest.find({ ambassador: amb._id, status: { $in: ['approved', 'paid'] } });
   const paid = approved.reduce((s, r) => s + r.amount, 0);

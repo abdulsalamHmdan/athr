@@ -1,4 +1,5 @@
 const express = require('express');
+const Fund = require('../models/Fund');
 const router = express.Router();
 
 const GOALS_API = 'https://donate.utq.org.sa/api/v1/orders/report/goals:ED4SFhUVFUcZGBsZHRgeTyEdIiQgHyIhJCMmJSgnKiksKy4tMC8yMQ';
@@ -61,21 +62,42 @@ router.get('/platform/check-account/:phone', async (req, res) => {
 
 // إنشاء صندوق جديد على المنصة
 router.post('/platform/create-fund', async (req, res) => {
-  const { name, targetAmount, waqfType, acceptAfterTarget, phone } = req.body || {};
+  const { name, targetAmount, waqfType, acceptAfterTarget, phone, ownerPhone } = req.body || {};
   if (!name || !targetAmount || !waqfType) {
     return res.status(400).json({ error: 'جميع الحقول مطلوبة' });
   }
-  // بيانات وهمية — لاحقاً يُرسل الطلب إلى API المنصة الحقيقي
+
+  const externalId = 'mock-' + Date.now();
+
+  let saved = null;
+  try {
+    if (req.session && req.session.ambassadorId) {
+      saved = await Fund.create({
+        ambassador: req.session.ambassadorId,
+        name,
+        targetAmount: Number(targetAmount),
+        waqfType: String(waqfType),
+        acceptAfterTarget: !!acceptAfterTarget,
+        phone: phone || '',
+        ownerPhone: ownerPhone || '',
+        externalId,
+      });
+    }
+  } catch (e) {
+    return res.status(500).json({ error: 'فشل حفظ الصندوق' });
+  }
+
   res.json({
     ok: true,
     fund: {
-      id: 'mock-' + Date.now(),
+      id: saved ? saved._id : externalId,
       name,
       targetAmount: Number(targetAmount),
       waqfType,
       acceptAfterTarget: !!acceptAfterTarget,
       phone,
-      createdAt: new Date().toISOString(),
+      ownerPhone: ownerPhone || '',
+      createdAt: saved ? saved.createdAt : new Date().toISOString(),
     },
   });
 });

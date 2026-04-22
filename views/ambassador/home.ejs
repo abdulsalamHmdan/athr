@@ -27,7 +27,7 @@
   </div>
 
   <div class="card" id="goalsCard" style="display:none;">
-    <h2>الصناديق</h2>
+    <h2>الصناديق <span class="goals-count" id="goalsCount"></span></h2>
     <div id="goalsBody" class="goals-list"></div>
   </div>
 </div>
@@ -55,16 +55,32 @@
     `${s.totalDonations.toLocaleString('ar-EG')} من ${s.nextMilestone.toLocaleString('ar-EG')} ريال للجائزة القادمة`;
 
   if (Array.isArray(s.goals) && s.goals.length) {
+    document.getElementById('goalsCount').textContent = s.goals.length.toLocaleString('ar-EG');
     const body = document.getElementById('goalsBody');
-    body.innerHTML = s.goals.map(g => {
+    const esc = (v) => String(v == null ? '' : v)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+    const buildMsg = (g) => {
+      const total = g.total || 0;
+      const goal = g.goal || 0;
+      return `صندوق : ${g.name || '-'}\n` +
+             `نسبة الاكتمال : ${Math.ceil(total/goal*100)}%\n` +
+             `رابط الصندوق:https://donate.utq.org.sa/goal_${g.pk}\n\n` +
+             `ساهم في إكمال صندوق الوقف\nليكون لك أجرٌ جارٍ لا ينقطع،`;
+    };
+
+    body.innerHTML = s.goals.map((g, i) => {
       const total = g.total || 0;
       const goal = g.goal || 0;
       const pct = goal > 0 ? Math.min(100, (total / goal) * 100) : 0;
       const pctTxt = goal > 0 ? pct.toFixed(1) + '%' : '—';
+      const canSend = !!(g.local && g.ownerPhone);
+      const btnLabel = canSend ? 'إرسال' : 'نسخ الرسالة';
       return `
         <div class="goal-item">
           <div class="goal-head">
-            <span class="goal-name">${g.name || '-'}</span>
+            <span class="goal-name">${esc(g.name || '-')}</span>
             <span class="goal-pct">${pctTxt}</span>
           </div>
           <div class="goal-nums">
@@ -72,9 +88,33 @@
             <span>المستهدف: <b>${goal ? goal.toLocaleString('ar-EG') : '-'}</b> ${goal ? 'ريال' : ''}</span>
           </div>
           <div class="goal-bar"><div style="width:${pct}%"></div></div>
+          <div class="goal-actions">
+            <button class="btn secondary sm goal-btn" type="button" data-goal-idx="${i}" data-action="${canSend ? 'send' : 'copy'}">${btnLabel}</button>
+          </div>
         </div>
       `;
     }).join('');
+
+    body.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-goal-idx]');
+      if (!btn) return;
+      const idx = Number(btn.getAttribute('data-goal-idx'));
+      const g = s.goals[idx];
+      if (!g) return;
+      const msg = buildMsg(g);
+      if (btn.getAttribute('data-action') === 'send') {
+        const phone = String(g.ownerPhone || '').replace(/[^\d]/g, '');
+        const normalized = phone.startsWith('0') ? '966' + phone.slice(1) : phone;
+        window.open(`https://wa.me/${normalized}?text=${encodeURIComponent(msg)}`, '_blank');
+      } else {
+        navigator.clipboard.writeText(msg).then(() => {
+          const old = btn.textContent;
+          btn.textContent = 'تم النسخ ✓';
+          setTimeout(() => { btn.textContent = old; }, 1500);
+        });
+      }
+    });
+
     document.getElementById('goalsCard').style.display = '';
   }
 

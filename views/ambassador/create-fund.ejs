@@ -48,6 +48,11 @@
       </div>
 
       <div>
+        <label for="ownerPhone">رقم صاحب الصندوق <span class="small">(اختياري)</span></label>
+        <input type="tel" id="ownerPhone" name="ownerPhone" placeholder="مثل. 05XXXXXXXX">
+      </div>
+
+      <div>
         <label for="fundType">نوع الصندوق</label>
         <label style="display:flex; align-items:center; gap:8px; font-weight:normal;">
           <input type="checkbox" id="fundType" name="fundType" style="width:auto; margin:0;">
@@ -95,6 +100,7 @@
         waqfType: document.getElementById('waqfType').value,
         acceptAfterTarget: document.getElementById('fundType').checked,
         phone,
+        ownerPhone: document.getElementById('ownerPhone').value.trim(),
       };
 
       const r = await fetch('/api/platform/create-fund', {
