@@ -23,7 +23,6 @@ router.get('/donations/:phone', async (req, res) => {
   try {
     const r = await fetch(`${GOALS_API}?goal_creator=${encodeURIComponent(phone)}`);
     const data = await r.json();
-    // console.log('Fetched data for phone', phone, data);
     const total = data?.totals?.total || 0;
     const items = Array.isArray(data?.items)
       ? data.items.map((it) => ({

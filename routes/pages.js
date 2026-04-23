@@ -5,6 +5,7 @@ const router = express.Router();
 router.get('/', (req, res) => res.render('index', { title: 'الرئيسية' }));
 router.get('/signup', (req, res) => res.render('signup', { title: 'تسجيل سفير جديد' }));
 router.get('/login', (req, res) => res.render('login', { title: 'تسجيل الدخول' }));
+router.get('/dashboard', (req, res) => res.render('dashboard', { title: 'لوحة الإحصائيات' }));
 
 router.get('/ambassador/home', (req, res) => {
   if (!req.session.ambassadorId) return res.redirect('/login');
@@ -14,6 +15,7 @@ router.get('/ambassador/prizes', (req, res) => {
   if (!req.session.ambassadorId) return res.redirect('/login');
   res.render('ambassador/prizes', { title: 'صرف الجوائز', active: 'prizes' });
 });
+
 router.get('/ambassador/create-fund', (req, res) => {
   if (!req.session.ambassadorId) return res.redirect('/login');
   res.render('ambassador/create-fund', { title: 'إنشاء صندوق', active: 'create-fund' });

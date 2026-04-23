@@ -1,0 +1,269 @@
+<%- include('partials/head') %>
+
+<%
+// ========== بيانات ستاتيك (تجريبية) — تُربط لاحقاً بقاعدة البيانات ==========
+const stats = {
+  totalDonations: 284750,
+  donationsGoal: 500000,
+  totalBoxes: 312,
+  boxesGoal: 500,
+  ambassadors: 54,
+  ambassadorsGoal: 80,
+  ambassadorBoxes: 198,
+  ambassadorBoxesGoal: 400,
+  avgPerformance: 64,
+  paidOutPrizes: 42300,
+};
+
+const notifications = [
+  { text: 'انضمام 3 سفراء جدد من مجمع النور', time: 'قبل ساعة' },
+  { text: 'تم صرف جائزة للسفير/ عبدالله الحربي', time: 'قبل 3 ساعات' },
+  { text: 'صندوق جديد: دعم طلاب حلقات التحفيظ', time: 'اليوم 10:22 ص' },
+  { text: 'تجاوز مجمع الأندلس هدف التبرعات الشهري', time: 'أمس' },
+];
+
+const topAmbassadors = [
+  { name: 'عبدالله الحربي', entity: 'مجمع الأندلس', amount: 42800 },
+  { name: 'سارة القحطاني', entity: 'مجمع النور', amount: 38450 },
+  { name: 'محمد العتيبي', entity: 'مجمع الفرقان', amount: 33110 },
+  { name: 'نورة الزهراني', entity: 'مجمع الأندلس', amount: 28900 },
+  { name: 'خالد السبيعي', entity: 'مجمع الصديق', amount: 24600 },
+  { name: 'هدى الدوسري', entity: 'مجمع النور', amount: 21400 },
+  { name: 'تركي الرشيد', entity: 'مجمع الفرقان', amount: 19250 },
+  { name: 'منى العنزي', entity: 'مجمع الصديق', amount: 16980 },
+  { name: 'فيصل الشمري', entity: 'مجمع الأندلس', amount: 15110 },
+  { name: 'ريم المطيري', entity: 'مجمع النور', amount: 13750 },
+];
+
+const topCompounds = [
+  { name: 'مجمع الأندلس', boxes: 94, amount: 98400 },
+  { name: 'مجمع النور', boxes: 78, amount: 81200 },
+  { name: 'مجمع الفرقان', boxes: 62, amount: 54800 },
+  { name: 'مجمع الصديق', boxes: 48, amount: 34600 },
+  { name: 'مجمع السلام', boxes: 30, amount: 15750 },
+];
+
+const genderSplit = { men: 58, women: 42 };
+
+function pct(a, b) { return Math.min(100, Math.round((a / b) * 100)); }
+function fmt(n) { return Number(n).toLocaleString('ar-EG'); }
+
+const donationsPct = pct(stats.totalDonations, stats.donationsGoal);
+const boxesPct = pct(stats.totalBoxes, stats.boxesGoal);
+const ambBoxesPct = pct(stats.ambassadorBoxes, stats.ambassadorBoxesGoal);
+const ambBoxShare = pct(stats.ambassadorBoxes, stats.totalBoxes);
+%>
+
+<div class="dash-root">
+
+  <!-- ====== الملخص العام ====== -->
+  <div class="dash-card">
+    <div class="dash-card-head">
+      <button class="dash-pill-btn" type="button" onclick="location.reload()">تحديث</button>
+      <div class="dash-card-title">الملخص العام</div>
+    </div>
+
+    <div class="dash-summary-grid">
+      <div class="dash-tile">
+        <div class="dash-tile-label">إجمالي التبرعات (ريال)</div>
+        <div class="dash-tile-value"><span class="dash-num" data-target="<%= stats.totalDonations %>">0</span></div>
+        <div class="dash-tile-foot"><span>المؤشر</span><b><%= donationsPct %>%</b></div>
+        <div class="dash-bar"><span style="--w: <%= donationsPct %>%"></span></div>
+      </div>
+
+      <div class="dash-tile">
+        <div class="dash-tile-label">إجمالي الصناديق</div>
+        <div class="dash-tile-value"><span class="dash-num" data-target="<%= stats.totalBoxes %>">0</span></div>
+        <div class="dash-tile-foot"><span>المؤشر</span><b><%= boxesPct %>%</b></div>
+        <div class="dash-bar"><span style="--w: <%= boxesPct %>%"></span></div>
+      </div>
+
+      <div class="dash-tile">
+        <div class="dash-tile-label">صناديق السفراء</div>
+        <div class="dash-tile-value"><span class="dash-num" data-target="<%= stats.ambassadorBoxes %>">0</span></div>
+        <div class="dash-tile-foot"><span>المؤشر</span><b><%= ambBoxesPct %>%</b></div>
+        <div class="dash-bar"><span style="--w: <%= ambBoxesPct %>%"></span></div>
+      </div>
+
+      <div class="dash-tile">
+        <div class="dash-tile-label">متوسط الأداء</div>
+        <div class="dash-tile-value"><span class="dash-num" data-target="<%= stats.avgPerformance %>" data-suffix="%">0</span></div>
+        <div class="dash-tile-foot"><span>المؤشر</span><b><%= stats.avgPerformance %>%</b></div>
+        <div class="dash-bar"><span style="--w: <%= stats.avgPerformance %>%"></span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== الإشعارات / آخر التحديثات ====== -->
+  <div class="dash-card">
+    <div class="dash-card-head">
+      <div class="dash-card-sub">آخر التحديثات العامة</div>
+      <div class="dash-card-title">الإشعارات البسيطة</div>
+    </div>
+    <div class="dash-notif-list">
+      <% notifications.forEach((n, i) => { %>
+        <div class="dash-notif-item" style="--i: <%= i %>">
+          <div class="dash-notif-dot"></div>
+          <div class="dash-notif-text"><%= n.text %></div>
+          <div class="dash-notif-time"><%= n.time %></div>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+
+  <!-- ====== الصف الثلاثي: السفراء / الصناديق / مقارنة ====== -->
+  <div class="dash-row-3">
+
+    <!-- السفراء -->
+    <div class="dash-card">
+      <div class="dash-card-head"><div class="dash-card-title">السفراء</div></div>
+      <div class="dash-total-box">
+        <div class="dash-total-label">الإجمالي</div>
+        <div class="dash-total-value"><span class="dash-num" data-target="<%= stats.ambassadors %>">0</span></div>
+      </div>
+      <div class="dash-metric">
+        <div class="dash-metric-head"><span>منسوبو الجمعية</span><span class="pct">36%</span></div>
+        <div class="dash-bar primary"><span style="--w:36%"></span></div>
+      </div>
+      <div class="dash-metric">
+        <div class="dash-metric-head"><span>من خارج الجمعية</span><span class="pct">64%</span></div>
+        <div class="dash-bar primary"><span style="--w:64%"></span></div>
+      </div>
+      <div class="dash-metric">
+        <div class="dash-metric-head"><span>ناشطون هذا الشهر</span><span class="pct">72%</span></div>
+        <div class="dash-bar primary"><span style="--w:72%"></span></div>
+      </div>
+      <div class="dash-metric">
+        <div class="dash-metric-head"><span>حققوا الهدف</span><span class="pct">23%</span></div>
+        <div class="dash-bar primary"><span style="--w:23%"></span></div>
+      </div>
+    </div>
+
+    <!-- الصناديق -->
+    <div class="dash-card">
+      <div class="dash-card-head"><div class="dash-card-title">الصناديق</div></div>
+      <div class="dash-total-box">
+        <div class="dash-total-label">الإجمالي</div>
+        <div class="dash-total-value"><span class="dash-num" data-target="<%= stats.totalBoxes %>">0</span></div>
+      </div>
+      <div class="dash-metric">
+        <div class="dash-metric-head"><span>مكتملة</span><span class="pct">41%</span></div>
+        <div class="dash-bar"><span style="--w:41%"></span></div>
+      </div>
+      <div class="dash-metric">
+        <div class="dash-metric-head"><span>قيد التبرع</span><span class="pct">34%</span></div>
+        <div class="dash-bar"><span style="--w:34%"></span></div>
+      </div>
+      <div class="dash-metric">
+        <div class="dash-metric-head"><span>جديدة هذا الشهر</span><span class="pct">18%</span></div>
+        <div class="dash-bar"><span style="--w:18%"></span></div>
+      </div>
+      <div class="dash-metric">
+        <div class="dash-metric-head"><span>نسبة صناديق السفراء</span><span class="pct"><%= ambBoxShare %>%</span></div>
+        <div class="dash-bar"><span style="--w:<%= ambBoxShare %>%"></span></div>
+      </div>
+    </div>
+
+    <!-- مقارنة سريعة -->
+    <div class="dash-card">
+      <div class="dash-card-head"><div class="dash-card-title">مقارنة سريعة</div></div>
+      <div class="dash-diff">
+        <div class="dash-diff-label">فرق متوسط التبرعات بين الفئات</div>
+        <div class="dash-diff-value"><span class="dash-num" data-target="16" data-suffix="%">0</span></div>
+      </div>
+      <div class="dash-donut-wrap">
+        <div class="dash-donut" style="--pct-final: <%= genderSplit.men %>; --ring: #e76f51;">
+          <span><%= genderSplit.men %>%</span>
+        </div>
+        <div class="dash-donut-label">الرجال</div>
+      </div>
+      <div class="dash-donut-wrap">
+        <div class="dash-donut" style="--pct-final: <%= genderSplit.women %>; --ring: #f4a261;">
+          <span><%= genderSplit.women %>%</span>
+        </div>
+        <div class="dash-donut-label">النساء</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ====== العشر الأوائل / ترتيب المجمعات ====== -->
+  <div class="dash-lb-row">
+
+    <div class="dash-card">
+      <div class="dash-card-head">
+        <div class="dash-card-sub">الأعلى تبرعاً هذا الشهر</div>
+        <div class="dash-card-title">العشر الأوائل من السفراء</div>
+      </div>
+      <% topAmbassadors.forEach((a, i) => {
+        const cls = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+      %>
+        <div class="dash-rank-item <%= cls %>" style="--i: <%= i %>">
+          <div class="dash-rank-num"><%= i + 1 %></div>
+          <div>
+            <div class="dash-rank-name"><%= a.name %></div>
+            <div class="dash-rank-sub"><%= a.entity %></div>
+          </div>
+          <div class="dash-rank-val"><%= fmt(a.amount) %> ر.س</div>
+        </div>
+      <% }) %>
+    </div>
+
+    <div class="dash-card">
+      <div class="dash-card-head">
+        <div class="dash-card-sub">حسب إجمالي التبرعات</div>
+        <div class="dash-card-title">ترتيب المجمعات</div>
+      </div>
+      <% topCompounds.forEach((c, i) => {
+        const cls = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+      %>
+        <div class="dash-rank-item <%= cls %>" style="--i: <%= i %>">
+          <div class="dash-rank-num"><%= i + 1 %></div>
+          <div>
+            <div class="dash-rank-name"><%= c.name %></div>
+            <div class="dash-rank-sub"><%= c.boxes %> صندوق</div>
+          </div>
+          <div class="dash-rank-val"><%= fmt(c.amount) %> ر.س</div>
+        </div>
+      <% }) %>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+(function () {
+  const root = document.querySelector('.dash-root');
+  if (!root) return;
+
+  function countUp(el) {
+    const target = Number(el.dataset.target || 0);
+    const suffix = el.dataset.suffix || '';
+    const duration = 1400;
+    const start = performance.now();
+    const fmt = (n) => Math.round(n).toLocaleString('ar-EG') + suffix;
+    // ease-out-expo-ish
+    const ease = (t) => 1 - Math.pow(1 - t, 4);
+    function tick(now) {
+      const p = Math.min(1, (now - start) / duration);
+      el.textContent = fmt(target * ease(p));
+      if (p < 1) requestAnimationFrame(tick);
+      else el.textContent = fmt(target);
+    }
+    requestAnimationFrame(tick);
+  }
+
+  // Trigger after first paint so initial states (opacity 0, width 0) are rendered first
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      root.classList.add('loaded');
+      root.querySelectorAll('.dash-num[data-target]').forEach((el, i) => {
+        setTimeout(() => countUp(el), 250 + i * 80);
+      });
+    }, 60);
+  });
+})();
+</script>
+
+<%- include('partials/foot') %>
