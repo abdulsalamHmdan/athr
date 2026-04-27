@@ -3,7 +3,21 @@
     "allow": [
       "Bash(rm -f public/index.html public/signup.html public/login.html public/referral.html public/ambassador/home.html public/ambassador/prizes.html public/admin/login.html public/admin/dashboard.html public/admin/requests.html)",
       "Bash(rmdir public/ambassador public/admin)",
-      "Bash(node -e \"const ejs = require\\('ejs'\\); const path = require\\('path'\\); ejs.renderFile\\(path.join\\('views','dashboard.ejs'\\), { title: 'لوحة الإحصائيات' }, { views: [path.join\\(process.cwd\\(\\),'views'\\)] }, \\(err, html\\) => { if\\(err\\) { console.error\\('ERR:', err.message\\); process.exit\\(1\\); } else { console.log\\('OK — length:', html.length\\); } }\\);\")"
+      "Bash(node -e \"const ejs = require\\('ejs'\\); const path = require\\('path'\\); ejs.renderFile\\(path.join\\('views','dashboard.ejs'\\), { title: 'لوحة الإحصائيات' }, { views: [path.join\\(process.cwd\\(\\),'views'\\)] }, \\(err, html\\) => { if\\(err\\) { console.error\\('ERR:', err.message\\); process.exit\\(1\\); } else { console.log\\('OK — length:', html.length\\); } }\\);\")",
+      "Bash(npm install *)",
+      "Bash(node -e \"const wp=require\\('web-push'\\); const k=wp.generateVAPIDKeys\\(\\); console.log\\('PUBLIC='+k.publicKey\\); console.log\\('PRIVATE='+k.privateKey\\);\")",
+      "Bash(node -e \"require\\('./routes/push'\\); require\\('./routes/pages'\\); require\\('./models/PushSubscription'\\); require\\('./models/Notification'\\); console.log\\('OK: all modules load'\\);\")",
+      "Bash(node --check server.js)",
+      "Bash(node --check routes/push.js)",
+      "Bash(node --check routes/pages.js)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3000/api/push/public-key)",
+      "Bash(curl -s http://localhost:3000/api/push/public-key)",
+      "Bash(PORT=3099 node server.js)",
+      "Bash(curl -sf http://localhost:3099/api/push/public-key)",
+      "Bash(curl -s http://localhost:3099/api/push/public-key)",
+      "Bash(curl -s -o /dev/null -w \"sw.js=%{http_code}\\\\n\" http://localhost:3099/sw.js)",
+      "Bash(curl -s -o /dev/null -w \"push.js=%{http_code}\\\\n\" http://localhost:3099/js/push.js)",
+      "Bash(curl -s -o /dev/null -w \"admin/notifications=%{http_code}\\\\n\" -L http://localhost:3099/admin/notifications)"
     ]
   }
 }

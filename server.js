@@ -15,6 +15,7 @@ const ambassadorRoutes = require('./routes/ambassador');
 const adminRoutes = require('./routes/admin');
 const apiRoutes = require('./routes/api');
 const pagesRoutes = require('./routes/pages');
+const pushRoutes = require('./routes/push');
 
 const app = express();
 
@@ -52,6 +53,7 @@ app.use('/auth', authRoutes);
 app.use('/ambassador', ambassadorRoutes);
 app.use('/admin', adminRoutes);
 app.use('/api', apiRoutes);
+app.use('/', pushRoutes);
 app.use('/', pagesRoutes);
 
 cron.schedule('0 * * * *', async () => {

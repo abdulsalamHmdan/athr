@@ -1,0 +1,190 @@
+<%- include('../partials/head') %>
+<%- include('../partials/nav-admin') %>
+
+<style>
+  textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--border-2);
+    border-radius: var(--radius-sm);
+    background: #fff;
+    color: var(--text);
+    font-size: 16px;
+    font-family: inherit;
+    min-height: 110px;
+    resize: vertical;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-soft);
+  }
+  .notif-target { display: flex; gap: 16px; flex-wrap: wrap; margin: 6px 0 12px; }
+  .notif-target label { display: inline-flex; align-items: center; gap: 6px; margin: 0; font-weight: 500; cursor: pointer; }
+  .notif-target input[type=radio] { width: auto; margin: 0; }
+  .notif-result { margin-top: 12px; padding: 10px 12px; border-radius: 8px; font-size: 14px; display: none; }
+  .notif-result.ok { background: #e7f7ec; color: #0f5132; }
+  .notif-result.err { background: #fde7e7; color: #842029; }
+  .hist-row { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; padding: 10px 0; border-bottom: 1px dashed var(--border-2); }
+  .hist-row:last-child { border-bottom: 0; }
+  .hist-title { font-weight: 700; }
+  .hist-body { color: var(--muted); font-size: 14px; grid-column: 1 / -1; }
+  .hist-meta { color: var(--muted-2); font-size: 12px; }
+</style>
+
+<div class="card">
+  <h2>إرسال إشعار للسفراء</h2>
+
+  <div class="stat-grid" style="margin-bottom: 8px;">
+    <div class="stat"><div class="v" id="s_subs">0</div><div class="l">اشتراكات نشطة</div></div>
+    <div class="stat"><div class="v" id="s_amb_subs">0</div><div class="l">سفراء مشتركون</div></div>
+  </div>
+
+  <label for="n_title">عنوان الإشعار</label>
+  <input id="n_title" type="text" maxlength="80" placeholder="مثال: تذكير من نقاط الأثر">
+
+  <label for="n_body">نص الإشعار</label>
+  <textarea id="n_body" maxlength="300" placeholder="اكتب الرسالة التي ستظهر في الإشعار…"></textarea>
+
+  <label for="n_url">رابط عند الضغط (اختياري)</label>
+  <input id="n_url" type="text" placeholder="/ambassador/home">
+
+  <label>المستهدفون</label>
+  <div class="notif-target">
+    <label><input type="radio" name="n_target" value="all" checked> جميع السفراء</label>
+    <label><input type="radio" name="n_target" value="ambassador"> سفير محدد</label>
+  </div>
+
+  <div id="amb_pick" style="display:none;">
+    <label for="n_amb">اختر السفير</label>
+    <select id="n_amb"><option value="">— اختر —</option></select>
+  </div>
+
+  <button class="btn" id="send_btn" type="button" style="margin-top:14px;">إرسال الإشعار</button>
+  <div class="notif-result" id="send_result"></div>
+</div>
+
+<div class="card">
+  <h2>آخر الإشعارات المُرسلة</h2>
+  <div id="hist_body" class="small">جارٍ التحميل…</div>
+</div>
+
+<script src="/js/app.js"></script>
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (v) => String(v == null ? '' : v)
+  .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+
+async function loadAmbassadors() {
+  try {
+    const r = await fetch('/admin/stats');
+    if (r.status === 401) { location.href = '/admin/login'; return; }
+    const d = await r.json();
+    const sel = $('n_amb');
+    (d.ambassadors || []).forEach((a) => {
+      const o = document.createElement('option');
+      o.value = a._id;
+      o.textContent = `${a.name} — ${a.phone}`;
+      sel.appendChild(o);
+    });
+  } catch (e) {}
+}
+
+async function loadHistory() {
+  try {
+    const r = await fetch('/admin/notifications-api');
+    if (r.status === 401) { location.href = '/admin/login'; return; }
+    const d = await r.json();
+    $('s_subs').textContent = (d.subscriptionsCount || 0).toLocaleString('ar-EG');
+    $('s_amb_subs').textContent = (d.subscribedAmbassadors || 0).toLocaleString('ar-EG');
+    const body = $('hist_body');
+    if (!d.notifications || !d.notifications.length) {
+      body.innerHTML = '<div class="small">لم يتم إرسال أي إشعار بعد.</div>';
+      return;
+    }
+    body.innerHTML = d.notifications.map((n) => {
+      const date = new Date(n.createdAt).toLocaleString('ar-EG');
+      const target = n.target === 'ambassador'
+        ? `للسفير: ${esc(n.ambassador?.name || '-')}`
+        : 'لجميع السفراء';
+      return `<div class="hist-row">
+        <div class="hist-title">${esc(n.title)}</div>
+        <div class="hist-meta">${date}</div>
+        <div class="hist-body">${esc(n.body)}</div>
+        <div class="hist-meta">${target} — أُرسل: ${n.sentCount || 0} | فشل: ${n.failedCount || 0}</div>
+      </div>`;
+    }).join('');
+  } catch (e) {
+    $('hist_body').innerHTML = '<div class="small">فشل تحميل السجل.</div>';
+  }
+}
+
+document.querySelectorAll('input[name=n_target]').forEach((r) => {
+  r.addEventListener('change', () => {
+    $('amb_pick').style.display = r.value === 'ambassador' && r.checked ? '' : ($('amb_pick').style.display);
+    const isAmb = document.querySelector('input[name=n_target]:checked').value === 'ambassador';
+    $('amb_pick').style.display = isAmb ? '' : 'none';
+  });
+});
+
+$('send_btn').addEventListener('click', async () => {
+  const title = $('n_title').value.trim();
+  const body = $('n_body').value.trim();
+  const url = $('n_url').value.trim();
+  const target = document.querySelector('input[name=n_target]:checked').value;
+  const ambassadorId = $('n_amb').value;
+  const result = $('send_result');
+  result.style.display = 'none';
+  result.className = 'notif-result';
+
+  if (!title || !body) {
+    result.className = 'notif-result err';
+    result.textContent = 'العنوان والنص مطلوبان.';
+    result.style.display = '';
+    return;
+  }
+  if (target === 'ambassador' && !ambassadorId) {
+    result.className = 'notif-result err';
+    result.textContent = 'اختر السفير المستهدف.';
+    result.style.display = '';
+    return;
+  }
+
+  $('send_btn').disabled = true;
+  $('send_btn').textContent = 'جارٍ الإرسال…';
+  try {
+    const r = await fetch('/admin/notifications/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, body, url, target, ambassadorId }),
+    });
+    const d = await r.json();
+    if (!r.ok) {
+      result.className = 'notif-result err';
+      result.textContent = d.error || 'فشل الإرسال.';
+    } else {
+      result.className = 'notif-result ok';
+      result.textContent = `تم الإرسال بنجاح — وصل: ${d.sent} | فشل: ${d.failed} | الإجمالي: ${d.total}`;
+      $('n_title').value = '';
+      $('n_body').value = '';
+      $('n_url').value = '';
+      loadHistory();
+    }
+    result.style.display = '';
+  } catch (e) {
+    result.className = 'notif-result err';
+    result.textContent = 'خطأ في الشبكة.';
+    result.style.display = '';
+  } finally {
+    $('send_btn').disabled = false;
+    $('send_btn').textContent = 'إرسال الإشعار';
+  }
+});
+
+loadAmbassadors();
+loadHistory();
+</script>
+
+<%- include('../partials/foot') %>

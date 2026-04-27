@@ -30,6 +30,10 @@ router.get('/admin/requests', (req, res) => {
   if (!req.session.adminId) return res.redirect('/admin/login');
   res.render('admin/requests', { title: 'متابعة الطلبات', active: 'requests' });
 });
+router.get('/admin/notifications', (req, res) => {
+  if (!req.session.adminId) return res.redirect('/admin/login');
+  res.render('admin/notifications', { title: 'إرسال إشعارات', active: 'notifications' });
+});
 
 // رابط السفير — يسجّل الدخول تلقائياً ويحوّل لصفحته
 router.get('/r/:code', async (req, res) => {
