@@ -17,7 +17,9 @@
       "Bash(curl -s http://localhost:3099/api/push/public-key)",
       "Bash(curl -s -o /dev/null -w \"sw.js=%{http_code}\\\\n\" http://localhost:3099/sw.js)",
       "Bash(curl -s -o /dev/null -w \"push.js=%{http_code}\\\\n\" http://localhost:3099/js/push.js)",
-      "Bash(curl -s -o /dev/null -w \"admin/notifications=%{http_code}\\\\n\" -L http://localhost:3099/admin/notifications)"
+      "Bash(curl -s -o /dev/null -w \"admin/notifications=%{http_code}\\\\n\" -L http://localhost:3099/admin/notifications)",
+      "Bash(node --check public/js/push.js)",
+      "Bash(node --check public/sw.js)"
     ]
   }
 }

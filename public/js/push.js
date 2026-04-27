@@ -1,4 +1,29 @@
 (function () {
+  const STATE = {
+    UNSUPPORTED: 'unsupported',
+    IOS_NEED_INSTALL: 'ios-need-install',
+    DENIED: 'denied',
+    UNSUBSCRIBED: 'unsubscribed',
+    SUBSCRIBED: 'subscribed',
+    BUSY: 'busy',
+  };
+
+  const LABELS = {
+    [STATE.UNSUPPORTED]: 'الإشعارات غير مدعومة في هذا المتصفح',
+    [STATE.IOS_NEED_INSTALL]: 'لتفعيل الإشعارات على iPhone: أضف الموقع للشاشة الرئيسية أولاً',
+    [STATE.DENIED]: 'الإشعارات محظورة — فعّلها من إعدادات المتصفح',
+    [STATE.UNSUBSCRIBED]: 'تفعيل الإشعارات',
+    [STATE.SUBSCRIBED]: 'الإشعارات مفعّلة ✓ (اضغط لإيقافها)',
+    [STATE.BUSY]: 'جارٍ المعالجة…',
+  };
+
+  function isIOS() {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  }
+  function isStandalone() {
+    return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  }
+
   function urlBase64ToUint8Array(base64String) {
     const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
     const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
@@ -8,41 +33,69 @@
     return out;
   }
 
-  async function setupPush() {
-    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
-
-    let reg;
+  async function getRegistration() {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return null;
     try {
-      reg = await navigator.serviceWorker.register('/sw.js');
+      return await navigator.serviceWorker.register('/sw.js');
     } catch (e) {
-      return;
+      return null;
     }
+  }
 
-    if (Notification.permission === 'denied') return;
+  async function currentState() {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
+      return STATE.UNSUPPORTED;
+    }
+    if (isIOS() && !isStandalone()) return STATE.IOS_NEED_INSTALL;
+    if (Notification.permission === 'denied') return STATE.DENIED;
+    const reg = await navigator.serviceWorker.getRegistration('/sw.js');
+    if (!reg) return STATE.UNSUBSCRIBED;
+    const sub = await reg.pushManager.getSubscription();
+    return sub ? STATE.SUBSCRIBED : STATE.UNSUBSCRIBED;
+  }
+
+  function applyState(btn, state) {
+    btn.dataset.pushState = state;
+    btn.textContent = LABELS[state] || '';
+    const disabled = (state === STATE.UNSUPPORTED || state === STATE.IOS_NEED_INSTALL || state === STATE.DENIED || state === STATE.BUSY);
+    btn.disabled = disabled;
+    btn.classList.toggle('secondary', state !== STATE.UNSUBSCRIBED);
+  }
+
+  async function subscribe(btn) {
+    applyState(btn, STATE.BUSY);
+
+    const reg = await getRegistration();
+    if (!reg) { applyState(btn, STATE.UNSUPPORTED); return; }
 
     if (Notification.permission === 'default') {
       const perm = await Notification.requestPermission();
-      if (perm !== 'granted') return;
+      if (perm !== 'granted') {
+        applyState(btn, perm === 'denied' ? STATE.DENIED : STATE.UNSUBSCRIBED);
+        return;
+      }
+    } else if (Notification.permission === 'denied') {
+      applyState(btn, STATE.DENIED);
+      return;
     }
 
     let keyRes;
     try {
       keyRes = await fetch('/api/push/public-key').then((r) => r.json());
     } catch (e) {
-      return;
+      applyState(btn, STATE.UNSUBSCRIBED); return;
     }
-    if (!keyRes || !keyRes.key) return;
+    if (!keyRes || !keyRes.key) { applyState(btn, STATE.UNSUBSCRIBED); return; }
 
-    let sub = await reg.pushManager.getSubscription();
-    if (!sub) {
-      try {
-        sub = await reg.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(keyRes.key),
-        });
-      } catch (e) {
-        return;
-      }
+    let sub;
+    try {
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(keyRes.key),
+      });
+    } catch (e) {
+      applyState(btn, Notification.permission === 'denied' ? STATE.DENIED : STATE.UNSUBSCRIBED);
+      return;
     }
 
     try {
@@ -52,9 +105,41 @@
         body: JSON.stringify({ subscription: sub, userAgent: navigator.userAgent }),
       });
     } catch (e) {}
+
+    applyState(btn, STATE.SUBSCRIBED);
+  }
+
+  async function unsubscribe(btn) {
+    applyState(btn, STATE.BUSY);
+    const reg = await navigator.serviceWorker.getRegistration('/sw.js');
+    if (reg) {
+      const sub = await reg.pushManager.getSubscription();
+      if (sub) {
+        try {
+          await fetch('/api/push/unsubscribe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ endpoint: sub.endpoint }),
+          });
+        } catch (e) {}
+        try { await sub.unsubscribe(); } catch (e) {}
+      }
+    }
+    applyState(btn, STATE.UNSUBSCRIBED);
+  }
+
+  async function bindButton(btn) {
+    if (!btn || btn.dataset.pushBound) return;
+    btn.dataset.pushBound = '1';
+    applyState(btn, await currentState());
+    btn.addEventListener('click', async () => {
+      const state = btn.dataset.pushState;
+      if (state === STATE.SUBSCRIBED) return unsubscribe(btn);
+      if (state === STATE.UNSUBSCRIBED) return subscribe(btn);
+    });
   }
 
   window.addEventListener('load', () => {
-    setupPush();
+    document.querySelectorAll('[data-push-subscribe]').forEach(bindButton);
   });
 })();

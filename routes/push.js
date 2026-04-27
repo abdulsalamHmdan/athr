@@ -45,6 +45,17 @@ router.post('/api/push/subscribe', async (req, res) => {
   }
 });
 
+router.post('/api/push/unsubscribe', async (req, res) => {
+  const { endpoint } = req.body || {};
+  if (!endpoint) return res.status(400).json({ error: 'endpoint مطلوب' });
+  try {
+    await PushSubscription.deleteOne({ endpoint });
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: 'فشل إلغاء الاشتراك' });
+  }
+});
+
 router.get('/admin/notifications-api', requireAdmin, async (req, res) => {
   const list = await Notification.find({})
     .populate('ambassador', 'name phone')

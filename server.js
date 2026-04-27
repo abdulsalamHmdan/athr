@@ -18,6 +18,7 @@ const pagesRoutes = require('./routes/pages');
 const pushRoutes = require('./routes/push');
 
 const app = express();
+app.set('trust proxy', 1);
 
 mongoose
   .connect(process.env.MONGO_URI)
