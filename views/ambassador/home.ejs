@@ -4,7 +4,7 @@
 <div data-content style="display:none;">
   <div class="card">
     <h2 id="hello">أهلاً بك</h2>
-    <p class="small">طريقة المنافسة: عن كل <b>3000 ريال</b> من التبرعات عبر رابطك الخاص، تحصل على جائزة قابلة للصرف من خلال صفحة "صرف الجوائز".</p>
+    <p class="small">طريقة المنافسة: تتنافس على ثلاث فئات من الجوائز عبر رابطك الخاص — <b>البرونزية (٢٠٠٠ ريال)</b>، <b>الفضية (٥٠٠٠ ريال)</b>، <b>الذهبية (١٠٠٠٠ ريال)</b>. عندما يبلغ رصيد تبرعاتك مبلغ أي فئة يمكنك صرفها من صفحة "صرف الجوائز".</p>
     <div>
       <label>رابطك الخاص</label>
       <div class="link-box"><span id="link"></span><button class="btn" id="copyBtn" type="button">نسخ</button></div>
@@ -23,9 +23,9 @@
 
     <div class="stat-grid" style="margin-top:16px;">
       <div class="stat"><div class="v" id="s_total">0</div><div class="l">مجموع التبرعات (ريال)</div></div>
-      <div class="stat"><div class="v" id="s_paid">0</div><div class="l">صُرف كمكافأة (ريال)</div></div>
-      <div class="stat"><div class="v" id="s_avail">0</div><div class="l">جوائز متاحة</div></div>
-      <div class="stat"><div class="v" id="s_next">0</div><div class="l">الهدف القادم (ريال)</div></div>
+      <div class="stat"><div class="v" id="s_paid">0</div><div class="l">صُرف كمكافأة (نقاط)</div></div>
+      <div class="stat"><div class="v" id="s_balance">0</div><div class="l">رصيدك المتاح (نقاط)</div></div>
+      <div class="stat"><div class="v" id="s_next">0</div><div class="l" id="s_next_lbl">الهدف القادم (نقاط)</div></div>
     </div>
   </div>
 
@@ -50,12 +50,16 @@
   const s = d.stats;
   document.getElementById('s_total').textContent = s.totalDonations.toLocaleString('ar-EG');
   document.getElementById('s_paid').textContent = s.paid.toLocaleString('ar-EG');
-  document.getElementById('s_avail').textContent = s.availablePrizes;
-  document.getElementById('s_next').textContent = s.nextMilestone.toLocaleString('ar-EG');
-  const pct = Math.min(100, (s.totalDonations / s.nextMilestone) * 100);
+  document.getElementById('s_balance').textContent = s.availableBalance.toLocaleString('ar-EG');
+  const next = s.nextTier || { amount: 0, name: '' };
+  // document.getElementById('s_next').textContent = next.amount.toLocaleString('ar-EG');
+  // document.getElementById('s_next_lbl').textContent = next.name ? `${next.name} (ريال)` : 'الهدف القادم (ريال)';
+  document.getElementById('s_next').textContent = next.name;
+  document.getElementById('s_next_lbl').textContent = 'الهدف القادم';
+  const pct = next.amount > 0 ? Math.min(100, (s.availableBalance / next.amount) * 100) : 100;
   document.getElementById('bar').style.width = pct + '%';
   document.getElementById('progressLbl').textContent =
-    `${s.totalDonations.toLocaleString('ar-EG')} من ${s.nextMilestone.toLocaleString('ar-EG')} ريال للجائزة القادمة`;
+    `${s.availableBalance.toLocaleString('ar-EG')} من ${next.amount.toLocaleString('ar-EG')} ريال نحو ${next.name || 'الجائزة القادمة'}`;
 
   if (Array.isArray(s.goals) && s.goals.length) {
     document.getElementById('goalsCount').textContent = s.goals.length.toLocaleString('ar-EG');

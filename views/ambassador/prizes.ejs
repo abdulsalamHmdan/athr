@@ -6,12 +6,13 @@
 <div data-content style="display:none;">
   <div class="card">
     <h2>صرف جائزة</h2>
-    <p class="small">تستطيع صرف جائزة واحدة عن كل 3000 ريال من التبرعات عبر رابطك.</p>
+    <p class="small">اختر تصنيف الجائزة المناسب من بين ثلاث فئات: البرونزية (٢٠٠٠) والفضية (٥٠٠٠) والذهبية (١٠٠٠٠). يُخصم مبلغ الجائزة من رصيد تبرعاتك المتاح عند الطلب.</p>
     <div class="stat-grid">
-      <div class="stat"><div class="v" id="s_avail">0</div><div class="l">جوائز متاحة للصرف</div></div>
+      <div class="stat"><div class="v" id="s_balance">0</div><div class="l">رصيدك المتاح (ريال)</div></div>
       <div class="stat"><div class="v" id="s_paid">0</div><div class="l">تم صرفها (ريال)</div></div>
     </div>
-    <button class="btn block ok" id="claimBtn" style="margin-top:16px;">طلب صرف جائزة (3000 ريال)</button>
+
+    <div class="tier-grid" id="tierGrid"></div>
     <div class="msg" id="msg"></div>
   </div>
 
@@ -19,7 +20,7 @@
     <h2>طلباتي</h2>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>التاريخ</th><th>المبلغ</th><th>الحالة</th><th>ملاحظة</th></tr></thead>
+        <thead><tr><th>التاريخ</th><th>الجائزة</th><th>المبلغ</th><th>الحالة</th><th>ملاحظة</th></tr></thead>
         <tbody id="tbody"></tbody>
       </table>
     </div>
@@ -28,26 +29,43 @@
 
 <script src="/js/app.js"></script>
 <script>
-const statusMap = { pending: 'قيد المراجعة', approved: 'مقبولة', rejected: 'مرفوضة' };
+const statusMap = { pending: 'قيد المراجعة', approved: 'مقبولة', rejected: 'مرفوضة', paid: 'تم الصرف' };
+const tierNameByAmount = { 2000: 'برونزية', 5000: 'فضية', 10000: 'ذهبية' };
+
+function renderTiers(tiers) {
+  const grid = document.getElementById('tierGrid');
+  grid.innerHTML = tiers.map((t) => `
+    <div class="tier ${t.id} ${t.canClaim ? '' : 'locked'}">
+      <div class="tier-name">${t.name}</div>
+      <div class="tier-amount">${t.amount.toLocaleString('ar-EG')} <span>ريال</span></div>
+      <button class="btn block ok" data-tier="${t.id}" ${t.canClaim ? '' : 'disabled'}>
+        ${t.canClaim ? 'طلب الصرف' : 'الرصيد غير كافٍ'}
+      </button>
+    </div>
+  `).join('');
+}
 
 async function load() {
   const me = await fetch('/ambassador/me');
   if (me.status === 401) { location.href = '/login'; return; }
   const d = await me.json();
-  document.getElementById('s_avail').textContent = d.stats.availablePrizes;
+  document.getElementById('s_balance').textContent = d.stats.availableBalance.toLocaleString('ar-EG');
   document.getElementById('s_paid').textContent = d.stats.paid.toLocaleString('ar-EG');
+  renderTiers(d.stats.tiers || []);
 
   const rr = await fetch('/ambassador/requests');
   const rd = await rr.json();
   const tb = document.getElementById('tbody');
   tb.innerHTML = '';
   if (!rd.requests.length) {
-    tb.innerHTML = '<tr><td colspan="4" class="center small">لا توجد طلبات بعد</td></tr>';
+    tb.innerHTML = '<tr><td colspan="5" class="center small">لا توجد طلبات بعد</td></tr>';
   } else {
     for (const r of rd.requests) {
+      const tierName = tierNameByAmount[r.amount] || '-';
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td>${new Date(r.createdAt).toLocaleDateString('ar-EG')}</td>
+        <td>${tierName}</td>
         <td>${r.amount.toLocaleString('ar-EG')} ريال</td>
         <td><span class="badge ${r.status}">${statusMap[r.status]}</span></td>
         <td>${r.note || '-'}</td>`;
@@ -56,18 +74,27 @@ async function load() {
   }
   App.showContent();
 }
-document.getElementById('claimBtn').onclick = async () => {
+
+document.getElementById('tierGrid').addEventListener('click', async (e) => {
+  const btn = e.target.closest('button[data-tier]');
+  if (!btn || btn.disabled) return;
+  const tier = btn.dataset.tier;
   const msg = document.getElementById('msg');
   msg.textContent = '';
-  const btn = document.getElementById('claimBtn');
+  const original = btn.textContent;
   btn.disabled = true; btn.textContent = 'جاري الإرسال...';
-  const r = await fetch('/ambassador/requests', { method: 'POST' });
+  const r = await fetch('/ambassador/requests', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ tier }),
+  });
   const d = await r.json();
-  btn.disabled = false; btn.textContent = 'طلب صرف جائزة (3000 ريال)';
+  btn.disabled = false; btn.textContent = original;
   if (!r.ok) { msg.className = 'msg err'; msg.textContent = d.error; return; }
   msg.className = 'msg ok'; msg.textContent = 'تم إرسال طلب الصرف بنجاح';
   load();
-};
+});
+
 load();
 </script>
 

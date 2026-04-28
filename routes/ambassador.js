@@ -6,7 +6,12 @@ const { requireAmbassador } = require('../middleware/auth');
 
 const router = express.Router();
 
-const PRIZE_STEP = 3000;
+const PRIZE_TIERS = [
+  { id: 'bronze', name: 'الجائزة البرونزية', amount: 2000 },
+  { id: 'silver', name: 'الجائزة الفضية', amount: 5000 },
+  { id: 'gold', name: 'الجائزة الذهبية', amount: 10000 },
+];
+const TIER_BY_ID = Object.fromEntries(PRIZE_TIERS.map((t) => [t.id, t]));
 
 async function getStats(amb) {
   const baseUrl = `http://localhost:${process.env.PORT || 3000}`;
@@ -45,19 +50,26 @@ async function getStats(amb) {
   const pending = await PrizeRequest.find({ ambassador: amb._id, status: 'pending' });
   const pendingAmount = pending.reduce((s, r) => s + r.amount, 0);
 
-  const eligiblePrizes = Math.floor(totalDonations / PRIZE_STEP);
-  const claimedPrizes = Math.floor((paid + pendingAmount) / PRIZE_STEP);
-  const availablePrizes = Math.max(0, eligiblePrizes - claimedPrizes);
+  const claimedAmount = paid + pendingAmount;
+  const availableBalance = Math.max(0, totalDonations - claimedAmount);
+
+  const sortedTiers = [...PRIZE_TIERS].sort((a, b) => a.amount - b.amount);
+  const tiers = sortedTiers.map((t) => ({
+    id: t.id,
+    name: t.name,
+    amount: t.amount,
+    canClaim: availableBalance >= t.amount,
+  }));
+  const nextTier = sortedTiers.find((t) => t.amount > availableBalance) || sortedTiers[sortedTiers.length - 1];
 
   return {
     totalDonations,
     paid,
     pendingAmount,
-    eligiblePrizes,
-    claimedPrizes,
-    availablePrizes,
-    nextMilestone: (eligiblePrizes + 1) * PRIZE_STEP,
-    prizeStep: PRIZE_STEP,
+    claimedAmount,
+    availableBalance,
+    tiers,
+    nextTier,
     goals,
   };
 }
@@ -90,13 +102,15 @@ router.get('/requests', requireAmbassador, async (req, res) => {
 router.post('/requests', requireAmbassador, async (req, res) => {
   const amb = await Ambassador.findById(req.session.ambassadorId);
   if (!amb) return res.status(404).json({ error: 'غير موجود' });
+  const tier = TIER_BY_ID[req.body && req.body.tier];
+  if (!tier) return res.status(400).json({ error: 'تصنيف الجائزة غير صالح' });
   const stats = await getStats(amb);
-  if (stats.availablePrizes < 1) {
-    return res.status(400).json({ error: 'لا يوجد جوائز متاحة للصرف حالياً' });
+  if (stats.availableBalance < tier.amount) {
+    return res.status(400).json({ error: 'رصيدك غير كافٍ لطلب هذه الجائزة' });
   }
   const reqDoc = await PrizeRequest.create({
     ambassador: amb._id,
-    amount: PRIZE_STEP,
+    amount: tier.amount,
     status: 'pending',
   });
   res.json({ ok: true, request: reqDoc });

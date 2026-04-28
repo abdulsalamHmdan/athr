@@ -392,11 +392,61 @@ input:focus, select:focus {
   line-height: 1.1;
   font-variant-numeric: tabular-nums;
 }
+#s_next { font-size: 18px; }
 .stat .l {
   font-size: 12px;
   color: var(--muted);
   margin-top: 6px;
   font-weight: 500;
+}
+
+/* ============================
+   Prize tiers
+   ============================ */
+.tier-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+.tier {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 16px 14px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.25s, border-color 0.2s;
+}
+.tier::before {
+  content: "";
+  position: absolute;
+  top: 0; right: 0; left: 0;
+  height: 4px;
+}
+.tier.bronze::before { background: linear-gradient(90deg, #b87333, #e09a5b); }
+.tier.silver::before { background: linear-gradient(90deg, #9aa1a8, #d6dadd); }
+.tier.gold::before   { background: linear-gradient(90deg, #d4a017, #f5d166); }
+.tier:hover { transform: translateY(-2px); box-shadow: var(--shadow-brand); }
+.tier.locked { opacity: 0.65; }
+.tier-name {
+  font-weight: 700;
+  font-size: 15px;
+  margin-bottom: 6px;
+}
+.tier-amount {
+  font-size: clamp(20px, 5vw, 26px);
+  font-weight: 800;
+  color: var(--primary);
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 12px;
+}
+.tier-amount span {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 500;
+  margin-right: 4px;
 }
 
 /* ============================
@@ -1441,6 +1491,7 @@ body:has(.dash-root) {
   .stat-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .stat { padding: 14px 10px; }
   .stat .v { font-size: 20px; }
+  #s_next {font-size: 14px; }
   .stat .l { font-size: 11px; }
   /* Center an orphan stat on the last row */
   .stat-grid > .stat:last-child:nth-child(odd) {
