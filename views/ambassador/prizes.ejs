@@ -8,8 +8,8 @@
     <h2>صرف جائزة</h2>
     <p class="small">اختر تصنيف الجائزة المناسب من بين ثلاث فئات: البرونزية (٢٠٠٠) والفضية (٥٠٠٠) والذهبية (١٠٠٠٠). يُخصم مبلغ الجائزة من رصيد تبرعاتك المتاح عند الطلب.</p>
     <div class="stat-grid">
-      <div class="stat"><div class="v" id="s_balance">0</div><div class="l">رصيدك المتاح (ريال)</div></div>
-      <div class="stat"><div class="v" id="s_paid">0</div><div class="l">تم صرفها (ريال)</div></div>
+      <div class="stat"><div class="v" id="s_balance">0</div><div class="l">رصيدك المتاح (نقاط)</div></div>
+      <div class="stat"><div class="v" id="s_paid">0</div><div class="l">تم صرفها (نقاط)</div></div>
     </div>
 
     <div class="tier-grid" id="tierGrid"></div>
@@ -20,7 +20,7 @@
     <h2>طلباتي</h2>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>التاريخ</th><th>الجائزة</th><th>المبلغ</th><th>الحالة</th><th>ملاحظة</th></tr></thead>
+        <thead><tr><th>التاريخ</th><th>الجائزة</th><th>النقاط</th><th>الحالة</th><th>ملاحظة</th></tr></thead>
         <tbody id="tbody"></tbody>
       </table>
     </div>
@@ -37,7 +37,7 @@ function renderTiers(tiers) {
   grid.innerHTML = tiers.map((t) => `
     <div class="tier ${t.id} ${t.canClaim ? '' : 'locked'}">
       <div class="tier-name">${t.name}</div>
-      <div class="tier-amount">${t.amount.toLocaleString('ar-EG')} <span>ريال</span></div>
+      <div class="tier-amount">${t.amount.toLocaleString('ar-EG')} <span>نقطة</span></div>
       <button class="btn block ok" data-tier="${t.id}" ${t.canClaim ? '' : 'disabled'}>
         ${t.canClaim ? 'طلب الصرف' : 'الرصيد غير كافٍ'}
       </button>
@@ -66,7 +66,7 @@ async function load() {
       tr.innerHTML = `
         <td>${new Date(r.createdAt).toLocaleDateString('ar-EG')}</td>
         <td>${tierName}</td>
-        <td>${r.amount.toLocaleString('ar-EG')} ريال</td>
+        <td>${r.amount.toLocaleString('ar-EG')} نقطة</td>
         <td><span class="badge ${r.status}">${statusMap[r.status]}</span></td>
         <td>${r.note || '-'}</td>`;
       tb.appendChild(tr);
