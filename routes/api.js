@@ -6,8 +6,10 @@ const GOALS_API = 'https://donate.utq.org.sa/api/v1/orders/report/goals:ED4SFhUV
 
 router.get('/donations-all', async (req, res) => {
   try {
-    const r = await fetch(`${GOALS_API}?ts=1772312400-1772744400`);
+    const r = await fetch(`${GOALS_API}?ts=1777755600-${Math.ceil(Date.now() / 1000)}`);
+    
     const data = await r.json();
+    console.log("Response:", data);
     res.json({
       total: data?.totals?.total || 0,
       currency: 'SAR',
@@ -21,8 +23,9 @@ router.get('/donations-all', async (req, res) => {
 router.get('/donations/:phone', async (req, res) => {
   const phone = req.params.phone;
   try {
-    const r = await fetch(`${GOALS_API}?goal_creator=${encodeURIComponent(phone)}`);
+    const r = await fetch(`${GOALS_API}?goal_creator=${encodeURIComponent(phone)}&ts=1777755600-${Math.ceil(Date.now() / 1000)}`);
     const data = await r.json();
+    console.log(data);
     const total = data?.totals?.total || 0;
     const items = Array.isArray(data?.items)
       ? data.items.map((it) => ({

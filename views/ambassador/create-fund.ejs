@@ -21,31 +21,43 @@
         <label for="name">اسم الصندوق</label>
         <input type="text" id="name" name="name" required placeholder="مثل. عن فلان الفلاني -رحمه الله- أو مشاركة فريق كذا أو مجموعة كذا .. ">
       </div>
-
-      <div>
-        <label for="targetAmount">القيمة المستهدفة للحملة</label>
-        <select id="targetAmount" name="targetAmount" required>
-          <option value="">— اختر عدد الأسهم —</option>
-          <option value="800">سهم واحد — 800 ريال</option>
-          <option value="1600">سهمان — 1,600 ريال</option>
-          <option value="4000">5 أسهم — 4,000 ريال</option>
-          <option value="8000">10 أسهم — 8,000 ريال</option>
-        </select>
-      </div>
-
+      
       <div>
         <label for="waqfType">مجال التبرع</label>
         <select id="waqfType" name="waqfType" required>
           <option value="">— اختر مجال التبرع —</option>
-          <option value="1">محطة السفير</option>
-          <option value="2">مجمع 1</option>
-          <option value="3">مجمع 2</option>
-          <option value="4">مجمع 3</option>
-          <option value="5">دار 1</option>
-          <option value="6">دار 2</option>
-          <option value="7">دار 3</option>
+          <option value="1">محطة جيل القران 2 (السفير)</option> 
+          <option value="2">كفالة حلقة</option>
+          <option value="3">المحفظة الإستثمارية</option>
         </select>
       </div>
+      <div>
+        <label for="targetAmount">القيمة المستهدفة للحملة</label>
+        <select id="targetAmount" name="targetAmount" required>
+          <option value="">— اختر المجال —</option>
+          <!-- <option value="800">سهم واحد — 800 ريال</option>
+          <option value="1600">سهمان — 1,600 ريال</option>
+          <option value="4000">5 أسهم — 4,000 ريال</option>
+          <option value="8000">10 أسهم — 8,000 ريال</option> -->
+        </select>
+        <!-- <select id="targetAmount" name="targetAmount" required>
+          <option value="">— اختر عدد الأسهم —</option>
+          <option value="800">شهر — 800 ريال</option>
+          <option value="1600">شهرين — 1,600 ريال</option>
+          <option value="2400">3 أشهر — 2,400 ريال</option>
+          <option value="5000">فصل دراسي — 5,000 ريال</option>
+          <option value="10000">سنة كاملة — 10,000 ريال</option>
+        </select> -->
+        <!-- <select id="targetAmount" name="targetAmount" required>
+          <option value="">— اختر عدد الأسهم —</option>
+          <option value="1465">متر — 1,465 ريال</option>
+          <option value="2930">مترين — 2,930 ريال</option>
+          <option value="4395">3 أمتار — 4,395 ريال</option>
+          <option value="7325">5 أمتار — 7,325 ريال</option>
+          <option value="14650">10 أمتار — 14,650 ريال</option>
+        </select> -->
+      </div>
+
 
       <div>
         <label for="ownerPhone">رقم صاحب الصندوق <span class="small">(اختياري)</span></label>
@@ -69,12 +81,38 @@
 
 <script src="/js/app.js"></script>
 <script>
+  document.getElementById('waqfType').onchange = function() {
+    const val = this.value;
+    const targetSelect = document.getElementById('targetAmount');
+    if (val === '1') {
+      targetSelect.innerHTML = '<option value="">— اختر عدد الأسهم —</option>';
+      targetSelect.innerHTML += '<option value="800">سهم واحد — 800 ريال</option>';
+      targetSelect.innerHTML += '<option value="1600">سهمان — 1,600 ريال</option>';
+      targetSelect.innerHTML += '<option value="4000">5 أسهم — 4,000 ريال</option>';
+      targetSelect.innerHTML += '<option value="8000">10 أسهم — 8,000 ريال</option>';
+    } else if (val === '2') {
+      targetSelect.innerHTML = '<option value="">— اختر عدد الأشهر —</option>';
+      targetSelect.innerHTML += '<option value="800">شهر — 800 ريال</option>';
+      targetSelect.innerHTML += '<option value="1600">شهرين — 1,600 ريال</option>';
+      targetSelect.innerHTML += '<option value="2400">3 أشهر — 2,400 ريال</option>';
+      targetSelect.innerHTML += '<option value="5000">فصل دراسي — 5,000 ريال</option>';
+      targetSelect.innerHTML += '<option value="10000">سنة كاملة — 10,000 ريال</option>';
+    } else if (val === '3') {
+      targetSelect.innerHTML = '<option value="">— اختر عدد الأمتار —</option>';
+      targetSelect.innerHTML += '<option value="1465">متر — 1,465 ريال</option>';
+      targetSelect.innerHTML += '<option value="2930">مترين — 2,930 ريال</option>';
+      targetSelect.innerHTML += '<option value="4395">3 أمتار — 4,395 ريال</option>';
+      targetSelect.innerHTML += '<option value="7325">5 أمتار — 7,325 ريال</option>';
+      targetSelect.innerHTML += '<option value="14650">10 أمتار — 14,650 ريال</option>';
+    } else {
+      targetSelect.innerHTML = '<option value="">— اختر المجال أولاً —</option>';
+    }
+  };
 (async function () {
   const me = await fetch('/ambassador/me');
   if (me.status === 401) { location.href = '/login'; return; }
   const d = await me.json();
   const phone = d.ambassador.phone;
-
   const check = await fetch('/api/platform/check-account/' + encodeURIComponent(phone));
   const cd = await check.json();
 
