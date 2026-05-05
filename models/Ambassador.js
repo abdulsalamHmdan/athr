@@ -10,6 +10,7 @@ const AmbassadorSchema = new mongoose.Schema(
     referralCode: { type: String, required: true, unique: true },
     platformProfileId: { type: String, default: '' },
     totalDonations: { type: Number, default: 0 },
+    orderCount: { type: Number, default: 0 },
     donationsUpdatedAt: { type: Date, default: null },
   },
   { timestamps: true }

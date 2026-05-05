@@ -29,13 +29,14 @@ async function fetchTotalDonations({ phone }) {
   const r = await fetch(url, { headers: authHeaders() });
   if (!r.ok) throw new Error(`donations_failed_${r.status}`);
   const data = await r.json();
-  return Number(data.totals.total || 0);
+  return { total: Number(data.totals.total || 0), count: Number(data.totals.order_count || 0) };
 }
 
 async function syncAmbassador(ambDoc) {
   const total = await fetchTotalDonations({ phone: ambDoc.phone });
   console.log(`[syncAmbassador] ${ambDoc.phone} total donations:`, total);
-  ambDoc.totalDonations = total;
+  ambDoc.totalDonations = total.total;
+  ambDoc.orderCount = total.count;
   ambDoc.donationsUpdatedAt = new Date();
   await ambDoc.save();
   return {totalDonations: total, donationsUpdatedAt: ambDoc.donationsUpdatedAt };

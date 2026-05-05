@@ -26,8 +26,8 @@
           <tr>
             <th>#</th>
             <th>الاسم</th>
-            <th>الجوال</th>
             <th>عدد الصناديق</th>
+            <th>عدد التبرعات</th>
             <th>إجمالي التبرعات</th>
           </tr>
         </thead>
@@ -59,8 +59,8 @@ function render(list){
     <tr>
       <td data-label="#">${i+1}</td>
       <td data-label="الاسم">${a.name}</td>
-      <td data-label="الجوال">${maskPhone(a.phone)}</td>
       <td data-label="عدد الصناديق">${fmt(a.fundsCount)}</td>
+      <td data-label="عدد التبرعات">${fmt(a.orderCount)}</td>
       <td data-label="إجمالي التبرعات">${fmt(a.totalDonations)} ريال</td>
     </tr>
   `).join('');
