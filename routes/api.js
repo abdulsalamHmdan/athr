@@ -89,16 +89,21 @@ router.post('/platform/create-fund', async (req, res) => {
     return res.status(500).json({ error: 'فشل حفظ الصندوق' });
   }
 
+  const fundId = saved ? String(saved._id) : externalId;
+  const shareUrl = `${PLATFORM_URL.replace(/\/+$/, '')}/funds/${encodeURIComponent(externalId)}`;
+
   res.json({
     ok: true,
     fund: {
-      id: saved ? saved._id : externalId,
+      id: fundId,
+      externalId,
       name,
       targetAmount: Number(targetAmount),
       waqfType,
       acceptAfterTarget: !!acceptAfterTarget,
       phone,
       ownerPhone: ownerPhone || '',
+      shareUrl,
       createdAt: saved ? saved.createdAt : new Date().toISOString(),
     },
   });

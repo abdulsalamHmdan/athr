@@ -79,6 +79,48 @@
   </div>
 </div>
 
+<!-- POP UP: تم إنشاء الصندوق -->
+<div id="fundSuccessOverlay" style="display:none; position:fixed; inset:0; background:rgba(7,15,22,.75); backdrop-filter:blur(4px); z-index:9999; align-items:center; justify-content:center; padding:16px;">
+  <div id="fundSuccessModal" style="background:#fff; color:#1a1a1a; max-width:440px; width:100%; border-radius:18px; padding:24px 22px; box-shadow:0 18px 50px rgba(0,0,0,.4); position:relative; animation:fundPop .25s ease-out;">
+    <button type="button" id="fundSuccessClose" aria-label="إغلاق" style="position:absolute; top:10px; left:12px; background:transparent; border:0; font-size:24px; cursor:pointer; color:#666; line-height:1;">×</button>
+
+    <div style="text-align:center; margin-bottom:14px;">
+      <div style="width:62px; height:62px; border-radius:50%; background:#e6f7ec; color:#1a8c3c; display:flex; align-items:center; justify-content:center; margin:0 auto 10px; font-size:34px; font-weight:bold;">✓</div>
+      <h3 style="margin:0 0 4px; font-size:20px;">تم إنشاء الصندوق بنجاح</h3>
+      <p style="margin:0; color:#5b6b78; font-size:13px;">شارك الصندوق مع صاحبه ليبدأ الحملة</p>
+    </div>
+
+    <div style="background:#f6f8fa; border-radius:12px; padding:14px; margin-bottom:14px;">
+      <div style="font-size:12px; color:#6b7785; margin-bottom:4px;">اسم الصندوق</div>
+      <div id="fsName" style="font-weight:700; font-size:16px; margin-bottom:12px; word-break:break-word;"></div>
+
+      <div style="font-size:12px; color:#6b7785; margin-bottom:4px;">رابط الصندوق</div>
+      <div style="display:flex; gap:6px; align-items:stretch;">
+        <input id="fsLink" type="text" readonly style="flex:1; min-width:0; padding:8px 10px; border:1px solid #d8dfe5; border-radius:8px; font-size:13px; background:#fff; direction:ltr; text-align:left;">
+        <button type="button" id="fsCopyBtn" style="padding:8px 12px; border:0; border-radius:8px; background:#0b6fa4; color:#fff; cursor:pointer; font-size:13px; white-space:nowrap;">نسخ</button>
+      </div>
+    </div>
+
+    <div style="text-align:center; margin-bottom:14px;">
+      <img id="fsQr" alt="QR" style="width:180px; height:180px; border:1px solid #e5eaf0; border-radius:10px; padding:6px; background:#fff;">
+      <div style="font-size:12px; color:#6b7785; margin-top:6px;">امسح الباركود لفتح رابط الصندوق</div>
+    </div>
+
+    <a id="fsWaBtn" href="#" target="_blank" rel="noopener"
+       style="display:flex; align-items:center; justify-content:center; gap:10px; background:#25D366; color:#fff; padding:13px 16px; border-radius:12px; font-weight:700; text-decoration:none; font-size:15px; box-shadow:0 6px 16px rgba(37,211,102,.35);">
+      <svg viewBox="0 0 32 32" width="22" height="22" aria-hidden="true">
+        <path fill="#fff" d="M16.003 3C9.374 3 4 8.373 4 15c0 2.121.554 4.115 1.527 5.85L4 28l7.348-1.501A11.95 11.95 0 0016.003 27C22.632 27 28 21.627 28 15S22.632 3 16.003 3zm5.563 14.428c-.305-.153-1.804-.89-2.084-.99-.28-.103-.484-.153-.687.152-.203.305-.787.99-.965 1.193-.178.204-.355.229-.66.077-.305-.153-1.288-.475-2.453-1.514-.907-.808-1.52-1.806-1.698-2.111-.178-.305-.019-.47.134-.622.137-.137.305-.355.458-.533.152-.178.203-.305.305-.508.102-.204.05-.382-.025-.534-.077-.153-.687-1.654-.94-2.265-.247-.595-.498-.514-.687-.523l-.585-.011a1.124 1.124 0 00-.814.382c-.28.305-1.067 1.043-1.067 2.544s1.092 2.95 1.244 3.153c.152.203 2.149 3.282 5.207 4.602.728.314 1.296.501 1.74.642.731.232 1.396.2 1.922.121.587-.087 1.804-.737 2.06-1.45.255-.712.255-1.322.178-1.45-.076-.127-.28-.204-.585-.357z"/>
+      </svg>
+      <span id="fsWaLabel">إرسال للصاحب عبر واتساب</span>
+    </a>
+    <p id="fsWaHint" style="margin:8px 0 0; font-size:12px; color:#6b7785; text-align:center;"></p>
+  </div>
+</div>
+<style>
+  @keyframes fundPop { from { transform:scale(.92); opacity:0 } to { transform:scale(1); opacity:1 } }
+  #fundSuccessOverlay.show { display:flex !important; }
+</style>
+
 <script src="/js/app.js"></script>
 <script>
   document.getElementById('waqfType').onchange = function() {
@@ -156,8 +198,64 @@
       }
       msg.className = 'msg ok';
       msg.textContent = 'تم إنشاء الصندوق بنجاح ✓';
+      showFundSuccess(rd.fund, body.ownerPhone);
       form.reset();
     };
+
+    // ===== POP UP: عرض معلومات الصندوق بعد الإنشاء =====
+    const overlay = document.getElementById('fundSuccessOverlay');
+    document.getElementById('fundSuccessClose').onclick = () => overlay.classList.remove('show');
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('show'); });
+
+    function normalizeSaPhone(p) {
+      const digits = String(p || '').replace(/\D/g, '');
+      if (!digits) return '';
+      if (digits.startsWith('966')) return digits;
+      if (digits.startsWith('05')) return '966' + digits.slice(1);
+      if (digits.startsWith('5') && digits.length === 9) return '966' + digits;
+      return digits;
+    }
+
+    function showFundSuccess(fund, ownerPhoneRaw) {
+      const link = fund.shareUrl || (location.origin + '/fund/' + (fund.externalId || fund.id));
+      document.getElementById('fsName').textContent = fund.name || '';
+      document.getElementById('fsLink').value = link;
+      document.getElementById('fsQr').src =
+        'https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=4&data=' + encodeURIComponent(link);
+
+      const text =
+        'السلام عليكم ورحمة الله،\n' +
+        'تم إنشاء صندوقكم "' + (fund.name || '') + '" على منصة نقاط الأثر.\n' +
+        'رابط الصندوق:\n' + link;
+
+      const waBtn = document.getElementById('fsWaBtn');
+      const waLabel = document.getElementById('fsWaLabel');
+      const waHint = document.getElementById('fsWaHint');
+      const owner = normalizeSaPhone(ownerPhoneRaw);
+      if (owner) {
+        waBtn.href = 'https://wa.me/' + owner + '?text=' + encodeURIComponent(text);
+        waLabel.textContent = 'إرسال للصاحب عبر واتساب';
+        waHint.textContent = 'سيُفتح واتساب على رقم صاحب الصندوق';
+      } else {
+        waBtn.href = 'https://wa.me/?text=' + encodeURIComponent(text);
+        waLabel.textContent = 'مشاركة عبر واتساب';
+        waHint.textContent = 'لم يتم إدخال رقم صاحب الصندوق — اختر جهة الإرسال من واتساب';
+      }
+
+      document.getElementById('fsCopyBtn').onclick = async () => {
+        try {
+          await navigator.clipboard.writeText(link);
+          const b = document.getElementById('fsCopyBtn');
+          const old = b.textContent;
+          b.textContent = 'تم النسخ ✓';
+          setTimeout(() => (b.textContent = old), 1500);
+        } catch {
+          document.getElementById('fsLink').select();
+        }
+      };
+
+      overlay.classList.add('show');
+    }
   }
 
   App.showContent();
