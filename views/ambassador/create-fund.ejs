@@ -126,7 +126,7 @@
   document.getElementById('waqfType').onchange = function() {
     const val = this.value;
     const targetSelect = document.getElementById('targetAmount');
-    if (val === '1') {
+    if (val === '3') {
       targetSelect.innerHTML = '<option value="">— اختر عدد الأسهم —</option>';
       targetSelect.innerHTML += '<option value="800">سهم واحد — 800 ريال</option>';
       targetSelect.innerHTML += '<option value="1600">سهمان — 1,600 ريال</option>';
@@ -139,7 +139,7 @@
       targetSelect.innerHTML += '<option value="2400">3 أشهر — 2,400 ريال</option>';
       targetSelect.innerHTML += '<option value="5000">فصل دراسي — 5,000 ريال</option>';
       targetSelect.innerHTML += '<option value="10000">سنة كاملة — 10,000 ريال</option>';
-    } else if (val === '3') {
+    } else if (val === '1') {
       targetSelect.innerHTML = '<option value="">— اختر عدد الأمتار —</option>';
       targetSelect.innerHTML += '<option value="1465">متر — 1,465 ريال</option>';
       targetSelect.innerHTML += '<option value="2930">مترين — 2,930 ريال</option>';
@@ -223,10 +223,14 @@
       document.getElementById('fsQr').src =
         'https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=4&data=' + encodeURIComponent(link);
 
-      const text =
-        'السلام عليكم ورحمة الله،\n' +
-        'تم إنشاء صندوقكم "' + (fund.name || '') + '" على منصة نقاط الأثر.\n' +
-        'رابط الصندوق:\n' + link;
+      // const text =
+      //   'السلام عليكم ورحمة الله،\n' +
+      //   'تم إنشاء صندوقكم "' + (fund.name || '') + '" على منصة نقاط الأثر.\n' +
+      //   'رابط الصندوق:\n' + link;
+      const text = `صندوق : ${fund.name || '-'}\n` +
+             `نسبة الاكتمال : ${0}%\n` +
+             `رابط الصندوق:https://donate.utq.org.sa/goal_${fund.externalId || fund.id}\n\n` +
+             `ساهم في إكمال صندوق الوقف\nليكون لك أجرٌ جارٍ لا ينقطع،`;
 
       const waBtn = document.getElementById('fsWaBtn');
       const waLabel = document.getElementById('fsWaLabel');
