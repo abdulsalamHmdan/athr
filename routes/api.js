@@ -1,6 +1,83 @@
 const express = require('express');
 const Fund = require('../models/Fund');
+const Ambassador = require('../models/Ambassador');
+const { listEntities, entityName } = require('../services/entities');
 const router = express.Router();
+
+// ===== Public APIs (لا تتطلب تسجيل دخول) =====
+
+// قائمة المجمعات مع إحصائيات مختصرة لكل مجمع
+router.get('/public/centers', async (req, res) => {
+  try {
+    const entities = listEntities();
+    const ambassadors = await Ambassador.find({}, 'entity totalDonations').lean();
+    const fundsAgg = await Fund.aggregate([
+      { $lookup: { from: 'ambassadors', localField: 'ambassador', foreignField: '_id', as: 'a' } },
+      { $unwind: '$a' },
+      { $group: { _id: '$a.entity', count: { $sum: 1 } } },
+    ]);
+    const fundsByEntity = Object.fromEntries(fundsAgg.map((x) => [String(x._id || ''), x.count]));
+
+    const stats = entities.map((e) => {
+      const ambs = ambassadors.filter((a) => String(a.entity || '') === String(e.id));
+      const totalDonations = ambs.reduce((s, a) => s + (a.totalDonations || 0), 0);
+      return {
+        id: e.id,
+        name: e.name,
+        ambassadorsCount: ambs.length,
+        totalDonations,
+        fundsCount: fundsByEntity[e.id] || 0,
+      };
+    });
+
+    res.json({ centers: stats });
+  } catch (e) {
+    res.status(500).json({ error: 'failed' });
+  }
+});
+
+// تفاصيل مجمع محدد + قائمة السفراء مرتبة من الأعلى للأقل
+router.get('/public/centers/:id', async (req, res) => {
+  try {
+    const id = String(req.params.id);
+    const ambassadors = await Ambassador
+      .find({ entity: id }, 'name phone totalDonations donationsUpdatedAt')
+      .lean();
+
+    const ids = ambassadors.map((a) => a._id);
+    const fundsAgg = await Fund.aggregate([
+      { $match: { ambassador: { $in: ids } } },
+      { $group: { _id: '$ambassador', count: { $sum: 1 } } },
+    ]);
+    const fundsByAmb = Object.fromEntries(fundsAgg.map((x) => [String(x._id), x.count]));
+
+    const list = ambassadors.map((a) => ({
+      id: String(a._id),
+      name: a.name,
+      phone: a.phone,
+      totalDonations: a.totalDonations || 0,
+      fundsCount: fundsByAmb[String(a._id)] || 0,
+      donationsUpdatedAt: a.donationsUpdatedAt,
+    }));
+    list.sort((a, b) => b.totalDonations - a.totalDonations);
+
+    const totalDonations = list.reduce((s, a) => s + a.totalDonations, 0);
+    const fundsCount = list.reduce((s, a) => s + a.fundsCount, 0);
+
+    res.json({
+      center: {
+        id,
+        name: entityName(id),
+        ambassadorsCount: list.length,
+        fundsCount,
+        totalDonations,
+      },
+      ambassadors: list,
+    });
+  } catch (e) {
+    res.status(500).json({ error: 'failed' });
+  }
+});
 
 const GOALS_API = 'https://donate.utq.org.sa/api/v1/orders/report/goals:ED4SFhUVFUcZGBsZHRgeTyEdIiQgHyIhJCMmJSgnKiksKy4tMC8yMQ';
 

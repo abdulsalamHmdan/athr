@@ -25,12 +25,10 @@ mongoose
   .connect(process.env.MONGO_URI)
   .then(async () => {
     console.log('MongoDB connected');
-    const exists = await Admin.findOne({ phone: process.env.ADMIN_PHONE });
-    if (!exists) {
-      const hash = await bcrypt.hash(process.env.ADMIN_PASSWORD, 10);
-      await Admin.create({ phone: process.env.ADMIN_PHONE, password: hash });
-      console.log('Default admin created');
-    }
+
+    const result = await syncStale();
+    console.log('[cron] sync done:', result);
+
   })
   .catch((err) => console.error('Mongo error:', err));
 
@@ -67,6 +65,7 @@ cron.schedule('0 * * * *', async () => {
     console.error('[cron] sync error:', e.message);
   }
 });
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));

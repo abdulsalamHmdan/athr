@@ -1,0 +1,388 @@
+<%- include('../partials/head') %>
+<%- include('../partials/loader') %>
+
+<div data-content style="display:none;">
+  <!-- HERO -->
+  <div class="centers-hero">
+    <div class="centers-hero-inner">
+      <div class="centers-hero-badge">منصة نقاط الأثر</div>
+      <h1>مجمعات ودور التحفيظ</h1>
+      <p>استعرض الإحصائيات والسفراء لكل جهة. اضغط على البطاقة لعرض التفاصيل.</p>
+
+      <div class="centers-summary">
+        <div class="cs-item">
+          <div class="cs-v" id="sumCenters">0</div>
+          <div class="cs-l">جهة</div>
+        </div>
+        <div class="cs-sep"></div>
+        <div class="cs-item">
+          <div class="cs-v" id="sumAmb">0</div>
+          <div class="cs-l">سفير</div>
+        </div>
+        <div class="cs-sep"></div>
+        <div class="cs-item">
+          <div class="cs-v" id="sumFunds">0</div>
+          <div class="cs-l">صندوق</div>
+        </div>
+        <div class="cs-sep"></div>
+        <div class="cs-item">
+          <div class="cs-v" id="sumTotal">0</div>
+          <div class="cs-l">ريال</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABS + SEARCH -->
+  <div class="centers-toolbar">
+    <div class="seg" id="seg" role="tablist">
+      <button class="seg-btn is-active" data-tab="all">الكل <span class="seg-count" id="cAll">0</span></button>
+      <button class="seg-btn" data-tab="مجمع">المجمعات <span class="seg-count" id="cMaj">0</span></button>
+      <button class="seg-btn" data-tab="دار">الدور النسائية <span class="seg-count" id="cDar">0</span></button>
+    </div>
+    <div class="centers-search">
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+        <path fill="currentColor" d="M10 2a8 8 0 015.293 13.957l4.875 4.875-1.336 1.336-4.875-4.875A8 8 0 1110 2zm0 2a6 6 0 100 12 6 6 0 000-12z"/>
+      </svg>
+      <input type="search" id="q" placeholder="ابحث بالاسم…" autocomplete="off">
+    </div>
+  </div>
+
+  <!-- SECTIONS -->
+  <section class="centers-section" data-sec="مجمع">
+    <div class="sec-head">
+      <span class="sec-icon sec-icon-maj" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12 2l9 5v2H3V7l9-5zm-7 9h2v8H5v-8zm4 0h2v8H9v-8zm4 0h2v8h-2v-8zm4 0h2v8h-2v-8zM3 20h18v2H3v-2z"/></svg>
+      </span>
+      <h3>المجمعات</h3>
+      <span class="sec-count-pill" id="secCMaj">0</span>
+    </div>
+    <div class="centers-grid" id="grid-maj"></div>
+  </section>
+
+  <section class="centers-section" data-sec="دار">
+    <div class="sec-head">
+      <span class="sec-icon sec-icon-dar" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12 3l9 8h-3v9h-5v-6H11v6H6v-9H3l9-8z"/></svg>
+      </span>
+      <h3>الدور النسائية</h3>
+      <span class="sec-count-pill" id="secCDar">0</span>
+    </div>
+    <div class="centers-grid" id="grid-dar"></div>
+  </section>
+
+  <div class="empty" id="empty" style="display:none;">لا توجد نتائج مطابقة لبحثك.</div>
+</div>
+
+<style>
+  :root {
+    --cc-bg:#f5f7fa;
+    --cc-card:#ffffff;
+    --cc-border:#e5eaf0;
+    --cc-text:#1a2733;
+    --cc-mute:#6b7785;
+    --cc-primary:#0b6fa4;
+    --cc-primary-soft:#e8f2f9;
+    --cc-green:#1a8c3c;
+    --cc-green-soft:#e6f7ec;
+    --cc-amber:#b8761d;
+    --cc-amber-soft:#fdf3e2;
+    --cc-purple:#6e3eb8;
+    --cc-purple-soft:#efe9fb;
+  }
+
+  /* HERO */
+  .centers-hero{
+    margin: 4px 0 18px;
+    border-radius: 22px;
+    background:
+      radial-gradient(120% 120% at 100% 0%, rgba(255,255,255,.18), transparent 50%),
+      radial-gradient(120% 120% at 0% 100%, rgba(255,255,255,.10), transparent 50%),
+      linear-gradient(135deg, #0b6fa4 0%, #0a4f7d 60%, #0a3a60 100%);
+    color:#fff;
+    padding: 26px 22px;
+    box-shadow: 0 18px 38px rgba(10,79,125,.22);
+    position:relative; overflow:hidden;
+  }
+  .centers-hero::after{
+    content:""; position:absolute; inset:auto -40px -60px auto;
+    width:240px; height:240px; border-radius:50%;
+    background: radial-gradient(circle, rgba(255,255,255,.18), transparent 60%);
+    pointer-events:none;
+  }
+  .centers-hero-badge{
+    display:inline-block; background:rgba(255,255,255,.16);
+    border:1px solid rgba(255,255,255,.25);
+    padding:5px 12px; border-radius:999px; font-size:12px; font-weight:600;
+    backdrop-filter: blur(6px);
+  }
+  .centers-hero h1{ margin:10px 0 4px; font-size:24px; font-weight:800; }
+  .centers-hero p{ margin:0; color:rgba(255,255,255,.85); font-size:13.5px; }
+
+  .centers-summary{
+    margin-top:18px; display:flex; align-items:center; gap:6px; flex-wrap:wrap;
+    background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.18);
+    border-radius:14px; padding:10px 14px; backdrop-filter: blur(6px);
+  }
+  .cs-item{ flex:1; min-width:90px; text-align:center; padding:4px 6px; }
+  .cs-v{ font-size:18px; font-weight:800; line-height:1.2; }
+  .cs-l{ font-size:11.5px; color:rgba(255,255,255,.78); margin-top:2px; }
+  .cs-sep{ width:1px; height:28px; background:rgba(255,255,255,.18); }
+
+  /* TOOLBAR */
+  .centers-toolbar{
+    display:flex; gap:10px; align-items:center; justify-content:space-between;
+    flex-wrap:wrap; margin: 4px 0 14px;
+  }
+  .seg{
+    display:inline-flex; gap:4px; padding:4px;
+    background:#fff; border:1px solid var(--cc-border);
+    border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,.04);
+    flex-wrap:wrap;
+  }
+  .seg-btn{
+    border:0; background:transparent; cursor:pointer;
+    padding:8px 14px; border-radius:9px;
+    font-size:13px; font-weight:600; color:var(--cc-mute);
+    display:inline-flex; align-items:center; gap:6px; transition:all .15s ease;
+    font-family:inherit;
+  }
+  .seg-btn:hover{ color:var(--cc-text); background:#f3f6f9; }
+  .seg-btn.is-active{ background:var(--cc-primary); color:#fff; box-shadow:0 4px 10px rgba(11,111,164,.28); }
+  .seg-count{
+    background:rgba(0,0,0,.06); padding:1px 8px; border-radius:999px;
+    font-size:11px; font-weight:700;
+  }
+  .seg-btn.is-active .seg-count{ background:rgba(255,255,255,.22); color:#fff; }
+
+  .centers-search{
+    flex:1; min-width:220px; max-width:360px;
+    display:flex; align-items:center; gap:8px;
+    background:#fff; border:1px solid var(--cc-border);
+    border-radius:12px; padding:8px 12px;
+    box-shadow:0 4px 12px rgba(0,0,0,.04);
+    color:var(--cc-mute);
+  }
+  .centers-search input{
+    flex:1; border:0; outline:0; background:transparent;
+    font:inherit; color:var(--cc-text); padding:2px 0;
+  }
+
+  /* SECTIONS */
+  .centers-section{ margin-top: 22px; }
+  .sec-head{
+    display:flex; align-items:center; gap:10px;
+    margin: 0 4px 12px;
+  }
+  .sec-head h3{
+    margin:0; font-size:15px; font-weight:800; color:var(--cc-text);
+    letter-spacing:.2px;
+  }
+  .sec-icon{
+    width:32px; height:32px; border-radius:10px;
+    display:inline-flex; align-items:center; justify-content:center;
+  }
+  .sec-icon-maj{ background:var(--cc-primary-soft); color:var(--cc-primary); }
+  .sec-icon-dar{ background:var(--cc-green-soft); color:var(--cc-green); }
+  .sec-icon-oth{ background:var(--cc-amber-soft); color:var(--cc-amber); }
+  .sec-count-pill{
+    margin-inline-start:auto;
+    background:#fff; border:1px solid var(--cc-border);
+    color:var(--cc-mute); border-radius:999px;
+    padding:3px 10px; font-size:12px; font-weight:700;
+  }
+
+  /* GRID + CARD */
+  .centers-grid{
+    display:grid; gap:14px;
+    grid-template-columns:repeat(auto-fill, minmax(240px, 1fr));
+  }
+  .center-card{
+    --accent:var(--cc-primary);
+    --accent-soft:var(--cc-primary-soft);
+    position:relative; display:block; text-decoration:none; color:inherit;
+    background:var(--cc-card); border:1px solid var(--cc-border);
+    border-radius:16px; padding:16px 16px 14px;
+    box-shadow:0 4px 14px rgba(15, 30, 50, .04);
+    transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    overflow:hidden;
+  }
+  .center-card::before{
+    content:""; position:absolute; inset:0 auto 0 0; width:4px;
+    background:linear-gradient(180deg, var(--accent), color-mix(in srgb, var(--accent) 50%, transparent));
+  }
+  [dir="rtl"] .center-card::before{ inset:0 0 0 auto; }
+  .center-card:hover{
+    transform:translateY(-3px);
+    box-shadow:0 16px 30px rgba(15, 30, 50, .10);
+    border-color: color-mix(in srgb, var(--accent) 35%, var(--cc-border));
+  }
+  .center-card.cc-dar{ --accent:var(--cc-green); --accent-soft:var(--cc-green-soft); }
+  .center-card.cc-oth{ --accent:var(--cc-amber); --accent-soft:var(--cc-amber-soft); }
+
+  .cc-top{ display:flex; align-items:flex-start; gap:10px; }
+  .cc-avatar{
+    width:42px; height:42px; border-radius:12px;
+    background:var(--accent-soft); color:var(--accent);
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    font-weight:800; font-size:15px;
+  }
+  .cc-name{ font-weight:700; font-size:14.5px; line-height:1.45; color:var(--cc-text); }
+  .cc-kind{ font-size:11.5px; color:var(--cc-mute); margin-top:2px; }
+
+  .cc-stats{ display:flex; gap:6px; flex-wrap:wrap; margin-top:12px; }
+  .cc-pill{
+    display:inline-flex; align-items:center; gap:4px;
+    background:#f3f6f9; color:#3a4a59; border-radius:999px;
+    padding:4px 9px; font-size:11.5px; font-weight:600;
+  }
+  .cc-pill b{ color:var(--cc-text); font-weight:800; }
+
+  .cc-total{
+    margin-top:12px; padding-top:10px;
+    border-top:1px dashed var(--cc-border);
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .cc-total-l{ font-size:11.5px; color:var(--cc-mute); }
+  .cc-total-v{ font-size:14px; font-weight:800; color:var(--cc-green); }
+
+  .cc-arrow{
+    position:absolute; bottom:12px; inset-inline-end:14px;
+    width:26px; height:26px; border-radius:50%;
+    background:var(--accent-soft); color:var(--accent);
+    display:flex; align-items:center; justify-content:center;
+    opacity:0; transform:translateX(6px); transition:all .18s ease;
+  }
+  [dir="rtl"] .cc-arrow{ transform:translateX(-6px); }
+  .center-card:hover .cc-arrow{ opacity:1; transform:translateX(0); }
+
+  .empty{
+    text-align:center; color:var(--cc-mute); padding:34px 16px;
+    background:#fff; border:1px dashed var(--cc-border); border-radius:14px;
+    margin-top:18px;
+  }
+
+  @media (max-width: 520px){
+    .centers-hero h1{ font-size:20px; }
+    .cs-v{ font-size:16px; }
+    .centers-grid{ grid-template-columns:repeat(auto-fill, minmax(170px, 1fr)); }
+    .seg-btn{ padding:7px 10px; font-size:12.5px; }
+  }
+</style>
+
+<script src="/js/app.js"></script>
+<script>
+  let centers = [];
+  let activeTab = 'all';
+
+  function fmt(n){ return Number(n||0).toLocaleString('ar-EG'); }
+  function classify(name){
+    const s = String(name || '').trim();
+    if (s.startsWith('مجمع')) return 'مجمع';
+    return 'دار';
+  }
+  function initial(name){
+    const s = String(name || '').trim();
+    const parts = s.split(/\s+/);
+    const w = (parts[1] || parts[0] || '?').replace(/[^؀-ۿA-Za-z]/g, '');
+    return (w[0] || '?');
+  }
+  function kindLabel(kind){
+    return kind === 'مجمع' ? 'مجمع' : 'دار نسائية';
+  }
+
+  function cardHtml(c){
+    const k = classify(c.name);
+    const cls = k === 'دار' ? 'cc-dar' : '';
+    return `
+      <a class="center-card ${cls}" href="/centers/${encodeURIComponent(c.id)}">
+        <div class="cc-top">
+          <div class="cc-avatar">${initial(c.name)}</div>
+          <div style="min-width:0;">
+            <div class="cc-name">${c.name}</div>
+            <div class="cc-kind">${kindLabel(k)}</div>
+          </div>
+        </div>
+        <div class="cc-stats">
+          <span class="cc-pill">السفراء <b>${fmt(c.ambassadorsCount)}</b></span>
+          <span class="cc-pill">الصناديق <b>${fmt(c.fundsCount)}</b></span>
+        </div>
+        <div class="cc-total">
+          <span class="cc-total-l">إجمالي التبرعات</span>
+          <span class="cc-total-v">${fmt(c.totalDonations)} ر.س</span>
+        </div>
+        <span class="cc-arrow" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M14 6l-6 6 6 6 1.41-1.41L10.83 12l4.58-4.59z"/></svg>
+        </span>
+      </a>`;
+  }
+
+  function applyFilters(){
+    const q = document.getElementById('q').value.trim();
+    const filtered = centers.filter(c => !q || (c.name || '').includes(q));
+
+    const groups = { 'مجمع':[], 'دار':[] };
+    for (const c of filtered) groups[classify(c.name)].push(c);
+    for (const k of Object.keys(groups)){
+      groups[k].sort((a,b) => b.totalDonations - a.totalDonations);
+    }
+
+    const wrap = (id, list) => {
+      const el = document.getElementById(id);
+      if (!list.length){ el.innerHTML = ''; return; }
+      el.innerHTML = list.map(cardHtml).join('');
+    };
+    wrap('grid-maj', groups['مجمع']);
+    wrap('grid-dar', groups['دار']);
+
+    document.getElementById('secCMaj').textContent = fmt(groups['مجمع'].length);
+    document.getElementById('secCDar').textContent = fmt(groups['دار'].length);
+
+    document.querySelectorAll('.centers-section').forEach(sec => {
+      const k = sec.getAttribute('data-sec');
+      const showByTab = (activeTab === 'all') || (activeTab === k);
+      const hasItems = groups[k].length > 0;
+      sec.style.display = (showByTab && hasItems) ? '' : 'none';
+    });
+
+    const totalShown = filtered.length;
+    document.getElementById('empty').style.display = totalShown ? 'none' : '';
+  }
+
+  document.getElementById('seg').addEventListener('click', (e) => {
+    const btn = e.target.closest('.seg-btn'); if (!btn) return;
+    document.querySelectorAll('.seg-btn').forEach(b => b.classList.remove('is-active'));
+    btn.classList.add('is-active');
+    activeTab = btn.getAttribute('data-tab');
+    applyFilters();
+  });
+  document.getElementById('q').addEventListener('input', applyFilters);
+
+  (async function(){
+    const r = await fetch('/api/public/centers');
+    const d = await r.json();
+    centers = d.centers || [];
+
+    let totalAmb = 0, totalFunds = 0, totalAmount = 0;
+    const counts = { 'مجمع':0, 'دار':0 };
+    for (const c of centers){
+      totalAmb += c.ambassadorsCount || 0;
+      totalFunds += c.fundsCount || 0;
+      totalAmount += c.totalDonations || 0;
+      counts[classify(c.name)]++;
+    }
+    document.getElementById('sumCenters').textContent = fmt(centers.length);
+    document.getElementById('sumAmb').textContent = fmt(totalAmb);
+    document.getElementById('sumFunds').textContent = fmt(totalFunds);
+    document.getElementById('sumTotal').textContent = fmt(totalAmount);
+    document.getElementById('cAll').textContent = fmt(centers.length);
+    document.getElementById('cMaj').textContent = fmt(counts['مجمع']);
+    document.getElementById('cDar').textContent = fmt(counts['دار']);
+
+    applyFilters();
+    App.showContent();
+  })();
+</script>
+
+<%- include('../partials/foot') %>

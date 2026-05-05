@@ -1,6 +1,24 @@
 const express = require('express');
 const Ambassador = require('../models/Ambassador');
+const { listEntities, entityName } = require('../services/entities');
 const router = express.Router();
+
+// صفحات عامة بدون تسجيل دخول — قائمة المجمعات وتفاصيل كل مجمع
+router.get('/centers', (req, res) => {
+  res.render('public/centers', {
+    title: 'المجمعات',
+    entities: listEntities(),
+  });
+});
+
+router.get('/centers/:id', (req, res) => {
+  const id = String(req.params.id);
+  res.render('public/center-details', {
+    title: entityName(id),
+    entityId: id,
+    entityNameAr: entityName(id),
+  });
+});
 
 router.get('/', (req, res) => res.render('index', { title: 'الرئيسية' }));
 router.get('/signup', (req, res) => res.render('signup', { title: 'تسجيل سفير جديد' }));

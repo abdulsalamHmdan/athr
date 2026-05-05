@@ -2,8 +2,8 @@ const Ambassador = require('../models/Ambassador');
 
 const BASE = process.env.PLATFORM_API_BASE || `http://localhost:${process.env.PORT || 3000}/api/platform`;
 const VERIFY_URL = process.env.PLATFORM_VERIFY_URL || `${BASE}/verify-or-create`;
-const DONATIONS_URL = process.env.PLATFORM_DONATIONS_URL || `${BASE}/donations-total`;
 const API_KEY = process.env.PLATFORM_API_KEY || 'mock-key';
+const GOALS_API = 'https://donate.utq.org.sa/api/v1/orders/report/goals:ED4SFhUVFUcZGBsZHRgeTyEdIiQgHyIhJCMmJSgnKiksKy4tMC8yMQ';
 
 const STALE_MS = 24 * 60 * 60 * 1000;
 
@@ -25,25 +25,20 @@ async function verifyOrCreateAccount({ phone, name }) {
 }
 
 async function fetchTotalDonations({ phone }) {
-  const url = `${DONATIONS_URL}?phone=${encodeURIComponent(phone)}`;
+  const url = `${GOALS_API}?goal_creator=${encodeURIComponent(phone)}&ts=1777755600-${Math.ceil(Date.now() / 1000)}`;
   const r = await fetch(url, { headers: authHeaders() });
   if (!r.ok) throw new Error(`donations_failed_${r.status}`);
   const data = await r.json();
-  return Number(data.total || 0);
+  return Number(data.totals.total || 0);
 }
 
 async function syncAmbassador(ambDoc) {
-  // let profileId = ambDoc.platformProfileId;
-  // if (!profileId) {
-  //   const acc = await verifyOrCreateAccount({ phone: ambDoc.phone, name: ambDoc.name });
-  //   profileId = acc.profileId || '';
-  //   ambDoc.platformProfileId = profileId;
-  // }
   const total = await fetchTotalDonations({ phone: ambDoc.phone });
+  console.log(`[syncAmbassador] ${ambDoc.phone} total donations:`, total);
   ambDoc.totalDonations = total;
   ambDoc.donationsUpdatedAt = new Date();
   await ambDoc.save();
-  return { profileId, totalDonations: total, donationsUpdatedAt: ambDoc.donationsUpdatedAt };
+  return {totalDonations: total, donationsUpdatedAt: ambDoc.donationsUpdatedAt };
 }
 
 async function syncStale() {
