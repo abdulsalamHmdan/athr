@@ -104,4 +104,26 @@ router.post('/platform/create-fund', async (req, res) => {
   });
 });
 
+// ===== Mock platform APIs (استبدلها بالـ API الحقيقي عبر متغيرات .env) =====
+// PLATFORM_VERIFY_URL  → POST  body: { phone, name }   → { profileId, hasAccount, created }
+// PLATFORM_DONATIONS_URL → GET  ?phone=&profileId=     → { total }
+
+router.post('/platform/verify-or-create', (req, res) => {
+  const { phone, name } = req.body || {};
+  if (!phone) return res.status(400).json({ error: 'phone_required' });
+  const hasAccount = !String(phone).endsWith('0');
+  res.json({
+    profileId: `mock-${phone}`,
+    hasAccount,
+    created: !hasAccount,
+    name: name || '',
+  });
+});
+
+router.get('/platform/donations-total', (req, res) => {
+  const { phone } = req.query;
+  const seed = String(phone || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+  res.json({ total: (seed % 50) * 100, currency: 'SAR' });
+});
+
 module.exports = router;

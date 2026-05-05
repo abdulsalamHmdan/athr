@@ -1,0 +1,1 @@
+fetch('https://donate.utq.org.sa/api/v1/goal/list',{method: 'GET',headers:{'k':'ED4SFhUVFUcZGBsZHRgeTyEdIiQgHyIhJCMmJSgnKiksKy4tMC8yMQ'}}).then(r=>r.json()).then(console.log).catch(console.error);

@@ -8,6 +8,9 @@ const AmbassadorSchema = new mongoose.Schema(
     isMember: { type: Boolean, default: false },
     entity: { type: String, default: '' },
     referralCode: { type: String, required: true, unique: true },
+    platformProfileId: { type: String, default: '' },
+    totalDonations: { type: Number, default: 0 },
+    donationsUpdatedAt: { type: Date, default: null },
   },
   { timestamps: true }
 );
