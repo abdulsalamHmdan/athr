@@ -7,7 +7,7 @@ const { syncAmbassador } = require('../services/platformSync');
 
 const router = express.Router();
 
-const PHONE_RE = /^[0-9]{9}$/;
+const PHONE_RE = /^5[0-9]{8}$/;
 function isValidPhone(phone) {
   return typeof phone === 'string' && PHONE_RE.test(phone);
 }
@@ -26,11 +26,19 @@ router.post('/signup', async (req, res) => {
     const hash = await bcrypt.hash(password, 10);
     const referralCode = crypto.randomBytes(4).toString('hex');
 
+    const fetchResult = await fetch(`http://donate.utq.org.sa/api/v1/clients/new?phone=${"966"+phone}&name=${name}`,{method: 'get',headers:{'k':'ED4SFhUVFUcZGBsZHRgeTyEdIiQgHyIhJCMmJSgnKiksKy4tMC8yMQ'}})
+    const fetchData = await fetchResult.json();
+    console.log('[signup] client create result:', fetchData);
+    if (fetchData.status == 'fail' && !fetchData.id) {
+      return res.status(500).json({ error: fetchData.msg || 'خطأ في الخادم' });
+    }
+
     const amb = await Ambassador.create({
       name,
       phone,
       password: hash,
       isMember: !!isMember,
+      platformProfileId: fetchData.id,
       entity: isMember ? entity || '' : '',
       referralCode,
     });

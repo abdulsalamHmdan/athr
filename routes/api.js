@@ -141,49 +141,58 @@ router.get('/platform/check-account/:phone', async (req, res) => {
 
 // إنشاء صندوق جديد على المنصة
 router.post('/platform/create-fund', async (req, res) => {
-  const { name, targetAmount, waqfType, acceptAfterTarget, phone, ownerPhone } = req.body || {};
+  const { name, targetAmount, waqfType, acceptAfterTarget, ownerPhone } = req.body || {};
   if (!name || !targetAmount || !waqfType) {
     return res.status(400).json({ error: 'جميع الحقول مطلوبة' });
   }
-
-  const externalId = 'mock-' + Date.now();
-
+  
+  
   let saved = null;
   try {
     if (req.session && req.session.ambassadorId) {
-      saved = await Fund.create({
-        ambassador: req.session.ambassadorId,
-        name,
-        targetAmount: Number(targetAmount),
-        waqfType: String(waqfType),
-        acceptAfterTarget: !!acceptAfterTarget,
-        phone: phone || '',
-        ownerPhone: ownerPhone || '',
-        externalId,
-      });
+      const ambassador = await Ambassador.findById(req.session.ambassadorId);
+      if (!ambassador) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }   
+    const fetchResult = await fetch(`https://donate.utq.org.sa/api/v1/goal/new?type=51&name=${name}&prod_id=${waqfType}&client_id=${ambassador.platformProfileId}&price_goal=${targetAmount}&approved=1`,
+    {method: 'get',headers:{'k':'ED4SFhUVFUcZGBsZHRgeTyEdIiQgHyIhJCMmJSgnKiksKy4tMC8yMQ'}})
+    const fetchData = await fetchResult.json();
+
+    res.json({
+    ok: true,
+    fund: {
+      id: fetchData.result.id,
+      externalId: fetchData.result.id,
+      name:fetchData.result.name,
+      targetAmount: Number(fetchData.result.price_goal),
+      waqfType,
+      acceptAfterTarget: !!acceptAfterTarget,
+      phone:ambassador.phone || '',
+      ownerPhone: ownerPhone || '',
+      shareUrl:`https://donate.utq.org.sa/goal_${fetchData.result.id}`,
+      createdAt: new Date().toISOString(),
+    },
+  });
+      // saved = await Fund.create({
+      //   ambassador: req.session.ambassadorId,
+      //   name,
+      //   targetAmount: Number(targetAmount),
+      //   waqfType: String(waqfType),
+      //   acceptAfterTarget: !!acceptAfterTarget,
+      //   phone: phone || '',
+      //   ownerPhone: ownerPhone || '',
+      //   externalId,
+      // });
     }
   } catch (e) {
+    console.error('Error creating fund:', e);
     return res.status(500).json({ error: 'فشل حفظ الصندوق' });
   }
 
-  const fundId = saved ? String(saved._id) : externalId;
-  const shareUrl = `${PLATFORM_URL.replace(/\/+$/, '')}/funds/${encodeURIComponent(externalId)}`;
+  // const fundId = saved ? String(saved._id);
+  // const shareUrl = `${PLATFORM_URL.replace(/\/+$/, '')}/funds/${encodeURIComponent(externalId)}`;
 
-  res.json({
-    ok: true,
-    fund: {
-      id: fundId,
-      externalId,
-      name,
-      targetAmount: Number(targetAmount),
-      waqfType,
-      acceptAfterTarget: !!acceptAfterTarget,
-      phone,
-      ownerPhone: ownerPhone || '',
-      shareUrl,
-      createdAt: saved ? saved.createdAt : new Date().toISOString(),
-    },
-  });
+
 });
 
 // ===== Mock platform APIs (استبدلها بالـ API الحقيقي عبر متغيرات .env) =====
