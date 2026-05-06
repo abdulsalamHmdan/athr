@@ -25,7 +25,8 @@ async function verifyOrCreateAccount({ phone, name }) {
 }
 
 async function fetchTotalDonations({ phone }) {
-  const url = `${GOALS_API}?goal_creator=${encodeURIComponent(phone)}&ts=1777755600-${Math.ceil(Date.now() / 1000)}`;
+  // const url = `${GOALS_API}?goal_creator=${encodeURIComponent(phone)}&ts=1777755600-${Math.ceil(Date.now() / 1000)}`;
+  const url = `${GOALS_API}?goal_creator=${encodeURIComponent(phone)}`;
   const r = await fetch(url, { headers: authHeaders() });
   if (!r.ok) throw new Error(`donations_failed_${r.status}`);
   const data = await r.json();
