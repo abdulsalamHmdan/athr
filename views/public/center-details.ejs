@@ -42,7 +42,7 @@
 const ENTITY_ID = <%- JSON.stringify(entityId) %>;
 let ambassadors = [];
 
-function fmt(n){ return Number(n||0).toLocaleString('ar-EG'); }
+function fmt(n){ return App.formatNumber(n || 0); }
 function maskPhone(p){
   const s = String(p || '');
   if (s.length < 4) return s;

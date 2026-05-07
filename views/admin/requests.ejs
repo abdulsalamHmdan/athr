@@ -2,7 +2,25 @@
 <%- include('../partials/nav-admin') %>
 
 <div class="card">
-  <h2>طلبات صرف الجوائز</h2>
+  <div class="page-intro" style="margin-bottom:12px;">
+    <span class="page-kicker">طلبات الجوائز</span>
+    <h3 class="page-title">إدارة حالات الصرف ومتابعة التنفيذ</h3>
+    <p class="page-subtitle">فلتر الطلبات حسب الحالة، وراجع إجراءات القبول/الرفض أو تأكيد الصرف.</p>
+  </div>
+
+  <div class="section-head">
+    <h2>طلبات صرف الجوائز</h2>
+    <span class="list-count-badge" id="req_count">0</span>
+  </div>
+
+  <div class="stat-grid" style="margin-bottom:10px;">
+    <div class="stat"><div class="v" id="c_all">0</div><div class="l">الإجمالي</div></div>
+    <div class="stat"><div class="v" id="c_pending">0</div><div class="l">قيد المراجعة</div></div>
+    <div class="stat"><div class="v" id="c_approved">0</div><div class="l">مقبولة</div></div>
+    <div class="stat"><div class="v" id="c_paid">0</div><div class="l">تم الصرف</div></div>
+    <div class="stat"><div class="v" id="c_rejected">0</div><div class="l">مرفوضة</div></div>
+  </div>
+
   <div class="filters">
     <a href="#" data-f="" class="filter active">الكل</a>
     <a href="#" data-f="pending" class="filter">قيد المراجعة</a>
@@ -52,11 +70,27 @@ function buildWhatsappLink(phone, name, count) {
 
 function filterRequests() {
   const q = document.getElementById('req_search').value.trim().toLowerCase();
-  if (!q) return allRequests;
-  return allRequests.filter(r => (r.ambassador?.name || '').toLowerCase().includes(q));
+  const byStatus = currentFilter ? allRequests.filter(r => r.status === currentFilter) : allRequests;
+  if (!q) return byStatus;
+  return byStatus.filter(r => (r.ambassador?.name || '').toLowerCase().includes(q));
+}
+
+function renderCounters() {
+  const nf = App.formatNumber;
+  const counts = { all: allRequests.length, pending: 0, approved: 0, paid: 0, rejected: 0 };
+  allRequests.forEach((r) => {
+    if (counts[r.status] != null) counts[r.status] += 1;
+  });
+  document.getElementById('c_all').textContent = nf(counts.all);
+  document.getElementById('c_pending').textContent = nf(counts.pending);
+  document.getElementById('c_approved').textContent = nf(counts.approved);
+  document.getElementById('c_paid').textContent = nf(counts.paid);
+  document.getElementById('c_rejected').textContent = nf(counts.rejected);
 }
 
 function renderRequests(list) {
+  const nf = App.formatNumber;
+  const df = App.formatDate;
   const tb = document.getElementById('tbody');
   tb.innerHTML = '';
   if (!list.length) {
@@ -83,10 +117,10 @@ function renderRequests(list) {
       </div>`;
     }
     tr.innerHTML = `
-      <td data-label="التاريخ">${new Date(r.createdAt).toLocaleDateString('ar-EG')}</td>
+      <td data-label="التاريخ">${df(r.createdAt)}</td>
       <td data-label="السفير">${r.ambassador?.name || '-'}</td>
       <td data-label="الجوال">${r.ambassador?.phone || '-'}</td>
-      <td data-label="المبلغ">${r.amount.toLocaleString('ar-EG')} ريال</td>
+      <td data-label="المبلغ">${nf(r.amount)} ريال</td>
       <td data-label="الحالة"><span class="badge ${r.status}">${statusMap[r.status]}</span></td>
       <td data-label="إجراء">${actions}</td>`;
     tb.appendChild(tr);
@@ -95,32 +129,31 @@ function renderRequests(list) {
 
 async function load() {
   App.showLoader();
-  const url = currentFilter ? `/admin/requests-api?status=${currentFilter}` : '/admin/requests-api';
-  const r = await fetch(url);
+  const r = await fetch('/admin/requests-api');
   if (r.status === 401) { location.href = '/admin/login'; return; }
   const d = await r.json();
 
   approvedByAmb = {};
-  try {
-    const ar = await fetch('/admin/requests-api?status=approved');
-    const ad = await ar.json();
-    for (const req of ad.requests) {
-      const id = req.ambassador?._id;
-      if (!id) continue;
-      approvedByAmb[id] = (approvedByAmb[id] || 0) + 1;
-    }
-  } catch (e) {}
-
   allRequests = d.requests || [];
+  for (const req of allRequests) {
+    if (req.status !== 'approved') continue;
+    const id = req.ambassador?._id;
+    if (!id) continue;
+    approvedByAmb[id] = (approvedByAmb[id] || 0) + 1;
+  }
+
+  renderCounters();
+  document.getElementById('req_count').textContent = App.formatNumber(filterRequests().length);
   renderRequests(filterRequests());
   App.showContent();
 }
 
 function exportRequests() {
+  const df = App.formatDate;
   const list = filterRequests();
   if (!list.length) { alert('لا توجد بيانات للتصدير'); return; }
   const rows = list.map((r) => ({
-    'التاريخ': new Date(r.createdAt).toLocaleDateString('ar-EG'),
+    'التاريخ': df(r.createdAt),
     'السفير': r.ambassador?.name || '-',
     'الجوال': r.ambassador?.phone || '-',
     'المبلغ (ريال)': r.amount,
@@ -144,7 +177,8 @@ document.addEventListener('click', async (e) => {
     document.querySelectorAll('.filter').forEach(x => x.classList.remove('active'));
     f.classList.add('active');
     currentFilter = f.dataset.f;
-    load();
+    document.getElementById('req_count').textContent = App.formatNumber(filterRequests().length);
+    renderRequests(filterRequests());
     return;
   }
   const btn = e.target.closest('button[data-a]');
@@ -163,6 +197,7 @@ document.addEventListener('click', async (e) => {
 });
 
 document.getElementById('req_search').addEventListener('input', () => {
+  document.getElementById('req_count').textContent = App.formatNumber(filterRequests().length);
   renderRequests(filterRequests());
 });
 document.getElementById('req_export').addEventListener('click', exportRequests);

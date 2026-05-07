@@ -4,8 +4,16 @@
 <%- include('../partials/loader') %>
 
 <div data-content style="display:none;">
+  <div class="page-intro">
+    <span class="page-kicker">لوحة الإدارة</span>
+    <h3 class="page-title">متابعة الأداء العام للسفراء</h3>
+    <p class="page-subtitle">راقب المؤشرات الكلية، ثم ابحث في قائمة السفراء أو صدّر البيانات مباشرة.</p>
+  </div>
+
   <div class="card">
-    <h2>ملخص عام</h2>
+    <div class="section-head">
+      <h2>ملخص عام</h2>
+    </div>
     <div class="stat-grid">
       <div class="stat"><div class="v" id="s_total">0</div><div class="l">مجموع التبرعات (ريال)</div></div>
       <div class="stat"><div class="v" id="s_prizes">0</div><div class="l">مجموع الجوائز المصروفة (ريال)</div></div>
@@ -16,7 +24,10 @@
   </div>
 
   <div class="card">
-    <h2>قائمة السفراء</h2>
+    <div class="section-head">
+      <h2>قائمة السفراء</h2>
+      <span class="list-count-badge" id="amb_count">0</span>
+    </div>
     <div class="toolbar">
       <div class="search">
         <input type="search" id="amb_search" placeholder="ابحث باسم السفير…" autocomplete="off">
@@ -84,15 +95,17 @@ function exportAmbassadors() {
 }
 
 (async function () {
+  const nf = App.formatNumber;
   const r = await fetch('/admin/stats');
   if (r.status === 401) { location.href = '/admin/login'; return; }
   const d = await r.json();
-  document.getElementById('s_total').textContent = d.totalDonations.toLocaleString('ar-EG');
-  document.getElementById('s_prizes').textContent = d.totalPrizes.toLocaleString('ar-EG');
-  document.getElementById('s_amb').textContent = d.ambassadorsCount;
-  document.getElementById('s_mem').textContent = d.members;
-  document.getElementById('s_non').textContent = d.nonMembers;
+  document.getElementById('s_total').textContent = nf(d.totalDonations);
+  document.getElementById('s_prizes').textContent = nf(d.totalPrizes);
+  document.getElementById('s_amb').textContent = nf(d.ambassadorsCount);
+  document.getElementById('s_mem').textContent = nf(d.members);
+  document.getElementById('s_non').textContent = nf(d.nonMembers);
   ambassadors = d.ambassadors || [];
+  document.getElementById('amb_count').textContent = nf(ambassadors.length);
   renderAmbassadors(ambassadors);
   App.showContent();
 })();

@@ -7,4 +7,53 @@
     <a href="#" data-logout>خروج</a>
   </nav>
 </div>
+
+<nav class="bottom-nav" aria-label="التنقل السفلي">
+  <div class="bottom-nav-inner">
+    <a href="/ambassador/home" class="<%= active==='home' ? 'active' : '' %>">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <path d="M3 10.5 12 3l9 7.5"></path>
+        <path d="M5 9.5V21h14V9.5"></path>
+      </svg>
+      <span>الرئيسية</span>
+    </a>
+    <a href="/ambassador/prizes" class="<%= active==='prizes' ? 'active' : '' %>">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <path d="M8 21h8"></path>
+        <path d="M12 17v4"></path>
+        <path d="M7 4h10v6a5 5 0 1 1-10 0V4Z"></path>
+        <path d="M7 6H5a2 2 0 0 0 0 4h2"></path>
+        <path d="M17 6h2a2 2 0 1 1 0 4h-2"></path>
+      </svg>
+      <span>الجوائز</span>
+    </a>
+    <a href="/ambassador/create-fund" class="<%= active==='create-fund' ? 'active' : '' %>">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <path d="M12 5v14"></path>
+        <path d="M5 12h14"></path>
+      </svg>
+      <span>صندوق جديد</span>
+    </a>
+    <a href="/ambassador/fund" class="<%= active==='funds' ? 'active' : '' %>">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <rect x="3.5" y="4" width="17" height="16" rx="2"></rect>
+        <path d="M7 8h10"></path>
+        <path d="M7 12h6"></path>
+        <path d="M7 16h8"></path>
+      </svg>
+      <span>الصناديق</span>
+    </a>
+    <a href="#" data-logout class="danger">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+        <path d="m16 17 5-5-5-5"></path>
+        <path d="M21 12H9"></path>
+      </svg>
+      <span>خروج</span>
+    </a>
+  </div>
+</nav>
 <script src="/js/push.js"></script>
+<script>
+  document.body.classList.add('has-bottom-nav');
+</script>

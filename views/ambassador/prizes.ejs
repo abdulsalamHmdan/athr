@@ -4,9 +4,16 @@
 <%- include('../partials/loader') %>
 
 <div data-content style="display:none;">
+  <div class="page-intro">
+    <span class="page-kicker">صرف الجوائز</span>
+    <h3 class="page-title">اختر الفئة المناسبة لرصيدك</h3>
+    <p class="page-subtitle">عند إرسال الطلب يتم خصم قيمة الجائزة من الرصيد المتاح، وتظهر حالة الطلب حتى الاعتماد.</p>
+  </div>
+
   <div class="card">
-    <h2>صرف جائزة</h2>
-    <p class="small">اختر تصنيف الجائزة المناسب من بين ثلاث فئات: البرونزية (٢٠٠٠) والفضية (٥٠٠٠) والذهبية (١٠٠٠٠). يُخصم مبلغ الجائزة من رصيد تبرعاتك المتاح عند الطلب.</p>
+    <div class="section-head">
+      <h2>الرصيد والاستحقاق</h2>
+    </div>
     <div class="stat-grid">
       <div class="stat"><div class="v" id="s_balance">0</div><div class="l">رصيدك المتاح (نقاط)</div></div>
       <div class="stat"><div class="v" id="s_paid">0</div><div class="l">تم صرفها (نقاط)</div></div>
@@ -17,9 +24,12 @@
   </div>
 
   <div class="card">
-    <h2>طلباتي</h2>
-    <div class="table-wrap">
-      <table>
+    <div class="section-head">
+      <h2>سجل طلباتي</h2>
+      <p class="small">آخر حالة لكل طلب صرف</p>
+    </div>
+    <div class="table-wrap has-cards">
+      <table class="table-cards">
         <thead><tr><th>التاريخ</th><th>الجائزة</th><th>النقاط</th><th>الحالة</th><th>ملاحظة</th></tr></thead>
         <tbody id="tbody"></tbody>
       </table>
@@ -34,10 +44,11 @@ const tierNameByAmount = { 2000: 'برونزية', 5000: 'فضية', 10000: 'ذ�
 
 function renderTiers(tiers) {
   const grid = document.getElementById('tierGrid');
+  const nf = App.formatNumber;
   grid.innerHTML = tiers.map((t) => `
     <div class="tier ${t.id} ${t.canClaim ? '' : 'locked'}">
       <div class="tier-name">${t.name}</div>
-      <div class="tier-amount">${t.amount.toLocaleString('ar-EG')} <span>نقطة</span></div>
+      <div class="tier-amount">${nf(t.amount)} <span>نقطة</span></div>
       <button class="btn block ok" data-tier="${t.id}" ${t.canClaim ? '' : 'disabled'}>
         ${t.canClaim ? 'طلب الصرف' : 'الرصيد غير كافٍ'}
       </button>
@@ -46,11 +57,13 @@ function renderTiers(tiers) {
 }
 
 async function load() {
+  const nf = App.formatNumber;
+  const df = App.formatDate;
   const me = await fetch('/ambassador/me');
   if (me.status === 401) { location.href = '/login'; return; }
   const d = await me.json();
-  document.getElementById('s_balance').textContent = d.stats.availableBalance.toLocaleString('ar-EG');
-  document.getElementById('s_paid').textContent = d.stats.paid.toLocaleString('ar-EG');
+  document.getElementById('s_balance').textContent = nf(d.stats.availableBalance);
+  document.getElementById('s_paid').textContent = nf(d.stats.paid);
   renderTiers(d.stats.tiers || []);
 
   const rr = await fetch('/ambassador/requests');
@@ -64,11 +77,11 @@ async function load() {
       const tierName = tierNameByAmount[r.amount] || '-';
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td>${new Date(r.createdAt).toLocaleDateString('ar-EG')}</td>
-        <td>${tierName}</td>
-        <td>${r.amount.toLocaleString('ar-EG')} نقطة</td>
-        <td><span class="badge ${r.status}">${statusMap[r.status]}</span></td>
-        <td>${r.note || '-'}</td>`;
+        <td data-label="التاريخ">${df(r.createdAt)}</td>
+        <td data-label="الجائزة">${tierName}</td>
+        <td data-label="النقاط">${nf(r.amount)} نقطة</td>
+        <td data-label="الحالة"><span class="badge ${r.status}">${statusMap[r.status]}</span></td>
+        <td data-label="ملاحظة">${r.note || '-'}</td>`;
       tb.appendChild(tr);
     }
   }

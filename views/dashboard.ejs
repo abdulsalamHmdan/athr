@@ -46,7 +46,7 @@ const topCompounds = [
 const genderSplit = { men: 58, women: 42 };
 
 function pct(a, b) { return Math.min(100, Math.round((a / b) * 100)); }
-function fmt(n) { return Number(n).toLocaleString('ar-EG'); }
+function fmt(n) { return Number(n).toLocaleString('en-US'); }
 
 const donationsPct = pct(stats.totalDonations, stats.donationsGoal);
 const boxesPct = pct(stats.totalBoxes, stats.boxesGoal);
@@ -242,7 +242,7 @@ const ambBoxShare = pct(stats.ambassadorBoxes, stats.totalBoxes);
     const suffix = el.dataset.suffix || '';
     const duration = 1400;
     const start = performance.now();
-    const fmt = (n) => Math.round(n).toLocaleString('ar-EG') + suffix;
+    const fmt = (n) => Math.round(n).toLocaleString('en-US') + suffix;
     // ease-out-expo-ish
     const ease = (t) => 1 - Math.pow(1 - t, 4);
     function tick(now) {

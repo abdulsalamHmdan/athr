@@ -1,93 +1,119 @@
 <%- include('partials/head') %>
 
-<div class="card" id="formCard">
-  <h2>تسجيل سفير جديد</h2>
-  <form id="form">
-    <label>الاسم</label>
-    <input name="name" required />
-    <label>رقم الجوال</label>
-    <input
-      name="phone"
-      type="tel"
-      inputmode="numeric"
-      required
-      pattern="[1-9][0-9]{8}"
-      maxlength="9"
-      minlength="9"
-      placeholder="5XXXXXXXX"
-      title="9 أرقام فقط، بدون صفر في البداية وبدون رمز الدولة"
-    />
-    <div class="small">
-      أدخل 9 أرقام فقط، بدون الصفر في البداية وبدون رمز الدولة (مثال: 5XXXXXXXX)
-    </div>
-    <label>كلمة السر</label>
-    <input name="password" type="password" required minlength="4" />
-    <label>هل أنت من منسوبي الجمعية؟</label>
-    <select name="isMember" id="isMember">
-      <option value="false">لا</option>
-      <option value="true">نعم</option>
-    </select>
-    <div id="entityWrap" style="display: none">
-      <label>الجهة</label>
-      <select name="entity">
-        <option value="">الإدارة</option>
-        <option value="48">البديعة الصباحية</option>
-        <option value="70">التلقين المسائية</option>
-        <option value="72">جامع التميمي</option>
-        <option value="71">حصة بنت عبدالله البسام</option>
-        <option value="60">دار ابن عيد المسائية</option>
-        <option value="57">دار البديعة المسائية</option>
-        <option value="59">دار البويطن</option>
-        <option value="46">دار الحركان الصباحية</option>
-        <option value="51">دار الحركان المسائية</option>
-        <option value="61">دار الحميضي المسائية</option>
-        <option value="47">دار العضيب الصباحية</option>
-        <option value="52">دار العضيب المسائية</option>
-        <option value="64">دار الفهد الصباحية</option>
-        <option value="67">دار الفهد المسائية</option>
-        <option value="55">دار الفيحاء المسائية</option>
-        <option value="68">دار المطار المسائية</option>
-        <option value="63">دار المقرأة الالكترونية</option>
-        <option value="50">دار الملك خالد الصباحية</option>
-        <option value="58">دار الملك خالد المسائية</option>
-        <option value="56">دار الودي المسائية</option>
-        <option value="49">دار تراتيل الصباحية</option>
-        <option value="53">دار تراتيل المسائية</option>
-        <option value="69">دار غراس المسائية</option>
-        <option value="54">دار مشرفة المسائية</option>
-        <option value="62">دار موضي الخنيني المسائية</option>
-        <option value="65">دار نورة الشبل الصباحية</option>
-        <option value="66">دار نورة الشبل المسائية</option>
-        <option value="40">مجمع الحلق الاجتماعية</option>
-        <option value="38">مجمع الحلقات الإلكترونية</option>
-        <option value="36">مجمع الحلقات المنفردة</option>
-        <option value="32">مجمع الزبير بن العوام</option>
-        <option value="24">مجمع أبي بن كعب</option>
-        <option value="23">مجمع أسامة بن زيد</option>
-        <option value="28">مجمع جامع المصيريعي</option>
-        <option value="35">مجمع زيد بن ثابت</option>
-        <option value="31">مجمع سعد بن معاذ</option>
-        <option value="26">مجمع سعيد بن زيد</option>
-        <option value="34">مجمع عبدالله بن عباس</option>
-        <option value="37">مجمع عبدالله بن مسعود</option>
-        <option value="30">مجمع عتبة بن غزوان</option>
-        <option value="33">مجمع عثمان بن عفان</option>
-        <option value="27">مجمع عمر بن الخطاب</option>
-        <option value="29">مجمع مصعب بن عمير</option>
-      </select>
-    </div>
-    <button class="btn block" type="submit" style="margin-top: 16px">
-      إنشاء الحساب
-    </button>
-    <div class="msg err" id="msg"></div>
-  </form>
-  <p class="small center" style="margin-top: 14px">
-    لديك حساب؟ <a href="/login">تسجيل الدخول</a>
-  </p>
+<div class="auth-shell" id="formCard">
+  <aside class="auth-aside">
+    <span class="page-kicker">الانضمام كسفير</span>
+    <h3>ابدأ من هنا</h3>
+    <p class="page-subtitle">املأ البيانات الأساسية مرة واحدة ثم تحصل على رابطك الخاص وتبدأ المشاركة مباشرة.</p>
+    <ul class="auth-list">
+      <li>ربط مباشر مع لوحة السفير بعد التسجيل.</li>
+      <li>متابعة الجوائز والتقدم عبر واجهة مبسطة.</li>
+      <li>نشر الصناديق برسائل جاهزة ومشاركة أسرع.</li>
+    </ul>
+  </aside>
+
+  <div class="card card-elevated auth-form-card">
+    <h2>تسجيل سفير جديد</h2>
+    <form id="form">
+      <div class="form-section">
+        <p class="form-section-title">البيانات الأساسية</p>
+        <div class="form-grid">
+          <div>
+            <label>الاسم</label>
+            <input name="name" required />
+          </div>
+          <div>
+            <label>رقم الجوال</label>
+            <input
+              name="phone"
+              type="tel"
+              inputmode="numeric"
+              required
+              pattern="[1-9][0-9]{8}"
+              maxlength="9"
+              minlength="9"
+              placeholder="5XXXXXXXX"
+              title="9 أرقام فقط، بدون صفر في البداية وبدون رمز الدولة"
+            />
+          </div>
+        </div>
+        <div class="small">
+          أدخل 9 أرقام فقط، بدون الصفر في البداية وبدون رمز الدولة (مثال: 5XXXXXXXX)
+        </div>
+        <label>كلمة السر</label>
+        <input name="password" type="password" required minlength="4" />
+      </div>
+
+      <div class="form-section">
+        <p class="form-section-title">الانتماء</p>
+        <label>هل أنت من منسوبي الجمعية؟</label>
+        <select name="isMember" id="isMember">
+          <option value="false">لا</option>
+          <option value="true">نعم</option>
+        </select>
+        <div id="entityWrap" style="display: none">
+          <label>الجهة</label>
+          <select name="entity">
+            <option value="">الإدارة</option>
+            <option value="48">البديعة الصباحية</option>
+            <option value="70">التلقين المسائية</option>
+            <option value="72">جامع التميمي</option>
+            <option value="71">حصة بنت عبدالله البسام</option>
+            <option value="60">دار ابن عيد المسائية</option>
+            <option value="57">دار البديعة المسائية</option>
+            <option value="59">دار البويطن</option>
+            <option value="46">دار الحركان الصباحية</option>
+            <option value="51">دار الحركان المسائية</option>
+            <option value="61">دار الحميضي المسائية</option>
+            <option value="47">دار العضيب الصباحية</option>
+            <option value="52">دار العضيب المسائية</option>
+            <option value="64">دار الفهد الصباحية</option>
+            <option value="67">دار الفهد المسائية</option>
+            <option value="55">دار الفيحاء المسائية</option>
+            <option value="68">دار المطار المسائية</option>
+            <option value="63">دار المقرأة الالكترونية</option>
+            <option value="50">دار الملك خالد الصباحية</option>
+            <option value="58">دار الملك خالد المسائية</option>
+            <option value="56">دار الودي المسائية</option>
+            <option value="49">دار تراتيل الصباحية</option>
+            <option value="53">دار تراتيل المسائية</option>
+            <option value="69">دار غراس المسائية</option>
+            <option value="54">دار مشرفة المسائية</option>
+            <option value="62">دار موضي الخنيني المسائية</option>
+            <option value="65">دار نورة الشبل الصباحية</option>
+            <option value="66">دار نورة الشبل المسائية</option>
+            <option value="40">مجمع الحلق الاجتماعية</option>
+            <option value="38">مجمع الحلقات الإلكترونية</option>
+            <option value="36">مجمع الحلقات المنفردة</option>
+            <option value="32">مجمع الزبير بن العوام</option>
+            <option value="24">مجمع أبي بن كعب</option>
+            <option value="23">مجمع أسامة بن زيد</option>
+            <option value="28">مجمع جامع المصيريعي</option>
+            <option value="35">مجمع زيد بن ثابت</option>
+            <option value="31">مجمع سعد بن معاذ</option>
+            <option value="26">مجمع سعيد بن زيد</option>
+            <option value="34">مجمع عبدالله بن عباس</option>
+            <option value="37">مجمع عبدالله بن مسعود</option>
+            <option value="30">مجمع عتبة بن غزوان</option>
+            <option value="33">مجمع عثمان بن عفان</option>
+            <option value="27">مجمع عمر بن الخطاب</option>
+            <option value="29">مجمع مصعب بن عمير</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn block lg" type="submit" style="margin-top: 12px">
+        إنشاء الحساب
+      </button>
+      <div class="msg err" id="msg"></div>
+    </form>
+    <p class="small center" style="margin-top: 12px">
+      لديك حساب؟ <a href="/login">تسجيل الدخول</a>
+    </p>
+  </div>
 </div>
 
-<div class="card" id="doneCard" style="display: none">
-  <h2>تم التسجيل بنجاح 🎉</h2>
+<div class="card card-elevated" id="doneCard" style="display: none">
+  <h2>تم التسجيل بنجاح</h2>
   <p>هذا هو رابط تسجيل الدخول السريع، لا تشاركه مع أحد:</p>
   <div class="link-box">
     <span id="link"></span

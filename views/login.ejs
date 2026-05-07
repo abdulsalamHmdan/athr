@@ -1,17 +1,30 @@
 <%- include('partials/head') %>
 
-<div class="card">
-  <h2>تسجيل الدخول</h2>
-  <form id="form">
-    <label>رقم الجوال</label>
-    <input name="phone" type="tel" inputmode="numeric" required pattern="[1-9][0-9]{8}" maxlength="9" minlength="9" placeholder="5XXXXXXXX" title="9 أرقام فقط، بدون صفر في البداية وبدون رمز الدولة">
-    <div class="small">9 أرقام فقط، بدون الصفر في البداية وبدون رمز الدولة</div>
-    <label>كلمة السر</label>
-    <input name="password" type="password" required>
-    <button class="btn block" type="submit" style="margin-top:16px;">دخول</button>
-    <div class="msg err" id="msg"></div>
-  </form>
-  <p class="small center" style="margin-top:14px;">ليس لديك حساب؟ <a href="/signup">تسجيل جديد</a></p>
+<div class="auth-shell">
+  <aside class="auth-aside">
+    <span class="page-kicker">بوابة السفراء</span>
+    <h3>دخول سريع وآمن</h3>
+    <p class="page-subtitle">تقدر من هنا تدخل مباشرة إلى لوحة السفير وتتابع الأثر والطلبات.</p>
+    <ul class="auth-list">
+      <li>متابعة الرصيد والتبرعات في مكان واحد.</li>
+      <li>الوصول السريع لروابط الصناديق ورسائل النشر.</li>
+      <li>استلام التنبيهات المهمة من الإدارة.</li>
+    </ul>
+  </aside>
+
+  <div class="card card-elevated auth-form-card">
+    <h2>تسجيل الدخول</h2>
+    <form id="form">
+      <label>رقم الجوال</label>
+      <input name="phone" type="tel" inputmode="numeric" required pattern="[1-9][0-9]{8}" maxlength="9" minlength="9" placeholder="5XXXXXXXX" title="9 أرقام فقط، بدون صفر في البداية وبدون رمز الدولة">
+      <div class="small">9 أرقام فقط، بدون الصفر في البداية وبدون رمز الدولة</div>
+      <label>كلمة السر</label>
+      <input name="password" type="password" required>
+      <button class="btn block lg" type="submit" style="margin-top:12px;">دخول</button>
+      <div class="msg err" id="msg"></div>
+    </form>
+    <p class="small center" style="margin-top:12px;">ليس لديك حساب؟ <a href="/signup">تسجيل جديد</a></p>
+  </div>
 </div>
 
 <script>

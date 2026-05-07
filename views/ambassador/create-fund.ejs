@@ -1,9 +1,16 @@
-<%- include('../partials/head') %> <%- include('../partials/nav-ambassador') %>
+<%- include('../partials/head') %>
+<%- include('../partials/nav-ambassador') %>
 <%- include('../partials/loader') %>
 
 <div data-content style="display: none">
+  <div class="page-intro">
+    <span class="page-kicker">إنشاء صندوق</span>
+    <h3 class="page-title">أنشئ صندوقك بخطوات واضحة</h3>
+    <p class="page-subtitle">حدّد المجال والقيمة المستهدفة ثم شارك الرابط مباشرة مع صاحب الصندوق أو جمهورك.</p>
+  </div>
+
   <!-- حالة: لا يوجد حساب على المنصة -->
-  <div class="card" id="noAccountCard" style="display: none">
+  <div class="card card-elevated" id="noAccountCard" style="display: none">
     <h2>تحتاج إلى حساب على المنصة</h2>
     <p class="small">
       لإنشاء صندوق جديد، يجب أن يكون لديك حساب على منصة ديسق. اضغط الزر أدناه
@@ -19,277 +26,129 @@
     >
   </div>
 
-  <!-- حالة: عنده حساب — يظهر النموذج -->
-  <div class="card" id="formCard" style="display: none">
-    <h2>إنشاء صندوق جديد</h2>
-    <p class="small">عبّئ بيانات الصندوق ثم اضغط "إنشاء".</p>
-
-    <form id="fundForm">
-      <div>
-        <label for="name">اسم الصندوق</label>
-        <input
-          type="text"
-          id="name"
-          name="name"
-          required
-          placeholder="مثل. عن فلان الفلاني -رحمه الله- أو مشاركة فريق كذا أو مجموعة كذا .. "
-        />
+  <div class="panel-grid panel-grid-2">
+    <!-- حالة: عنده حساب — يظهر النموذج -->
+    <div class="card card-elevated" id="formCard" style="display: none">
+      <div class="section-head">
+        <h2>بيانات الصندوق</h2>
       </div>
 
-      <div>
-        <label for="waqfType">مجال التبرع</label>
-        <select id="waqfType" name="waqfType" required>
-          <option value="">— اختر مجال التبرع —</option>
-          <option value="1">محطة جيل القران 2 (السفير)</option>
-          <option value="2">كفالة حلقة</option>
-          <option value="3">المحفظة الإستثمارية</option>
-        </select>
-      </div>
-      <div>
-        <label for="targetAmount">القيمة المستهدفة للحملة</label>
-        <select id="targetAmount" name="targetAmount" required>
-          <option value="">— اختر المجال —</option>
-          <!-- <option value="800">سهم واحد — 800 ريال</option>
-          <option value="1600">سهمان — 1,600 ريال</option>
-          <option value="4000">5 أسهم — 4,000 ريال</option>
-          <option value="8000">10 أسهم — 8,000 ريال</option> -->
-        </select>
-        <!-- <select id="targetAmount" name="targetAmount" required>
-          <option value="">— اختر عدد الأسهم —</option>
-          <option value="800">شهر — 800 ريال</option>
-          <option value="1600">شهرين — 1,600 ريال</option>
-          <option value="2400">3 أشهر — 2,400 ريال</option>
-          <option value="5000">فصل دراسي — 5,000 ريال</option>
-          <option value="10000">سنة كاملة — 10,000 ريال</option>
-        </select> -->
-        <!-- <select id="targetAmount" name="targetAmount" required>
-          <option value="">— اختر عدد الأسهم —</option>
-          <option value="1465">متر — 1,465 ريال</option>
-          <option value="2930">مترين — 2,930 ريال</option>
-          <option value="4395">3 أمتار — 4,395 ريال</option>
-          <option value="7325">5 أمتار — 7,325 ريال</option>
-          <option value="14650">10 أمتار — 14,650 ريال</option>
-        </select> -->
-      </div>
-
-      <div>
-        <label for="ownerPhone"
-          >رقم صاحب الصندوق <span class="small">(اختياري)</span></label
-        >
-        <input
-          type="tel"
-          id="ownerPhone"
-          name="ownerPhone"
-          placeholder="مثل. 05XXXXXXXX"
-        />
-      </div>
-
-      <div>
-        <label for="fundType">نوع الصندوق</label>
-        <label
-          style="
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: normal;
-          "
-        >
+      <form id="fundForm">
+        <div class="form-section">
+          <p class="form-section-title">المعلومات الأساسية</p>
+          <label for="name">اسم الصندوق</label>
           <input
-            type="checkbox"
-            id="fundType"
-            name="fundType"
-            style="width: auto; margin: 0"
+            type="text"
+            id="name"
+            name="name"
+            required
+            placeholder="مثل: صندوق عن فلان رحمه الله أو مبادرة فريق..."
           />
-          <span> نشرها مع قائمة الصناديق الأكثر تفاعلاً .</span>
-        </label>
-        <p class="small" style="margin-top: 8px">
-          ملاحظة: سيتاح استقبال التبرعات حتى بعد الوصول للمستهدف.
-        </p>
-      </div>
 
-      <button
-        class="btn block ok"
-        id="submitBtn"
-        type="submit"
-        style="margin-top: 16px"
-      >
-        إنشاء الصندوق
-      </button>
-      <div class="msg" id="msg"></div>
-    </form>
+          <div class="form-grid">
+            <div>
+              <label for="waqfType">مجال التبرع</label>
+              <select id="waqfType" name="waqfType" required>
+                <option value="">— اختر مجال التبرع —</option>
+                <option value="1">محطة جيل القران 2 (السفير)</option>
+                <option value="2">كفالة حلقة</option>
+                <option value="3">المحفظة الإستثمارية</option>
+              </select>
+            </div>
+            <div>
+              <label for="targetAmount">القيمة المستهدفة للحملة</label>
+              <select id="targetAmount" name="targetAmount" required>
+                <option value="">— اختر المجال —</option>
+              </select>
+            </div>
+          </div>
+
+          <label for="ownerPhone">رقم صاحب الصندوق <span class="small">(اختياري)</span></label>
+          <input
+            type="tel"
+            id="ownerPhone"
+            name="ownerPhone"
+            placeholder="مثل: 05XXXXXXXX"
+          />
+        </div>
+
+        <div class="form-section">
+          <p class="form-section-title">إعدادات النشر</p>
+          <label for="fundType">نوع الصندوق</label>
+          <label class="fund-option-label">
+            <input type="checkbox" id="fundType" name="fundType" />
+            <span>نشره ضمن قائمة الصناديق الأكثر تفاعلاً.</span>
+          </label>
+          <p class="small" style="margin-top: 8px">
+            ملاحظة: سيتاح استقبال التبرعات حتى بعد الوصول للمستهدف.
+          </p>
+        </div>
+
+        <button class="btn block ok lg" id="submitBtn" type="submit" style="margin-top: 12px">
+          إنشاء الصندوق
+        </button>
+        <div class="msg" id="msg"></div>
+      </form>
+    </div>
+
+    <aside class="card" id="fundGuideCard" style="display: none">
+      <div class="section-head">
+        <h2>إرشادات سريعة</h2>
+      </div>
+      <ul class="feature-bullets">
+        <li>اختر اسمًا واضحًا يساعد المتبرع على فهم الهدف بسرعة.</li>
+        <li>حدّد المجال أولًا لتظهر القيم المناسبة تلقائيًا.</li>
+        <li>بعد الإنشاء انسخ الرابط أو أرسله عبر واتساب مباشرة.</li>
+      </ul>
+      <div class="card-note small">
+        كل صندوق تنشئه يظهر لاحقًا في صفحة "قائمة الصناديق" مع مؤشرات التقدم والزيارات.
+      </div>
+    </aside>
   </div>
 </div>
 
 <!-- POP UP: تم إنشاء الصندوق -->
-<div
-  id="fundSuccessOverlay"
-  style="
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(7, 15, 22, 0.75);
-    backdrop-filter: blur(4px);
-    z-index: 9999;
-    align-items: center;
-    justify-content: center;
-    padding: 16px;
-  "
->
-  <div
-    id="fundSuccessModal"
-    style="
-      background: #fff;
-      color: #1a1a1a;
-      max-width: 440px;
-      width: 100%;
-      border-radius: 18px;
-      padding: 24px 22px;
-      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.4);
-      position: relative;
-      animation: fundPop 0.25s ease-out;
-    "
-  >
-    <button
-      type="button"
-      id="fundSuccessClose"
-      aria-label="إغلاق"
-      style="
-        position: absolute;
-        top: 10px;
-        left: 12px;
-        background: transparent;
-        border: 0;
-        font-size: 24px;
-        cursor: pointer;
-        color: #666;
-        line-height: 1;
-      "
-    >
+<div id="fundSuccessOverlay" class="fund-success-overlay">
+  <div id="fundSuccessModal" class="fund-success-modal">
+    <button type="button" id="fundSuccessClose" aria-label="إغلاق" class="fund-close-btn">
       ×
     </button>
 
-    <div style="text-align: center; margin-bottom: 14px">
-      <div
-        style="
-          width: 62px;
-          height: 62px;
-          border-radius: 50%;
-          background: #e6f7ec;
-          color: #1a8c3c;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin: 0 auto 10px;
-          font-size: 34px;
-          font-weight: bold;
-        "
-      >
+    <div class="fund-success-head">
+      <div class="fund-success-check">
         ✓
       </div>
-      <h3 style="margin: 0 0 4px; font-size: 20px">تم إنشاء الصندوق بنجاح</h3>
-      <p style="margin: 0; color: #5b6b78; font-size: 13px">
+      <h3>تم إنشاء الصندوق بنجاح</h3>
+      <p>
         شارك الصندوق مع صاحبه ليبدأ الحملة
       </p>
     </div>
 
-    <div
-      style="
-        background: #f6f8fa;
-        border-radius: 12px;
-        padding: 14px;
-        margin-bottom: 14px;
-      "
-    >
-      <div style="font-size: 12px; color: #6b7785; margin-bottom: 4px">
+    <div class="fund-info-block">
+      <div class="fund-info-label">
         اسم الصندوق
       </div>
-      <div
-        id="fsName"
-        style="
-          font-weight: 700;
-          font-size: 16px;
-          margin-bottom: 12px;
-          word-break: break-word;
-        "
-      ></div>
+      <div id="fsName" class="fund-info-value"></div>
 
-      <div style="font-size: 12px; color: #6b7785; margin-bottom: 4px">
+      <div class="fund-info-label">
         رابط الصندوق
       </div>
-      <div style="display: flex; gap: 6px; align-items: stretch">
-        <input
-          id="fsLink"
-          type="text"
-          readonly
-          style="
-            flex: 1;
-            min-width: 0;
-            padding: 8px 10px;
-            border: 1px solid #d8dfe5;
-            border-radius: 8px;
-            font-size: 13px;
-            background: #fff;
-            direction: ltr;
-            text-align: left;
-          "
-        />
-        <button
-          type="button"
-          id="fsCopyBtn"
-          style="
-            padding: 8px 12px;
-            border: 0;
-            border-radius: 8px;
-            background: #0b6fa4;
-            color: #fff;
-            cursor: pointer;
-            font-size: 13px;
-            white-space: nowrap;
-          "
-        >
+      <div class="fund-link-row">
+        <input id="fsLink" type="text" readonly class="fund-link-input" />
+        <button type="button" id="fsCopyBtn" class="fund-copy-btn">
           نسخ
         </button>
       </div>
     </div>
 
-    <div style="text-align: center; margin-bottom: 14px">
-      <img
-        id="fsQr"
-        alt="QR"
-        style="
-          width: 180px;
-          height: 180px;
-          border: 1px solid #e5eaf0;
-          border-radius: 10px;
-          padding: 6px;
-          background: #fff;
-        "
-      />
-      <div style="font-size: 12px; color: #6b7785; margin-top: 6px">
+    <div class="fund-qr-wrap">
+      <img id="fsQr" alt="QR" class="fund-qr-image" />
+      <div class="fund-qr-hint">
         امسح الباركود لفتح رابط الصندوق
       </div>
     </div>
 
-    <a
-      id="fsWaBtn"
-      href="#"
-      target="_blank"
-      rel="noopener"
-      style="
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        background: #25d366;
-        color: #fff;
-        padding: 13px 16px;
-        border-radius: 12px;
-        font-weight: 700;
-        text-decoration: none;
-        font-size: 15px;
-        box-shadow: 0 6px 16px rgba(37, 211, 102, 0.35);
-      "
-    >
+    <a id="fsWaBtn" href="#" target="_blank" rel="noopener" class="fund-wa-btn">
       <svg viewBox="0 0 32 32" width="22" height="22" aria-hidden="true">
         <path
           fill="#fff"
@@ -298,32 +157,9 @@
       </svg>
       <span id="fsWaLabel">إرسال للصاحب عبر واتساب</span>
     </a>
-    <p
-      id="fsWaHint"
-      style="
-        margin: 8px 0 0;
-        font-size: 12px;
-        color: #6b7785;
-        text-align: center;
-      "
-    ></p>
+    <p id="fsWaHint" class="fund-wa-hint"></p>
   </div>
 </div>
-<style>
-  @keyframes fundPop {
-    from {
-      transform: scale(0.92);
-      opacity: 0;
-    }
-    to {
-      transform: scale(1);
-      opacity: 1;
-    }
-  }
-  #fundSuccessOverlay.show {
-    display: flex !important;
-  }
-</style>
 
 <script src="/js/app.js"></script>
 <script>
@@ -370,6 +206,7 @@
   };
   (async function () {
     document.getElementById("formCard").style.display = "";
+    document.getElementById("fundGuideCard").style.display = "";
 
     const form = document.getElementById("fundForm");
     const msg = document.getElementById("msg");

@@ -81,8 +81,8 @@
     --cc-border:#e5eaf0;
     --cc-text:#1a2733;
     --cc-mute:#6b7785;
-    --cc-primary:#0b6fa4;
-    --cc-primary-soft:#e8f2f9;
+    --cc-primary:#185C57;
+    --cc-primary-soft:#e7f5f2;
     --cc-green:#1a8c3c;
     --cc-green-soft:#e6f7ec;
     --cc-amber:#b8761d;
@@ -98,10 +98,10 @@
     background:
       radial-gradient(120% 120% at 100% 0%, rgba(255,255,255,.18), transparent 50%),
       radial-gradient(120% 120% at 0% 100%, rgba(255,255,255,.10), transparent 50%),
-      linear-gradient(135deg, #0b6fa4 0%, #0a4f7d 60%, #0a3a60 100%);
+      linear-gradient(135deg, #185C57 0%, #0f3f3c 58%, #061f1d 100%);
     color:#fff;
     padding: 26px 22px;
-    box-shadow: 0 18px 38px rgba(10,79,125,.22);
+    box-shadow: 0 18px 38px rgba(24,92,87,.22);
     position:relative; overflow:hidden;
   }
   .centers-hero::after{
@@ -276,7 +276,7 @@
   let centers = [];
   let activeTab = 'all';
 
-  function fmt(n){ return Number(n||0).toLocaleString('ar-EG'); }
+  function fmt(n){ return App.formatNumber(n || 0); }
   function classify(name){
     const s = String(name || '').trim();
     if (s.startsWith('مجمع')) return 'مجمع';
