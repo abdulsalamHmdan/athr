@@ -16,34 +16,18 @@ const TIER_BY_ID = Object.fromEntries(PRIZE_TIERS.map((t) => [t.id, t]));
 async function getStats(amb) {
   const baseUrl = `http://localhost:${process.env.PORT || 3000}`;
   let totalDonations = 0;
+  let orderCount = 0;
   let goals = [];
   try {
     const r = await fetch(`${baseUrl}/api/donations/${encodeURIComponent(amb.phone)}`);
     const data = await r.json();
+    console.log(`[getStats] donations for ${amb.phone}:`, data); // --- IGNORE ---
     totalDonations = data.total || 0;
+    orderCount = data.orderCount || 0;
     goals = Array.isArray(data.items) ? data.items : [];
   } catch (e) {
-    totalDonations = 0;
+    console.error(`[getStats] failed to fetch donations for ${amb.phone}:`, e.message);
   }
-
-  try {
-    const localFunds = await Fund.find({ ambassador: amb._id }).sort({ createdAt: -1 }).lean();
-    const existingKeys = new Set(
-      goals.map((g) => String(g.pk || g.name || '').trim()).filter(Boolean)
-    );
-    for (const f of localFunds) {
-      const key = String(f.externalId || f.name || '').trim();
-      if (existingKeys.has(key) || existingKeys.has(String(f.name).trim())) continue;
-      goals.push({
-        pk: f.externalId || String(f._id),
-        name: f.name,
-        total: 0,
-        goal: f.targetAmount || 0,
-        local: true,
-        ownerPhone: f.ownerPhone || '',
-      });
-    }
-  } catch (e) {}
 
   const approved = await PrizeRequest.find({ ambassador: amb._id, status: { $in: ['approved', 'paid'] } });
   const paid = approved.reduce((s, r) => s + r.amount, 0);
@@ -64,6 +48,7 @@ async function getStats(amb) {
 
   return {
     totalDonations,
+    orderCount,
     paid,
     pendingAmount,
     claimedAmount,
@@ -75,10 +60,14 @@ async function getStats(amb) {
 }
 
 router.get('/me', requireAmbassador, async (req, res) => {
-  const amb = await Ambassador.findById(req.session.ambassadorId).lean();
+  const amb = await Ambassador.findById(req.session.ambassadorId);
   if (!amb) return res.status(404).json({ error: 'غير موجود' });
   const stats = await getStats(amb);
   const link = `${req.protocol}://${req.get('host')}/r/${amb.referralCode}`;
+  amb.totalDonations = stats.totalDonations;
+  amb.orderCount = stats.orderCount;
+  amb.donationsUpdatedAt = new Date();
+  amb.save().catch((e) => console.error('[get /me] failed to update donations:', e.message));
   res.json({
     ambassador: {
       name: amb.name,

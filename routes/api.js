@@ -90,11 +90,12 @@ router.get('/donations-all', async (req, res) => {
     console.log("Response:", data);
     res.json({
       total: data?.totals?.total || 0,
+      orderCount: data?.totals?.order_count || 0,
       currency: 'SAR',
       updatedAt: new Date().toISOString(),
     });
   } catch (e) {
-    res.json({ total: 0, currency: 'SAR', error: 'fetch_failed' });
+    res.json({ total: 0, orderCount: 0, currency: 'SAR', error: 'fetch_failed' });
   }
 });
 
@@ -106,6 +107,7 @@ router.get('/donations/:phone', async (req, res) => {
     const data = await r.json();
     console.log(data);
     const total = data?.totals?.total || 0;
+    const orderCount = data?.totals?.order_count || 0;
     const items = Array.isArray(data?.items)
       ? data.items.map((it) => ({
           pk: it.pk,
@@ -117,12 +119,13 @@ router.get('/donations/:phone', async (req, res) => {
     res.json({
       phone,
       total,
+      orderCount,
       items,
       currency: 'SAR',
       updatedAt: new Date().toISOString(),
     });
   } catch (e) {
-    res.json({ phone, total: 0, items: [], currency: 'SAR', error: 'fetch_failed' });
+    res.json({ phone, total: 0, orderCount: 0, items: [], currency: 'SAR', error: 'fetch_failed' });
   }
 });
 

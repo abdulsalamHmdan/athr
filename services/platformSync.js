@@ -35,7 +35,6 @@ async function fetchTotalDonations({ phone }) {
 
 async function syncAmbassador(ambDoc) {
   const total = await fetchTotalDonations({ phone: ambDoc.phone });
-  console.log(`[syncAmbassador] ${ambDoc.phone} total donations:`, total);
   ambDoc.totalDonations = total.total;
   ambDoc.orderCount = total.count;
   ambDoc.donationsUpdatedAt = new Date();

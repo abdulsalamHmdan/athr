@@ -45,11 +45,11 @@ router.post('/signup', async (req, res) => {
 
     req.session.ambassadorId = amb._id;
 
-    try {
-      await syncAmbassador(amb);
-    } catch (e) {
-      console.error('[signup] platform sync failed:', e.message);
-    }
+    // try {
+    //   await syncAmbassador(amb);
+    // } catch (e) {
+    //   console.error('[signup] platform sync failed:', e.message);
+    // }
 
     const link = `${req.protocol}://${req.get('host')}/r/${referralCode}`;
     res.json({ ok: true, referralLink: link, referralCode });
