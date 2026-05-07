@@ -4,7 +4,7 @@ const { listEntities, entityName } = require('../services/entities');
 const router = express.Router();
 
 // صفحات عامة بدون تسجيل دخول — قائمة المجمعات وتفاصيل كل مجمع
-router.get('/centers', (req, res) => {
+router.get('/centers',  (req, res) => {
   res.render('public/centers', {
     title: 'المجمعات',
     entities: listEntities(),

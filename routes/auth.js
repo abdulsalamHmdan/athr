@@ -28,7 +28,6 @@ router.post('/signup', async (req, res) => {
 
     const fetchResult = await fetch(`http://donate.utq.org.sa/api/v1/clients/new?phone=${"966"+phone}&name=${name}`,{method: 'get',headers:{'k':'ED4SFhUVFUcZGBsZHRgeTyEdIiQgHyIhJCMmJSgnKiksKy4tMC8yMQ'}})
     const fetchData = await fetchResult.json();
-    console.log('[signup] client create result:', fetchData);
     if (fetchData.status == 'fail' && !fetchData.id) {
       return res.status(500).json({ error: fetchData.msg || 'خطأ في الخادم' });
     }

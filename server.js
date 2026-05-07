@@ -25,8 +25,6 @@ mongoose
   .connect(process.env.MONGO_URI)
   .then(async () => {
     console.log("MongoDB connected");
-    // const result = await syncStale();
-    // console.log('[cron] sync done:', result);
   })
   .catch((err) => console.error("Mongo error:", err));
 
@@ -55,7 +53,7 @@ app.use("/", pushRoutes);
 app.use("/", pagesRoutes);
 
 cron.schedule("0 * * * *", async () => {
-  console.log("[cron] hourly sync tick", new Date().toISOString());
+  // console.log("[cron] hourly sync tick", new Date().toISOString());
   try {
     const result = await syncStale();
     console.log("[cron] sync done:", result);

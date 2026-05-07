@@ -4,6 +4,8 @@ const PrizeRequest = require('../models/PrizeRequest');
 const Fund = require('../models/Fund');
 const { requireAmbassador } = require('../middleware/auth');
 
+
+
 const router = express.Router();
 
 const PRIZE_TIERS = [
@@ -21,7 +23,6 @@ async function getStats(amb) {
   try {
     const r = await fetch(`${baseUrl}/api/donations/${encodeURIComponent(amb.phone)}`);
     const data = await r.json();
-    console.log(`[getStats] donations for ${amb.phone}:`, data); // --- IGNORE ---
     totalDonations = data.total || 0;
     orderCount = data.orderCount || 0;
     goals = Array.isArray(data.items) ? data.items : [];

@@ -3,6 +3,26 @@ const Fund = require('../models/Fund');
 const Ambassador = require('../models/Ambassador');
 const { listEntities, entityName } = require('../services/entities');
 const router = express.Router();
+const cache = require("memory-cache");
+// دالة الوسيط (Middleware) الخاصة بالكاش
+let cacheM = (duration) => {
+  return (req, res, next) => {
+    let key = "__express__" + (req.originalUrl || req.url);
+    let cachedBody = cache.get(key);
+
+    if (cachedBody) {
+      res.send(cachedBody);
+      return;
+    } else {
+      res.sendResponse = res.send;
+      res.send = (body) => {
+        cache.put(key, body, duration * 1000 * 60); // المدة بالثواني
+        res.sendResponse(body);
+      };
+      next();
+    }
+  };
+};
 
 // ===== Public APIs (لا تتطلب تسجيل دخول) =====
 
@@ -87,7 +107,6 @@ router.get('/donations-all', async (req, res) => {
     // const r = await fetch(`${GOALS_API}?ts=1777755600-${Math.ceil(Date.now() / 1000)}`);
     
     const data = await r.json();
-    console.log("Response:", data);
     res.json({
       total: data?.totals?.total || 0,
       orderCount: data?.totals?.order_count || 0,
@@ -99,13 +118,13 @@ router.get('/donations-all', async (req, res) => {
   }
 });
 
-router.get('/donations/:phone', async (req, res) => {
+router.get('/donations/:phone', cacheM(5), async (req, res) => {
   const phone = req.params.phone;
   try {
     // const r = await fetch(`${GOALS_API}?goal_creator=${encodeURIComponent(phone)}&ts=1777755600-${Math.ceil(Date.now() / 1000)}`);
     const r = await fetch(`${GOALS_API}?goal_creator=${encodeURIComponent(phone)}`);
     const data = await r.json();
-    console.log(data);
+    // console.log(data);
     const total = data?.totals?.total || 0;
     const orderCount = data?.totals?.order_count || 0;
     const items = Array.isArray(data?.items)
