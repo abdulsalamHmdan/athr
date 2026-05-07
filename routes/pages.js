@@ -39,6 +39,12 @@ router.get('/ambassador/create-fund', (req, res) => {
   res.render('ambassador/create-fund', { title: 'إنشاء صندوق', active: 'create-fund' });
 });
 
+router.get('/ambassador/fund', (req, res) => {
+  if (!req.session.ambassadorId) return res.redirect('/login');
+  // res.send("قائمة الصناديق - تحت التطوير"); // مؤقتاً، لعدم وجود بيانات حقيقية
+  res.render('ambassador/funds', { title: 'قائمة الصناديق', active: 'funds' });
+});
+
 router.get('/admin/login', (req, res) => res.render('admin/login', { title: 'دخول الإدارة' }));
 router.get('/admin/dashboard', (req, res) => {
   if (!req.session.adminId) return res.redirect('/admin/login');

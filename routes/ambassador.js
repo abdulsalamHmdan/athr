@@ -82,6 +82,50 @@ router.get('/me', requireAmbassador, async (req, res) => {
   });
 });
 
+router.get('/funds', requireAmbassador, async (req, res) => {
+  try {
+    const amb = await Ambassador.findById(req.session.ambassadorId);
+    if (!amb) return res.status(404).json({ error: 'غير موجود' });
+    if (!amb.platformProfileId) {
+      return res.json({ results: [], stats: { total: 0, completed: 0, incomplete: 0 } });
+    }
+
+    const url = `https://donate.utq.org.sa/api/v1/goal/list?client_id=${encodeURIComponent(amb.platformProfileId)}`;
+    const r = await fetch(url, { headers: { k: 'ED4SFhUVFUcZGBsZHRgeTyEdIiQgHyIhJCMmJSgnKiksKy4tMC8yMQ' } });
+    const data = await r.json();
+    const results = Array.isArray(data?.results) ? data.results : [];
+
+    const items = results.map((g) => {
+      const stats = g.stats || {};
+      const progress = Number(stats.progress || 0);
+      return {
+        id: g.id,
+        name: g.name || '',
+        priceGoal: Number(g.price_goal || 0),
+        soldTotal: Number(stats.sold_total || 0),
+        soldCount: Number(stats.sold_count || 0),
+        visits: Number(stats.visits || 0),
+        progress,
+        completed: progress >= 100,
+        shareUrl: `https://donate.utq.org.sa/goal_${g.id}`,
+      };
+    }).sort((a, b) => b.soldTotal - a.soldTotal);
+
+    const completed = items.filter((g) => g.completed).length;
+    res.json({
+      results: items,
+      stats: {
+        total: items.length,
+        completed,
+        incomplete: items.length - completed,
+      },
+    });
+  } catch (e) {
+    console.error('[ambassador/funds] failed:', e.message);
+    res.json({ results: [], stats: { total: 0, completed: 0, incomplete: 0 }, error: 'fetch_failed' });
+  }
+});
+
 router.get('/requests', requireAmbassador, async (req, res) => {
   const list = await PrizeRequest.find({ ambassador: req.session.ambassadorId })
     .sort({ createdAt: -1 })

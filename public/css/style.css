@@ -844,6 +844,7 @@ a:hover { color: var(--accent); }
   margin-top: 10px;
   display: flex;
   justify-content: flex-start;
+  gap: 10px;
 }
 .btn.goal-btn {
   padding: 5px 14px;

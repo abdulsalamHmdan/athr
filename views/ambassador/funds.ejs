@@ -1,0 +1,111 @@
+<%- include('../partials/head') %>
+<%- include('../partials/nav-ambassador') %>
+<%- include('../partials/loader') %>
+
+<div data-content style="display:none;">
+  <div class="card">
+    <h2>إحصائيات الصناديق</h2>
+    <div class="stat-grid">
+      <div class="stat"><div class="v" id="s_total">0</div><div class="l">إجمالي الصناديق</div></div>
+      <div class="stat"><div class="v" id="s_done">0</div><div class="l">الصناديق المكتملة</div></div>
+      <div class="stat"><div class="v" id="s_open">0</div><div class="l">الصناديق غير المكتملة</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>قائمة الصناديق <span class="goals-count" id="goalsCount"></span></h2>
+    <div id="goalsBody" class="goals-list"></div>
+    <div class="msg" id="msg"></div>
+  </div>
+</div>
+
+<style>
+  .goal-item { position: relative; }
+  .goal-badge-done {
+    display: inline-block;
+    background: #1a8c3c;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 999px;
+    margin-inline-start: 6px;
+    vertical-align: middle;
+  }
+  .goal-item.done {box-shadow: 0 0 0 1px rgba(26,140,60,.25) inset; }
+  .goal-meta { display: flex; flex-wrap: wrap; gap: 10px 16px; font-size: 13px; color: #5b6b78; margin-top: 6px; }
+  .goal-meta b { color: #1a1a1a; }
+</style>
+
+<script src="/js/app.js"></script>
+<script>
+(async function () {
+  const esc = (v) => String(v == null ? '' : v)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+  const buildMsg = (g) => {
+    const pct = Math.min(100, Math.round(g.progress || 0));
+    return `صندوق : ${g.name || '-'}\n` +
+           `نسبة الاكتمال : ${pct}%\n` +
+           `رابط الصندوق: ${g.shareUrl}\n\n` +
+           `ساهم في إكمال صندوق الوقف\nليكون لك أجرٌ جارٍ لا ينقطع،`;
+  };
+
+  const r = await fetch('/ambassador/funds');
+  if (r.status === 401) { location.href = '/login'; return; }
+  const d = await r.json();
+
+  document.getElementById('s_total').textContent = (d.stats.total || 0).toLocaleString('ar-EG');
+  document.getElementById('s_done').textContent = (d.stats.completed || 0).toLocaleString('ar-EG');
+  document.getElementById('s_open').textContent = (d.stats.incomplete || 0).toLocaleString('ar-EG');
+  document.getElementById('goalsCount').textContent = (d.results.length || 0).toLocaleString('ar-EG');
+
+  const body = document.getElementById('goalsBody');
+  if (!d.results.length) {
+    body.innerHTML = '<p class="small center">لا توجد صناديق بعد</p>';
+  } else {
+    body.innerHTML = d.results.map((g, i) => {
+      const pct = Math.min(100, Number(g.progress || 0));
+      const pctTxt = (g.progress != null ? Number(g.progress).toFixed(1) : '0') + '%';
+      const doneBadge = g.completed ? '<span class="goal-badge-done">مكتمل ✓</span>' : '';
+      return `
+        <div class="goal-item ${g.completed ? 'done' : ''}">
+          <div class="goal-head">
+            <span class="goal-name">${esc(g.name || '-')} ${doneBadge}</span>
+            <span class="goal-pct">${pctTxt}</span>
+          </div>
+          <div class="goal-bar"><div style="width:${pct}%"></div></div>
+          <div class="goal-meta">
+            <span>المستهدف: <b>${(g.priceGoal || 0).toLocaleString('ar-EG')}</b> ريال</span>
+            <span>المحقق: <b>${(g.soldTotal || 0).toLocaleString('ar-EG')}</b> ريال</span>
+            <span>عمليات التبرع: <b>${(g.soldCount || 0).toLocaleString('ar-EG')}</b></span>
+            <span>الزيارات: <b>${(g.visits || 0).toLocaleString('ar-EG')}</b></span>
+          </div>
+          <div class="goal-actions">
+            <button class="btn secondary sm" type="button" data-goal-idx="${i}">نسخ رسالة النشر</button>
+            <a class="btn sm" href="${esc(g.shareUrl)}" target="_blank" rel="noopener">رابط الصندوق</a>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    body.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-goal-idx]');
+      if (!btn) return;
+      const idx = Number(btn.getAttribute('data-goal-idx'));
+      const g = d.results[idx];
+      if (!g) return;
+      navigator.clipboard.writeText(buildMsg(g)).then(() => {
+        const old = btn.textContent;
+        btn.textContent = 'تم النسخ ✓';
+        setTimeout(() => { btn.textContent = old; }, 1500);
+      });
+    });
+  }
+
+  App.showContent();
+})();
+</script>
+
+<%- include('../partials/foot') %>
