@@ -177,7 +177,15 @@ async function load() {
 function exportRequests() {
   const df = App.formatDate;
   const list = filterRequests();
-  if (!list.length) { alert('لا توجد بيانات للتصدير'); return; }
+  if (!list.length) {
+    App.notify({
+      title: 'لا توجد بيانات',
+      message: 'لا توجد بيانات للتصدير',
+      type: 'warning',
+      confirmText: 'حسناً',
+    });
+    return;
+  }
   const rows = list.map((r) => ({
     'التاريخ': df(r.createdAt),
     'السفير': r.ambassador?.name || '-',
@@ -212,8 +220,27 @@ document.addEventListener('click', async (e) => {
   if (btn) {
     const action = btn.dataset.a;
     const confirmMsg = action === 'paid' ? 'تأكيد أن الجائزة تم صرفها؟' : null;
-    if (confirmMsg && !confirm(confirmMsg)) return;
-    const note = action === 'paid' ? '' : (prompt('ملاحظة (اختياري)') || '');
+    if (confirmMsg) {
+      const ok = await App.confirm({
+        title: 'تأكيد العملية',
+        message: confirmMsg,
+        type: 'warning',
+        confirmText: 'تأكيد',
+        cancelText: 'إلغاء',
+      });
+      if (!ok) return;
+    }
+    const note = action === 'paid'
+      ? ''
+      : ((await App.prompt({
+          title: 'ملاحظة الطلب',
+          message: 'يمكنك إضافة ملاحظة للإجراء (اختياري)',
+          placeholder: 'اكتب ملاحظتك هنا...',
+          defaultValue: '',
+          confirmText: 'حفظ',
+          cancelText: 'تخطي',
+          type: 'info',
+        })) ?? '');
     btn.disabled = true;
     await fetch(`/admin/requests/${btn.dataset.id}/${action}`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },

@@ -17,6 +17,10 @@
     [STATE.BUSY]: 'جارٍ المعالجة…',
   };
 
+  function isIconButton(btn) {
+    return !!(btn && btn.hasAttribute('data-push-icon'));
+  }
+
   function isIOS() {
     return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
   }
@@ -56,10 +60,20 @@
 
   function applyState(btn, state) {
     btn.dataset.pushState = state;
-    btn.textContent = LABELS[state] || '';
+    const label = LABELS[state] || '';
+    if (isIconButton(btn)) {
+      btn.setAttribute('aria-label', label);
+      btn.setAttribute('title', label);
+      btn.classList.toggle('is-active', state === STATE.SUBSCRIBED);
+      btn.classList.toggle('is-busy', state === STATE.BUSY);
+    } else {
+      btn.textContent = label;
+    }
     const disabled = (state === STATE.UNSUPPORTED || state === STATE.IOS_NEED_INSTALL || state === STATE.DENIED || state === STATE.BUSY);
     btn.disabled = disabled;
-    btn.classList.toggle('secondary', state !== STATE.UNSUBSCRIBED);
+    if (!isIconButton(btn)) {
+      btn.classList.toggle('secondary', state !== STATE.UNSUBSCRIBED);
+    }
   }
 
   async function subscribe(btn) {
@@ -139,7 +153,67 @@
     });
   }
 
-  window.addEventListener('load', () => {
+  async function bindAllButtons() {
     document.querySelectorAll('[data-push-subscribe]').forEach(bindButton);
+  }
+
+  async function askFromEntry(options = {}) {
+    const {
+      confirmText = 'هل تريد تفعيل الإشعارات الآن؟',
+      iosText = 'لتفعيل الإشعارات على iPhone: أضف المنصة للشاشة الرئيسية أولاً ثم افتحها من الأيقونة.',
+      sessionKey = 'athr_push_prompt_once',
+    } = options;
+
+    const btn = document.querySelector('[data-push-subscribe]');
+    if (!btn) return;
+    await bindButton(btn);
+    const state = btn.dataset.pushState;
+
+    if (sessionStorage.getItem(sessionKey) === '1') return;
+    if (state === STATE.SUBSCRIBED || state === STATE.DENIED || state === STATE.UNSUPPORTED) return;
+
+    if (state === STATE.IOS_NEED_INSTALL) {
+      sessionStorage.setItem(sessionKey, '1');
+      if (window.App && typeof window.App.notify === 'function') {
+        await window.App.notify({
+          title: 'تنبيه الإشعارات',
+          message: iosText,
+          type: 'info',
+          confirmText: 'فهمت',
+        });
+      } else {
+        window.alert(iosText);
+      }
+      return;
+    }
+
+    if (state !== STATE.UNSUBSCRIBED || Notification.permission !== 'default') return;
+
+    sessionStorage.setItem(sessionKey, '1');
+    const ok = window.App && typeof window.App.confirm === 'function'
+      ? await window.App.confirm({
+          title: 'تفعيل الإشعارات',
+          message: confirmText,
+          type: 'info',
+          confirmText: 'تفعيل',
+          cancelText: 'لاحقاً',
+        })
+      : window.confirm(confirmText);
+    if (!ok) return;
+    await subscribe(btn);
+  }
+
+  window.PushNotify = {
+    bindAllButtons,
+    askFromEntry,
+    getState: currentState,
+  };
+
+  window.addEventListener('DOMContentLoaded', () => {
+    bindAllButtons();
+  });
+
+  window.addEventListener('load', () => {
+    bindAllButtons();
   });
 })();

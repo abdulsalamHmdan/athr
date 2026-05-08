@@ -99,8 +99,6 @@ document.getElementById('tierGrid').addEventListener('click', async (e) => {
   const btn = e.target.closest('button[data-tier]');
   if (!btn || btn.disabled) return;
   const tier = btn.dataset.tier;
-  const msg = document.getElementById('msg');
-  msg.textContent = '';
   const original = btn.textContent;
   btn.disabled = true; btn.textContent = 'جاري الإرسال...';
   const r = await fetch('/ambassador/requests', {
@@ -110,8 +108,21 @@ document.getElementById('tierGrid').addEventListener('click', async (e) => {
   });
   const d = await r.json();
   btn.disabled = false; btn.textContent = original;
-  if (!r.ok) { msg.className = 'msg err'; msg.textContent = d.error; return; }
-  msg.className = 'msg ok'; msg.textContent = 'تم إرسال طلب الصرف بنجاح';
+  if (!r.ok) {
+    await App.notify({
+      title: 'تعذر إرسال الطلب',
+      message: d.error || 'تعذر إرسال الطلب.',
+      type: 'error',
+      confirmText: 'إغلاق',
+    });
+    return;
+  }
+  await App.notify({
+    title: 'تم الإرسال',
+    message: 'تم إرسال طلب الصرف بنجاح',
+    type: 'success',
+    confirmText: 'ممتاز',
+  });
   load();
 });
 

@@ -35,15 +35,18 @@ router.get('/ambassador/home', (req, res) => {
   return renderAmbassadorPage(req, res, 'ambassador/home', { title: 'صفحتي', active: 'home' });
 });
 router.get('/ambassador/prizes', (req, res) => {
-  return renderAmbassadorPage(req, res, 'ambassador/prizes', { title: 'صرف الجوائز', active: 'prizes' });
+  if (!req.session.ambassadorId) return res.redirect('/login');
+  return res.redirect('/ambassador/home?tab=prizes');
 });
 
 router.get('/ambassador/create-fund', (req, res) => {
-  return renderAmbassadorPage(req, res, 'ambassador/create-fund', { title: 'إنشاء صندوق', active: 'create-fund' });
+  if (!req.session.ambassadorId) return res.redirect('/login');
+  return res.redirect('/ambassador/home?tab=create');
 });
 
 router.get('/ambassador/fund', (req, res) => {
-  return renderAmbassadorPage(req, res, 'ambassador/funds', { title: 'قائمة الصناديق', active: 'funds' });
+  if (!req.session.ambassadorId) return res.redirect('/login');
+  return res.redirect('/ambassador/home?tab=funds');
 });
 
 router.get('/admin/login', (req, res) => res.render('admin/login', { title: 'دخول الإدارة' }));

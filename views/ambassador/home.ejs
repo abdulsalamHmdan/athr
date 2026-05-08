@@ -1,9 +1,10 @@
 <%- include('../partials/head') %>
 <%- include('../partials/nav-ambassador') %>
 <%- include('../partials/loader') %>
+
 <div data-content style="display:none;">
   <div class="home-layout">
-    <div class="card portfolio-card card-elevated">
+    <div class="portfolio-hero">
       <div class="portfolio-head">
         <div>
           <span class="portfolio-label">رصيدك المتاح</span>
@@ -19,15 +20,17 @@
         <div class="portfolio-meta-item"><span id="s_next_lbl">المتبقي</span><b id="remainingToNext">0</b></div>
       </div>
 
-      <div class="progress portfolio-progress"><div id="bar" style="width:0%"></div></div>
-      <div class="small" id="progressLbl"></div>
-
-      <div class="action-pill-row">
-        <a class="btn sm" href="/ambassador/create-fund">إنشاء صندوق</a>
-        <a class="btn sm secondary" href="/ambassador/fund">قائمة الصناديق</a>
-        <a class="btn sm secondary" href="/ambassador/prizes">صرف الجوائز</a>
-        <button class="btn sm flat" id="copyBtn" type="button">نسخ الرابط</button>
+      <div class="smart-progress" id="smartProgress" aria-live="polite">
+        <div class="smart-progress-head">
+          <div class="smart-progress-level">
+            <span class="smart-progress-badge" aria-hidden="true">◉</span>
+            <b id="smartLevel">المستوى 1</b>
+          </div>
+          <span class="smart-progress-meta" id="smartProgressMeta">0%</span>
+        </div>
+        <div class="smart-stages" id="smartStages"></div>
       </div>
+      <div class="small" id="progressLbl"></div>
     </div>
 
     <div class="card insight-card">
@@ -40,162 +43,904 @@
       <div class="insight-content">
         <div class="insight-title-row">
           <h2>تحليل الأداء</h2>
-          <span class="chip new-chip">جديد</span>
+          <span class="chip new-chip">مباشر</span>
         </div>
         <p id="heroTargetNote">هدفك القادم سيظهر بعد تحميل بياناتك.</p>
-        <div class="link-box">
-          <span id="link"></span>
-          <button class="btn sm bordered" id="quickCopy" type="button">نسخ الرابط</button>
+        <div class="insight-metrics">
+          <div class="insight-metric">
+            <span>التقدم للهدف القادم</span>
+            <b id="insightProgress">0%</b>
+          </div>
+          <div class="insight-metric">
+            <span>عدد الطلبات</span>
+            <b id="insightOrders">0</b>
+          </div>
+          <div class="insight-metric">
+            <span>الصناديق النشطة</span>
+            <b id="insightFunds">0</b>
+          </div>
         </div>
       </div>
     </div>
 
     <div class="segment-control" id="homeSegments">
       <button class="segment-btn active" type="button" data-tab="overview">الملخص</button>
-      <button class="segment-btn" type="button" data-tab="goals">الصناديق</button>
+      <button class="segment-btn" type="button" data-tab="funds">الصناديق</button>
+      <button class="segment-btn" type="button" data-tab="prizes">الجوائز</button>
     </div>
 
-    <div class="tab-pane active" data-pane="overview">
-      <div class="card">
+    <section class="tab-pane active" data-pane="overview">
+      <div class="card summary-overview-card">
         <div class="section-head">
-          <h2>الإشعارات</h2>
+          <h2>ملخص سريع</h2>
+          <p class="small">نظرة فورية على الصناديق والطلبات</p>
         </div>
-        <button class="btn block bordered" type="button" data-push-subscribe>تفعيل الإشعارات</button>
-        <p class="small" style="margin-top:8px;">فعّل الإشعارات لتصلك تنبيهات وتذكيرات من إدارة المنصة على متصفحك.</p>
+        <div class="overview-stats-grid">
+          <div class="overview-stat"><span>إجمالي الصناديق</span><b id="ovFundsTotal">0</b></div>
+          <div class="overview-stat"><span>الصناديق النشطة</span><b id="ovFundsActive">0</b></div>
+          <div class="overview-stat"><span>الصناديق المكتملة</span><b id="ovFundsDone">0</b></div>
+          <div class="overview-stat"><span>عدد عمليات التبرع</span><b id="ovOrderCount">0</b></div>
+          <div class="overview-stat"><span>طلبات قيد المراجعة</span><b id="ovPendingReq">0</b></div>
+          <div class="overview-stat"><span>قيمة قيد المراجعة</span><b id="ovPendingAmount">0</b></div>
+        </div>
       </div>
-    </div>
 
-    <div class="tab-pane" data-pane="goals">
-      <div class="card" id="goalsCard" style="display:none;">
+      <div class="card install-card" id="a2hsCard" hidden>
+        <div data-a2hs-prompt>
+          <div class="section-head">
+            <h2>إضافة للصفحة الرئيسية</h2>
+          </div>
+          <p class="small" id="a2hsPromptText">ثبت المنصة على جهازك للوصول السريع بدون فتح المتصفح كل مرة.</p>
+          <button class="btn block" id="a2hsInstallBtn" type="button">إضافة الآن</button>
+        </div>
+
+        <div data-a2hs-installed hidden>
+          <div class="install-done-brand">
+            <img src="/img/logo.png" alt="شعار نقاط الأثر">
+            <div>
+              <b>نقاط الأثر</b>
+              <span>تمت إضافتها إلى الشاشة الرئيسية</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-pane" data-pane="funds">
+      <div class="card" id="goalsCard">
         <div class="section-head">
           <h2>الصناديق</h2>
           <span class="list-count-badge" id="goalsCount">0</span>
         </div>
-        <div id="goalsBody" class="goals-list"></div>
+        <div class="filters" id="fundStatusFilters">
+          <a href="#" class="filter active" data-status="all">الكل</a>
+          <a href="#" class="filter" data-status="active">نشطة</a>
+          <a href="#" class="filter" data-status="complete">مكتملة</a>
+        </div>
+        <div id="goalsBody" class="fund-jobs-grid"></div>
       </div>
-    </div>
+    </section>
+
+    <section class="tab-pane" data-pane="prizes">
+      <div class="card">
+        <div class="section-head">
+          <h2>الرصيد والاستحقاق</h2>
+        </div>
+        <div class="stat-grid">
+          <div class="stat"><div class="v" id="p_balance">0</div><div class="l">رصيدك المتاح (نقاط)</div></div>
+          <div class="stat"><div class="v" id="p_paid">0</div><div class="l">تم صرفها (نقاط)</div></div>
+        </div>
+        <div class="tier-grid" id="tierGridHome"></div>
+        <div class="msg" id="prizeMsgHome"></div>
+      </div>
+
+      <div class="card">
+        <div class="section-head">
+          <h2>سجل طلباتي</h2>
+          <p class="small">آخر حالة لكل طلب صرف</p>
+        </div>
+        <div class="table-wrap has-cards">
+          <table class="table-cards">
+            <thead><tr><th>التاريخ</th><th>الجائزة</th><th>النقاط</th><th>الحالة</th><th>ملاحظة</th></tr></thead>
+            <tbody id="prizeTbodyHome"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-pane" data-pane="create">
+      <div class="card">
+        <div class="section-head">
+          <h2>إنشاء صندوق جديد</h2>
+          <p class="small">بدون مغادرة الصفحة</p>
+        </div>
+
+        <form id="quickCreateFundForm" novalidate>
+          <label for="cf_name">اسم الصندوق</label>
+          <input id="cf_name" type="text" required placeholder="مثل: وقف عن فلان رحمه الله">
+
+          <label for="cf_ownerPhone">رقم صاحب الصندوق <span class="small">(اختياري)</span></label>
+          <input id="cf_ownerPhone" type="tel" placeholder="05XXXXXXXX">
+
+          <label for="cf_waqfType">مجال التبرع</label>
+          <select id="cf_waqfType" required>
+            <option value="">— اختر مجال التبرع —</option>
+            <option value="1">محطة جيل القران 2 (السفير)</option>
+            <option value="2">كفالة حلقة</option>
+            <option value="3">المحفظة الإستثمارية</option>
+          </select>
+
+          <label for="cf_targetAmount">القيمة المستهدفة للحملة</label>
+          <select id="cf_targetAmount" required>
+            <option value="">— اختر المجال أولاً —</option>
+          </select>
+
+          <label class="fund-option-label" style="margin-top:12px;">
+            <input type="checkbox" id="cf_fundType">
+            <span>نشره ضمن قائمة الصناديق الأكثر تفاعلاً</span>
+          </label>
+
+          <button class="btn block ok" id="cf_submit" type="submit" style="margin-top:14px;">إنشاء الصندوق</button>
+        </form>
+
+        <div class="msg" id="cf_msg"></div>
+
+        <div class="link-box" id="cf_linkBox" style="display:none; margin-top:10px;">
+          <span id="cf_createdLink"></span>
+          <button class="btn sm bordered" type="button" id="cf_copyLink">نسخ الرابط</button>
+          <button class="btn sm secondary" type="button" id="cf_shareLink">مشاركة</button>
+          <a class="btn sm ok" id="cf_openLink" href="#" target="_blank" rel="noopener">فتح</a>
+        </div>
+      </div>
+    </section>
   </div>
+
+  <button type="button" id="createFundFab" class="create-fund-fab" aria-label="إنشاء صندوق وقفي" title="إنشاء صندوق وقفي">
+    <span class="create-fund-fab-icon">+</span>
+    <span class="create-fund-fab-text">أنشئ صندوق وقفي</span>
+  </button>
 </div>
 
 <script src="/js/app.js"></script>
 <script>
 (async function () {
   const nf = App.formatNumber;
-  const r = await fetch('/ambassador/me');
-  if (r.status === 401) { location.href = '/login'; return; }
-  const d = await r.json();
-  document.getElementById('link').textContent = d.ambassador.referralLink;
-  document.getElementById('copyBtn').onclick = () => {
-    navigator.clipboard.writeText(d.ambassador.referralLink);
-    document.getElementById('copyBtn').textContent = 'تم النسخ ✓';
-    setTimeout(() => {
-      document.getElementById('copyBtn').textContent = 'نسخ الرابط';
-    }, 1200);
-  };
-  document.getElementById('quickCopy').onclick = () => {
-    navigator.clipboard.writeText(d.ambassador.referralLink);
-    document.getElementById('quickCopy').textContent = 'تم النسخ ✓';
-    setTimeout(() => {
-      document.getElementById('quickCopy').textContent = 'نسخ الرابط';
-    }, 1200);
-  };
-  const s = d.stats;
-  document.getElementById('s_total').textContent = nf(s.totalDonations);
-  document.getElementById('s_paid').textContent = nf(s.paid);
-  document.getElementById('s_balance').textContent = nf(s.availableBalance);
-  const next = s.nextTier || { amount: 0, name: '' };
-  // document.getElementById('s_next').textContent = nf(next.amount);
-  // document.getElementById('s_next_lbl').textContent = next.name ? `${next.name} (ريال)` : 'الهدف القادم (ريال)';
-  document.getElementById('s_next').textContent = next.name;
-  document.getElementById('s_next_lbl').textContent = 'المتبقي';
-  const pct = next.amount > 0 ? Math.min(100, (s.availableBalance / next.amount) * 100) : 100;
-  const remaining = Math.max(0, (next.amount || 0) - (s.availableBalance || 0));
-  document.getElementById('remainingToNext').textContent = nf(remaining);
-  document.getElementById('bar').style.width = pct + '%';
-  document.getElementById('balanceTrend').textContent = '+' + Math.round(pct) + '%';
-  document.getElementById('progressLbl').textContent =
-    `${nf(s.availableBalance)} من ${nf(next.amount)} ريال نحو ${next.name || 'الجائزة القادمة'}`;
-  document.getElementById('heroTargetNote').textContent =
-    `رصيدك الحالي ${nf(s.availableBalance)} ريال — الهدف القادم ${next.name || 'الجائزة القادمة'}.`;
+  const df = App.formatDate;
+  const esc = (v) => String(v == null ? '' : v)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
-  if (Array.isArray(s.goals) && s.goals.length) {
-    document.getElementById('goalsCount').textContent = nf(s.goals.length);
-    const body = document.getElementById('goalsBody');
-    const esc = (v) => String(v == null ? '' : v)
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  const statusMap = { pending: 'قيد المراجعة', approved: 'مقبولة', rejected: 'مرفوضة', paid: 'تم الصرف' };
+  const tierNameByAmount = { 2000: 'برونزية', 5000: 'فضية', 10000: 'ذهبية' };
 
-    const buildMsg = (g) => {
-      const total = g.total || 0;
-      const goal = g.goal || 0;
-      const completion = goal > 0 ? Math.ceil((total / goal) * 100) : 0;
-      return `صندوق : ${g.name || '-'}\n` +
-             `نسبة الاكتمال : ${completion}%\n` +
-             `رابط الصندوق:https://donate.utq.org.sa/goal_${g.pk}\n\n` +
-             `ساهم في إكمال صندوق الوقف\nليكون لك أجرٌ جارٍ لا ينقطع،`;
-    };
+  let stats = null;
+  let goalsList = [];
+  let allFunds = [];
+  let fundStatusFilter = 'all';
+  let requestsList = [];
 
-    body.innerHTML = s.goals.map((g, i) => {
-      const total = g.total || 0;
-      const goal = g.goal || 0;
-      const pct = goal > 0 ? Math.min(100, (total / goal) * 100) : 0;
-      const pctTxt = goal > 0 ? pct.toFixed(1) + '%' : '—';
-      const canSend = !!(g.local && g.ownerPhone);
-      const btnLabel = canSend ? 'إرسال' : 'نسخ الرسالة';
-      return `
-        <div class="goal-item">
-          <div class="goal-head">
-            <span class="goal-name">${esc(g.name || '-')}</span>
-            <span class="goal-pct">${pctTxt}</span>
-          </div>
-          <div class="goal-nums">
-            <span>المحقق: <b>${nf(total)}</b> ريال</span>
-            <span>المستهدف: <b>${goal ? nf(goal) : '-'}</b> ${goal ? 'ريال' : ''}</span>
-          </div>
-          <div class="goal-bar"><div style="width:${pct}%"></div></div>
-          <div class="goal-actions">
-            <button class="btn secondary sm goal-btn" type="button" data-goal-idx="${i}" data-action="${canSend ? 'send' : 'copy'}">${btnLabel}</button>
-          </div>
-        </div>
-      `;
-    }).join('');
-
-    body.addEventListener('click', (e) => {
-      const btn = e.target.closest('button[data-goal-idx]');
-      if (!btn) return;
-      const idx = Number(btn.getAttribute('data-goal-idx'));
-      const g = s.goals[idx];
-      if (!g) return;
-      const msg = buildMsg(g);
-      if (btn.getAttribute('data-action') === 'send') {
-        const phone = String(g.ownerPhone || '').replace(/[^\d]/g, '');
-        const normalized = phone.startsWith('0') ? '966' + phone.slice(1) : phone;
-        window.open(`https://wa.me/${normalized}?text=${encodeURIComponent(msg)}`, '_blank');
-      } else {
-        navigator.clipboard.writeText(msg).then(() => {
-          const old = btn.textContent;
-          btn.textContent = 'تم النسخ ✓';
-          setTimeout(() => { btn.textContent = old; }, 1500);
-        });
-      }
-    });
-
-    document.getElementById('goalsCard').style.display = '';
-  } else {
-    document.getElementById('goalsCount').textContent = '0';
+  function trackAmbActivity(action, details = {}) {
+    if (!action) return;
+    fetch('/ambassador/activity', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action,
+        details,
+        path: location.pathname + location.search,
+      }),
+    }).catch(() => {});
   }
 
-  document.getElementById('homeSegments').addEventListener('click', (e) => {
-    const btn = e.target.closest('.segment-btn[data-tab]');
-    if (!btn) return;
-    const tab = btn.dataset.tab;
-    document.querySelectorAll('.segment-btn').forEach((x) => x.classList.toggle('active', x === btn));
+  function setTabQuery(tab) {
+    const url = new URL(location.href);
+    if (tab === 'overview') url.searchParams.delete('tab');
+    else url.searchParams.set('tab', tab);
+    history.replaceState({}, '', url.pathname + (url.search ? url.search : ''));
+  }
+
+  function activateTab(tab) {
+    document.querySelectorAll('#homeSegments .segment-btn').forEach((btn) => {
+      btn.classList.toggle('active', btn.dataset.tab === tab);
+    });
     document.querySelectorAll('.tab-pane[data-pane]').forEach((pane) => {
       pane.classList.toggle('active', pane.dataset.pane === tab);
     });
-  });
+    const topHomeBtn = document.querySelector('[data-top-home]');
+    if (topHomeBtn) {
+      topHomeBtn.classList.toggle('is-active', tab === 'overview');
+    }
+    const createFab = document.getElementById('createFundFab');
+    if (createFab) {
+      createFab.classList.toggle('is-active', tab === 'create');
+    }
+  }
+
+  function initTabs() {
+    const validTabs = new Set(['overview', 'funds', 'prizes', 'create']);
+    const qpTab = new URLSearchParams(location.search).get('tab');
+    const initialTab = validTabs.has(qpTab) ? qpTab : 'overview';
+    activateTab(initialTab);
+
+    document.getElementById('homeSegments').addEventListener('click', (e) => {
+      const btn = e.target.closest('.segment-btn[data-tab]');
+      if (!btn) return;
+      const tab = btn.dataset.tab;
+      activateTab(tab);
+      setTabQuery(tab);
+      trackAmbActivity('switch_home_tab', { tab });
+    });
+
+    window.addEventListener('amb-home-request', () => {
+      activateTab('overview');
+      setTabQuery('overview');
+    });
+  }
+
+  function buildFundMsg(g) {
+    const pct = Math.min(100, Math.round(Number(g.progress || 0)));
+    return `صندوق : ${g.name || '-'}\n` +
+           `نسبة الاكتمال : ${pct}%\n` +
+           `رابط الصندوق: ${g.shareUrl}\n\n` +
+           `ساهم في إكمال صندوق الوقف\nليكون لك أجرٌ جارٍ لا ينقطع،`;
+  }
+
+  function getFilteredFunds() {
+    if (fundStatusFilter === 'active') return allFunds.filter((g) => !g.completed);
+    if (fundStatusFilter === 'complete') return allFunds.filter((g) => !!g.completed);
+    return allFunds;
+  }
+
+  function renderFundsTab() {
+    const body = document.getElementById('goalsBody');
+    const list = getFilteredFunds();
+    document.getElementById('goalsCount').textContent = nf(list.length || 0);
+
+    if (!list.length) {
+      const emptyTxt = fundStatusFilter === 'active'
+        ? 'لا توجد صناديق نشطة'
+        : fundStatusFilter === 'complete'
+          ? 'لا توجد صناديق مكتملة'
+          : 'لا توجد صناديق بعد';
+      body.innerHTML = `<p class="small center">${emptyTxt}</p>`;
+      return;
+    }
+
+    body.innerHTML = list.map((g) => {
+      const pct = Math.min(100, Number(g.progress || 0));
+      const pctTxt = (g.progress != null ? Number(g.progress).toFixed(1) : '0') + '%';
+      const doneLabel = g.completed ? 'مكتمل' : 'نشط';
+      const doneClass = g.completed ? 'saved' : 'active';
+      const initial = (g.name || 'ص').trim().charAt(0);
+      return `
+        <article class="fund-job-card ${g.completed ? 'is-complete' : ''}">
+          <div class="fund-job-head">
+            <div class="fund-job-brand">
+              <span class="fund-job-avatar">${esc(initial)}</span>
+              <div class="fund-job-brand-meta">
+                <b>${esc(g.name || '-')}</b>
+                <small>نسبة الإنجاز ${pctTxt}</small>
+              </div>
+            </div>
+            <span class="fund-job-save ${doneClass}">${doneLabel}</span>
+          </div>
+
+          <h3 class="fund-job-title">متابعة أداء الصندوق</h3>
+
+          <div class="fund-job-tags">
+            <span class="fund-job-tag">المستهدف ${nf(g.priceGoal || 0)} ر.س</span>
+            <span class="fund-job-tag">المحقق ${nf(g.soldTotal || 0)} ر.س</span>
+            <span class="fund-job-tag muted">التبرعات ${nf(g.soldCount || 0)}</span>
+            <span class="fund-job-tag muted">الزيارات ${nf(g.visits || 0)}</span>
+          </div>
+
+          <div class="fund-job-progress"><div style="width:${pct}%"></div></div>
+          <div class="fund-job-divider"></div>
+
+          <div class="fund-job-footer">
+            <div class="fund-job-amount">
+              <strong>${nf(g.soldTotal || 0)} ر.س</strong>
+              <small>من أصل ${nf(g.priceGoal || 0)} ر.س</small>
+            </div>
+            <div class="fund-job-actions">
+              <button class="fund-job-copy" type="button" data-goal-id="${esc(g.id)}">نسخ</button>
+              <a class="fund-job-cta" href="${esc(g.shareUrl)}" target="_blank" rel="noopener">فتح الصندوق</a>
+            </div>
+          </div>
+        </article>
+      `;
+    }).join('');
+  }
+
+  function initFundsTabInteractions() {
+    const filtersEl = document.getElementById('fundStatusFilters');
+    const body = document.getElementById('goalsBody');
+    if (!filtersEl || !body) return;
+
+    filtersEl.addEventListener('click', (e) => {
+      const filter = e.target.closest('.filter[data-status]');
+      if (!filter) return;
+      e.preventDefault();
+      fundStatusFilter = filter.dataset.status;
+      filtersEl.querySelectorAll('.filter').forEach((el) => {
+        el.classList.toggle('active', el === filter);
+      });
+      renderFundsTab();
+    });
+
+    body.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-goal-id]');
+      if (!btn) return;
+      const id = btn.getAttribute('data-goal-id');
+      const g = allFunds.find((item) => String(item.id) === String(id));
+      if (!g) return;
+      navigator.clipboard.writeText(buildFundMsg(g)).then(() => {
+        const old = btn.textContent;
+        btn.textContent = 'تم النسخ ✓';
+        setTimeout(() => { btn.textContent = old; }, 1500);
+      });
+      trackAmbActivity('copy_fund_message', {
+        fundId: g.id,
+        fundName: g.name,
+      });
+    });
+  }
+
+  function renderPrizeTiers() {
+    const grid = document.getElementById('tierGridHome');
+    const tiers = Array.isArray(stats?.tiers) ? stats.tiers : [];
+    grid.innerHTML = tiers.map((t) => `
+      <div class="tier ${t.id} ${t.canClaim ? '' : 'locked'}">
+        <div class="tier-name">${t.name}</div>
+        <div class="tier-amount">${nf(t.amount)} <span>نقطة</span></div>
+        <button class="btn block ok" data-tier="${t.id}" ${t.canClaim ? '' : 'disabled'}>
+          ${t.canClaim ? 'طلب الصرف' : 'الرصيد غير كافٍ'}
+        </button>
+      </div>
+    `).join('');
+  }
+
+  function renderPrizeHistory() {
+    const tb = document.getElementById('prizeTbodyHome');
+    tb.innerHTML = '';
+    if (!requestsList.length) {
+      tb.innerHTML = '<tr><td colspan="5" class="table-empty">لا توجد طلبات بعد</td></tr>';
+      return;
+    }
+    for (const r of requestsList) {
+      const tierName = tierNameByAmount[r.amount] || '-';
+      const note = r.note || '-';
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td data-label="التاريخ"><span class="table-value is-number">${esc(df(r.createdAt))}</span></td>
+        <td data-label="الجائزة"><span class="table-value is-ellipsis">${esc(tierName)}</span></td>
+        <td data-label="النقاط"><span class="table-value is-number">${nf(r.amount)} نقطة</span></td>
+        <td data-label="الحالة"><span class="table-value is-badge"><span class="badge ${r.status}">${statusMap[r.status] || '-'}</span></span></td>
+        <td data-label="ملاحظة"><span class="table-value">${esc(note)}</span></td>`;
+      tb.appendChild(tr);
+    }
+  }
+
+  async function loadRequests() {
+    try {
+      const rr = await fetch('/ambassador/requests');
+      const rd = await rr.json();
+      requestsList = Array.isArray(rd.requests) ? rd.requests : [];
+    } catch (e) {
+      requestsList = [];
+    }
+  }
+
+  function renderSmartProgress() {
+    const levelEl = document.getElementById('smartLevel');
+    const metaEl = document.getElementById('smartProgressMeta');
+    const stagesEl = document.getElementById('smartStages');
+    if (!levelEl || !metaEl || !stagesEl) return null;
+
+    const balance = Number(stats?.availableBalance || 0);
+    const tiers = Array.isArray(stats?.tiers)
+      ? [...stats.tiers]
+          .map((t) => ({ ...t, amount: Number(t.amount || 0) }))
+          .filter((t) => Number.isFinite(t.amount) && t.amount > 0)
+          .sort((a, b) => a.amount - b.amount)
+      : [];
+
+    if (!tiers.length) {
+      levelEl.textContent = 'المستوى 1';
+      metaEl.textContent = 'لا توجد مستويات حالياً';
+      stagesEl.innerHTML = '';
+      return { pct: 0, remaining: 0, nextName: '' };
+    }
+
+    const segmentsPerStage = 4;
+    const stages = tiers.map((tier, idx) => {
+      const start = idx === 0 ? 0 : Number(tiers[idx - 1].amount || 0);
+      const end = Number(tier.amount || 0);
+      const span = Math.max(1, end - start);
+      let progress = 0;
+      if (balance >= end) progress = 1;
+      else if (balance > start) progress = (balance - start) / span;
+      return {
+        idx,
+        name: tier.name || `المستوى ${idx + 1}`,
+        start,
+        end,
+        progress: Math.max(0, Math.min(1, progress)),
+      };
+    });
+
+    let currentStageIndex = stages.findIndex((s) => s.progress < 1);
+    if (currentStageIndex < 0) currentStageIndex = stages.length - 1;
+    const currentStage = stages[currentStageIndex];
+    const completedAll = stages.every((s) => s.progress >= 1);
+    const currentPct = Math.round((currentStage?.progress || 0) * 100);
+    const remainingToCurrentEnd = Math.max(0, Number(currentStage?.end || 0) - balance);
+
+    levelEl.textContent = completedAll
+      ? `المستوى ${stages.length} مكتمل`
+      : `المستوى ${currentStageIndex + 1}`;
+
+    metaEl.textContent = completedAll
+      ? 'أكملت كل مستويات الجوائز'
+      : `${currentPct}% • المتبقي ${nf(remainingToCurrentEnd)} نقطة`;
+
+    stagesEl.innerHTML = stages.map((stage, stageIndex) => {
+      const segments = Array.from({ length: segmentsPerStage }).map((_, segIdx) => {
+        const segStart = segIdx / segmentsPerStage;
+        const segEnd = (segIdx + 1) / segmentsPerStage;
+        let fill = 0;
+        if (stage.progress >= segEnd) fill = 1;
+        else if (stage.progress > segStart) fill = (stage.progress - segStart) / (segEnd - segStart);
+        const cls = fill >= 1 ? 'is-full' : fill > 0 ? 'is-partial' : '';
+        return `<span class="smart-seg ${cls}" style="--fill:${(fill * 100).toFixed(2)}%"></span>`;
+      }).join('');
+
+      const stageCls = [
+        'smart-stage',
+        stageIndex === currentStageIndex ? 'is-active' : '',
+        stage.progress >= 1 ? 'is-done' : '',
+      ].join(' ').trim();
+
+      return `<div class="${stageCls}" title="${esc(stage.name)}">${segments}</div>`;
+    }).join('');
+
+    return {
+      pct: currentPct,
+      remaining: remainingToCurrentEnd,
+      nextName: currentStage?.name || '',
+      completedAll,
+    };
+  }
+
+  function fillOverviewAndTop() {
+    const next = stats.nextTier || { amount: 0, name: '' };
+    const pct = next.amount > 0 ? Math.min(100, (stats.availableBalance / next.amount) * 100) : 100;
+    const remaining = Math.max(0, (next.amount || 0) - (stats.availableBalance || 0));
+    const smartProgress = renderSmartProgress();
+
+    document.getElementById('s_total').textContent = nf(stats.totalDonations || 0);
+    document.getElementById('s_paid').textContent = nf(stats.paid || 0);
+    document.getElementById('s_balance').textContent = nf(stats.availableBalance || 0);
+    document.getElementById('s_next').textContent = next.name || '—';
+    document.getElementById('s_next_lbl').textContent = 'المتبقي';
+    document.getElementById('remainingToNext').textContent = nf(remaining);
+    const progressPct = smartProgress ? smartProgress.pct : Math.round(pct);
+    document.getElementById('balanceTrend').textContent = '+' + progressPct + '%';
+    document.getElementById('progressLbl').textContent = smartProgress?.completedAll
+      ? 'أكملت جميع مستويات الجوائز — يمكنك طلب الصرف مباشرة.'
+      : `${nf(stats.availableBalance || 0)} نقطة • ${progressPct}% نحو ${smartProgress?.nextName || next.name || 'الجائزة القادمة'} • المتبقي ${nf(smartProgress?.remaining || remaining)} نقطة`;
+    document.getElementById('heroTargetNote').textContent =
+      `رصيدك الحالي ${nf(stats.availableBalance || 0)} نقطة — الهدف القادم ${next.name || 'الجائزة القادمة'}.`;
+    document.getElementById('insightProgress').textContent = `${progressPct}%`;
+    document.getElementById('insightOrders').textContent = nf(stats.orderCount || 0);
+
+    const activeGoalsCount = allFunds.filter((g) => !g.completed).length;
+    const doneGoalsCount = allFunds.filter((g) => !!g.completed).length;
+    const pendingReqCount = requestsList.filter((x) => x.status === 'pending').length;
+
+    document.getElementById('insightFunds').textContent = nf(activeGoalsCount);
+    document.getElementById('ovFundsTotal').textContent = nf(allFunds.length);
+    document.getElementById('ovFundsActive').textContent = nf(activeGoalsCount);
+    document.getElementById('ovFundsDone').textContent = nf(doneGoalsCount);
+    document.getElementById('ovOrderCount').textContent = nf(stats.orderCount || 0);
+    document.getElementById('ovPendingReq').textContent = nf(pendingReqCount);
+    document.getElementById('ovPendingAmount').textContent = nf(stats.pendingAmount || 0);
+
+    document.getElementById('p_balance').textContent = nf(stats.availableBalance || 0);
+    document.getElementById('p_paid').textContent = nf(stats.paid || 0);
+
+  }
+
+  async function requestPrize(tier) {
+    const r = await fetch('/ambassador/requests', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tier }),
+    });
+    const d = await r.json();
+    if (!r.ok) {
+      await App.notify({
+        title: 'تعذر إرسال الطلب',
+        message: d.error || 'تعذر إرسال الطلب.',
+        type: 'error',
+        confirmText: 'إغلاق',
+      });
+      return false;
+    }
+    await App.notify({
+      title: 'تم الإرسال بنجاح',
+      message: 'تم إرسال طلب الصرف بنجاح',
+      type: 'success',
+      confirmText: 'ممتاز',
+    });
+    return true;
+  }
+
+  function initPrizeActions() {
+    document.getElementById('tierGridHome').addEventListener('click', async (e) => {
+      const btn = e.target.closest('button[data-tier]');
+      if (!btn || btn.disabled) return;
+      const old = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = 'جارٍ الإرسال...';
+      const ok = await requestPrize(btn.dataset.tier);
+      btn.disabled = false;
+      btn.textContent = old;
+      if (!ok) return;
+
+      await loadRequests();
+      fillOverviewAndTop();
+      renderPrizeTiers();
+      renderPrizeHistory();
+    });
+  }
+
+  function initQuickCreateFund() {
+    const targetOptions = {
+      "3": {
+        placeholder: "— اختر عدد الأسهم —",
+        items: [
+          { value: "800", label: "سهم واحد — 800 ريال" },
+          { value: "1600", label: "سهمان — 1,600 ريال" },
+          { value: "4000", label: "5 أسهم — 4,000 ريال" },
+          { value: "8000", label: "10 أسهم — 8,000 ريال" },
+        ],
+      },
+      "2": {
+        placeholder: "— اختر عدد الأشهر —",
+        items: [
+          { value: "800", label: "شهر — 800 ريال" },
+          { value: "1600", label: "شهرين — 1,600 ريال" },
+          { value: "2400", label: "3 أشهر — 2,400 ريال" },
+          { value: "5000", label: "فصل دراسي — 5,000 ريال" },
+          { value: "10000", label: "سنة كاملة — 10,000 ريال" },
+        ],
+      },
+      "1": {
+        placeholder: "— اختر عدد الأمتار —",
+        items: [
+          { value: "1465", label: "متر — 1,465 ريال" },
+          { value: "2930", label: "مترين — 2,930 ريال" },
+          { value: "4395", label: "3 أمتار — 4,395 ريال" },
+          { value: "7325", label: "5 أمتار — 7,325 ريال" },
+          { value: "14650", label: "10 أمتار — 14,650 ريال" },
+        ],
+      },
+    };
+
+    const form = document.getElementById('quickCreateFundForm');
+    const typeEl = document.getElementById('cf_waqfType');
+    const targetEl = document.getElementById('cf_targetAmount');
+    const submitBtn = document.getElementById('cf_submit');
+    const linkBox = document.getElementById('cf_linkBox');
+    const createdLinkEl = document.getElementById('cf_createdLink');
+    const copyBtn = document.getElementById('cf_copyLink');
+    const shareBtn = document.getElementById('cf_shareLink');
+    const openLink = document.getElementById('cf_openLink');
+
+    async function copyText(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    async function shareFundLink(link, fundName) {
+      const shareText = `صندوق: ${fundName || 'صندوق وقفي'}\n${link}`;
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: fundName || 'صندوق وقفي',
+            text: shareText,
+            url: link,
+          });
+          return true;
+        } catch (e) {
+          return false;
+        }
+      }
+      window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank');
+      return true;
+    }
+
+    async function showCreatedFundActions(fundName, link) {
+      const action = await App.actions({
+        title: 'تم إنشاء الصندوق',
+        message: `${fundName || 'الصندوق'}\nاختر الإجراء المناسب الآن`,
+        type: 'success',
+        actions: [
+          { id: 'copy', label: 'نسخ رابط الصندوق' },
+          { id: 'share', label: 'مشاركة الصندوق', className: 'btn secondary' },
+          { id: 'open', label: 'فتح الصندوق', className: 'btn flat' },
+        ],
+      });
+      if (!action) return;
+        if (action === 'copy') {
+          const ok = await copyText(link);
+          await App.notify({
+            title: ok ? 'تم النسخ' : 'تعذر النسخ',
+            message: ok ? 'تم نسخ رابط الصندوق بنجاح' : 'تعذر نسخ الرابط، حاول مرة أخرى',
+            type: ok ? 'success' : 'error',
+            confirmText: 'حسناً',
+          });
+          if (ok) trackAmbActivity('copy_fund_link', { fundName, link });
+          return;
+        }
+        if (action === 'share') {
+          await shareFundLink(link, fundName);
+          trackAmbActivity('share_fund_link', { fundName, link });
+          return;
+        }
+        if (action === 'open') {
+          trackAmbActivity('open_fund_link', { fundName, link });
+          window.open(link, '_blank', 'noopener');
+        }
+      }
+
+    function showMsg(type, text) {
+      App.notify({
+        title: type === 'err' ? 'تنبيه' : 'تمت العملية',
+        message: text,
+        type: type === 'err' ? 'error' : 'success',
+        confirmText: 'حسناً',
+      });
+    }
+
+    function renderTargetsByType(type) {
+      const data = targetOptions[type];
+      targetEl.innerHTML = '';
+      const first = document.createElement('option');
+      first.value = '';
+      first.textContent = data ? data.placeholder : '— اختر المجال أولاً —';
+      targetEl.appendChild(first);
+      if (!data) return;
+      data.items.forEach((item) => {
+        const o = document.createElement('option');
+        o.value = item.value;
+        o.textContent = item.label;
+        targetEl.appendChild(o);
+      });
+    }
+
+    function validOwnerPhone(raw) {
+      if (!raw) return true;
+      const cleaned = String(raw).replace(/\D/g, '');
+      return /^(05\d{8}|5\d{8}|9665\d{8})$/.test(cleaned);
+    }
+
+    typeEl.addEventListener('change', () => renderTargetsByType(typeEl.value));
+    renderTargetsByType('');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      linkBox.style.display = 'none';
+
+      const name = document.getElementById('cf_name').value.trim();
+      const ownerPhone = document.getElementById('cf_ownerPhone').value.trim();
+      const waqfType = typeEl.value;
+      const targetAmount = targetEl.value;
+      const acceptAfterTarget = document.getElementById('cf_fundType').checked;
+
+      if (!name) return showMsg('err', 'الرجاء إدخال اسم الصندوق.');
+      if (!waqfType) return showMsg('err', 'اختر مجال التبرع.');
+      if (!targetAmount) return showMsg('err', 'اختر القيمة المستهدفة.');
+      if (!validOwnerPhone(ownerPhone)) return showMsg('err', 'رقم صاحب الصندوق غير صحيح.');
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'جاري الإنشاء...';
+      try {
+        const body = {
+          name,
+          targetAmount,
+          waqfType: waqfType === '1' ? '45' : waqfType === '2' ? '3' : '22',
+          acceptAfterTarget,
+          ownerPhone,
+        };
+        const r = await fetch('/api/platform/create-fund', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        const d = await r.json();
+        if (!r.ok) {
+          showMsg('err', d.error || 'تعذر إنشاء الصندوق.');
+          return;
+        }
+
+        const link = d?.fund?.shareUrl || '';
+        const fundName = d?.fund?.name || name;
+        if (link) {
+          createdLinkEl.textContent = link;
+          openLink.href = link;
+          linkBox.dataset.fundName = fundName;
+          linkBox.style.display = '';
+          await showCreatedFundActions(fundName, link);
+          await loadAndRenderMainData();
+        } else {
+          showMsg('ok', 'تم إنشاء الصندوق بنجاح ✓');
+        }
+        form.reset();
+        renderTargetsByType('');
+      } catch (err) {
+        showMsg('err', 'حدث خطأ بالشبكة. حاول مرة أخرى.');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'إنشاء الصندوق';
+      }
+    });
+
+    copyBtn.addEventListener('click', () => {
+      const link = createdLinkEl.textContent.trim();
+      if (!link) return;
+      copyText(link).then((ok) => {
+        if (!ok) return;
+        const old = copyBtn.textContent;
+        copyBtn.textContent = 'تم النسخ ✓';
+        setTimeout(() => { copyBtn.textContent = old; }, 1300);
+        trackAmbActivity('copy_created_fund_link', {
+          fundName: linkBox.dataset.fundName || '',
+          link,
+        });
+      });
+    });
+
+    shareBtn.addEventListener('click', async () => {
+      const link = createdLinkEl.textContent.trim();
+      if (!link) return;
+      await shareFundLink(link, linkBox.dataset.fundName || 'صندوق وقفي');
+      trackAmbActivity('share_created_fund_link', {
+        fundName: linkBox.dataset.fundName || '',
+        link,
+      });
+    });
+  }
+
+  async function loadAndRenderMainData() {
+    const [me, fundsRes] = await Promise.all([
+      fetch('/ambassador/me'),
+      fetch('/ambassador/funds-data').catch(() => null),
+    ]);
+    if (me.status === 401) { location.href = '/login'; return; }
+    if (fundsRes && fundsRes.status === 401) { location.href = '/login'; return; }
+
+    const d = await me.json();
+    stats = d.stats || {};
+    goalsList = Array.isArray(stats.goals) ? stats.goals : [];
+
+    if (fundsRes && fundsRes.ok) {
+      const fd = await fundsRes.json();
+      allFunds = Array.isArray(fd.results) ? fd.results : [];
+    } else {
+      allFunds = [];
+    }
+
+    if (!allFunds.length && goalsList.length) {
+      allFunds = goalsList.map((g, idx) => {
+        const goal = Number(g.goal || 0);
+        const total = Number(g.total || 0);
+        const progress = goal > 0 ? Math.min(100, (total / goal) * 100) : 0;
+        return {
+          id: g.pk || `legacy-${idx}`,
+          name: g.name || '',
+          priceGoal: goal,
+          soldTotal: total,
+          soldCount: Number(g.count || 0),
+          visits: Number(g.visits || 0),
+          progress,
+          completed: goal > 0 ? total >= goal : false,
+          shareUrl: g.pk ? `https://donate.utq.org.sa/goal_${g.pk}` : '#',
+        };
+      });
+    }
+
+    await loadRequests();
+    fillOverviewAndTop();
+    renderFundsTab();
+    renderPrizeTiers();
+    renderPrizeHistory();
+  }
+
+  function initA2HSCard() {
+    const card = document.getElementById('a2hsCard');
+    if (!card) return;
+    const promptBlock = card.querySelector('[data-a2hs-prompt]');
+    const installedBlock = card.querySelector('[data-a2hs-installed]');
+    const installBtn = document.getElementById('a2hsInstallBtn');
+    const promptText = document.getElementById('a2hsPromptText');
+    let deferredPrompt = null;
+
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+    function showInstalled() {
+      card.hidden = false;
+      promptBlock.hidden = true;
+      installedBlock.hidden = false;
+      localStorage.setItem('athr_a2hs_installed', '1');
+    }
+
+    function showPrompt() {
+      card.hidden = false;
+      promptBlock.hidden = false;
+      installedBlock.hidden = true;
+    }
+
+    if (isStandalone || localStorage.getItem('athr_a2hs_installed') === '1') {
+      showInstalled();
+      return;
+    }
+
+    showPrompt();
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      showPrompt();
+    });
+
+    window.addEventListener('appinstalled', () => {
+      deferredPrompt = null;
+      showInstalled();
+    });
+
+    installBtn.addEventListener('click', async () => {
+      if (!deferredPrompt) {
+        showPrompt();
+        promptText.textContent = 'في iPhone: افتح مشاركة المتصفح ثم اختر "إضافة إلى الشاشة الرئيسية".';
+        return;
+      }
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      deferredPrompt = null;
+    });
+  }
+
+  function initCreateFab() {
+    const fab = document.getElementById('createFundFab');
+    if (!fab) return;
+    fab.addEventListener('click', () => {
+      activateTab('create');
+      setTabQuery('create');
+      const createPane = document.querySelector('.tab-pane[data-pane="create"]');
+      if (createPane) createPane.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+
+  initTabs();
+  initPrizeActions();
+  initFundsTabInteractions();
+  initQuickCreateFund();
+  initA2HSCard();
+  initCreateFab();
+  await loadAndRenderMainData();
 
   App.showContent();
+  if (window.PushNotify && typeof window.PushNotify.askFromEntry === 'function') {
+    window.PushNotify.askFromEntry({
+      confirmText: 'هل ترغب بتفعيل إشعارات منصة نقاط الأثر الآن؟'
+    });
+  }
 })();
 </script>
 

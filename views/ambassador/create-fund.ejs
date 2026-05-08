@@ -190,8 +190,9 @@
           d="M16.003 3C9.374 3 4 8.373 4 15c0 2.121.554 4.115 1.527 5.85L4 28l7.348-1.501A11.95 11.95 0 0016.003 27C22.632 27 28 21.627 28 15S22.632 3 16.003 3zm5.563 14.428c-.305-.153-1.804-.89-2.084-.99-.28-.103-.484-.153-.687.152-.203.305-.787.99-.965 1.193-.178.204-.355.229-.66.077-.305-.153-1.288-.475-2.453-1.514-.907-.808-1.52-1.806-1.698-2.111-.178-.305-.019-.47.134-.622.137-.137.305-.355.458-.533.152-.178.203-.305.305-.508.102-.204.05-.382-.025-.534-.077-.153-.687-1.654-.94-2.265-.247-.595-.498-.514-.687-.523l-.585-.011a1.124 1.124 0 00-.814.382c-.28.305-1.067 1.043-1.067 2.544s1.092 2.95 1.244 3.153c.152.203 2.149 3.282 5.207 4.602.728.314 1.296.501 1.74.642.731.232 1.396.2 1.922.121.587-.087 1.804-.737 2.06-1.45.255-.712.255-1.322.178-1.45-.076-.127-.28-.204-.585-.357z"
         />
       </svg>
-      <span id="fsWaLabel">إرسال للصاحب عبر واتساب</span>
+      <span id="fsWaLabel">مشاركة الصندوق</span>
     </a>
+    <a id="fsOpenBtn" href="#" target="_blank" rel="noopener" class="btn block" style="margin-top:8px;">فتح الصندوق</a>
     <p id="fsWaHint" class="fund-wa-hint"></p>
   </div>
 </div>
@@ -203,7 +204,6 @@
     document.getElementById("fundGuideCard").style.display = "";
 
     const form = document.getElementById("fundForm");
-    const msg = document.getElementById("msg");
     const btn = document.getElementById("submitBtn");
     const waqfTypeEl = document.getElementById("waqfType");
     const targetSelect = document.getElementById("targetAmount");
@@ -244,13 +244,16 @@
     };
 
     function showMessage(type, text) {
-      msg.className = "msg " + type;
-      msg.textContent = text;
+      App.notify({
+        title: type === "err" ? "تنبيه" : "تمت العملية",
+        message: text,
+        type: type === "err" ? "error" : "success",
+        confirmText: "حسناً",
+      });
     }
 
     function clearMessage() {
-      msg.className = "msg";
-      msg.textContent = "";
+      return;
     }
 
     function renderTargetsByType(type) {
@@ -430,13 +433,15 @@
         `ساهم في إكمال صندوق الوقف\nليكون لك أجرٌ جارٍ لا ينقطع،`;
 
       const waBtn = document.getElementById("fsWaBtn");
+      const openBtn = document.getElementById("fsOpenBtn");
       const waLabel = document.getElementById("fsWaLabel");
       const waHint = document.getElementById("fsWaHint");
+      openBtn.href = link;
       const owner = normalizeSaPhone(ownerPhoneRaw);
       if (owner) {
         waBtn.href =
           "https://wa.me/" + owner + "?text=" + encodeURIComponent(text);
-        waLabel.textContent = "إرسال للصاحب عبر واتساب";
+        waLabel.textContent = "مشاركة الصندوق";
         waHint.textContent = "سيُفتح واتساب على رقم صاحب الصندوق";
       } else {
         waBtn.href = "https://wa.me/?text=" + encodeURIComponent(text);

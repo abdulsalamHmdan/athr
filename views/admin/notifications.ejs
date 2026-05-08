@@ -1,53 +1,55 @@
 <%- include('../partials/head') %>
 <%- include('../partials/nav-admin') %>
 
-<div class="page-intro" style="margin-bottom:12px;">
-  <span class="page-kicker">الإشعارات</span>
-  <h3 class="page-title">إرسال تنبيهات موجهة للسفراء</h3>
-  <p class="page-subtitle">أنشئ رسالة عامة أو استهدف سفيرًا محددًا، مع متابعة سجل الإرسال مباشرة.</p>
-</div>
-
-<div class="panel-grid panel-grid-2">
-<div class="card">
-  <div class="section-head">
-    <h2>إرسال إشعار</h2>
+<div class="page-container notifications-page">
+  <div class="page-intro" style="margin-bottom:12px;">
+    <span class="page-kicker">الإشعارات</span>
+    <h3 class="page-title">إرسال تنبيهات موجهة للسفراء</h3>
+    <p class="page-subtitle">أنشئ رسالة عامة أو استهدف سفيرًا محددًا، مع متابعة سجل الإرسال مباشرة.</p>
   </div>
 
-  <div class="stat-grid" style="margin-bottom: 8px;">
-    <div class="stat"><div class="v" id="s_subs">0</div><div class="l">اشتراكات نشطة</div></div>
-    <div class="stat"><div class="v" id="s_amb_subs">0</div><div class="l">سفراء مشتركون</div></div>
+  <div class="panel-grid panel-grid-2 notifications-grid">
+    <div class="card">
+      <div class="section-head">
+        <h2>إرسال إشعار</h2>
+      </div>
+
+      <div class="stat-grid" style="margin-bottom: 8px;">
+        <div class="stat"><div class="v" id="s_subs">0</div><div class="l">اشتراكات نشطة</div></div>
+        <div class="stat"><div class="v" id="s_amb_subs">0</div><div class="l">سفراء مشتركون</div></div>
+      </div>
+
+      <label for="n_title">عنوان الإشعار</label>
+      <input id="n_title" type="text" maxlength="80" placeholder="مثال: تذكير من نقاط الأثر">
+
+      <label for="n_body">نص الإشعار</label>
+      <textarea id="n_body" maxlength="300" placeholder="اكتب الرسالة التي ستظهر في الإشعار…"></textarea>
+
+      <label for="n_url">رابط عند الضغط (اختياري)</label>
+      <input id="n_url" type="text" placeholder="/ambassador/home">
+
+      <label>المستهدفون</label>
+      <div class="notif-target">
+        <label><input type="radio" name="n_target" value="all" checked> جميع السفراء</label>
+        <label><input type="radio" name="n_target" value="ambassador"> سفير محدد</label>
+      </div>
+
+      <div id="amb_pick" style="display:none;">
+        <label for="n_amb">اختر السفير</label>
+        <select id="n_amb"><option value="">— اختر —</option></select>
+      </div>
+
+      <button class="btn" id="send_btn" type="button" style="margin-top:14px;">إرسال الإشعار</button>
+      <div class="notif-result" id="send_result"></div>
+    </div>
+
+    <div class="card">
+      <div class="section-head">
+        <h2>سجل الإشعارات</h2>
+      </div>
+      <div id="hist_body" class="small">جارٍ التحميل…</div>
+    </div>
   </div>
-
-  <label for="n_title">عنوان الإشعار</label>
-  <input id="n_title" type="text" maxlength="80" placeholder="مثال: تذكير من نقاط الأثر">
-
-  <label for="n_body">نص الإشعار</label>
-  <textarea id="n_body" maxlength="300" placeholder="اكتب الرسالة التي ستظهر في الإشعار…"></textarea>
-
-  <label for="n_url">رابط عند الضغط (اختياري)</label>
-  <input id="n_url" type="text" placeholder="/ambassador/home">
-
-  <label>المستهدفون</label>
-  <div class="notif-target">
-    <label><input type="radio" name="n_target" value="all" checked> جميع السفراء</label>
-    <label><input type="radio" name="n_target" value="ambassador"> سفير محدد</label>
-  </div>
-
-  <div id="amb_pick" style="display:none;">
-    <label for="n_amb">اختر السفير</label>
-    <select id="n_amb"><option value="">— اختر —</option></select>
-  </div>
-
-  <button class="btn" id="send_btn" type="button" style="margin-top:14px;">إرسال الإشعار</button>
-  <div class="notif-result" id="send_result"></div>
-</div>
-
-<div class="card">
-  <div class="section-head">
-    <h2>سجل الإشعارات</h2>
-  </div>
-  <div id="hist_body" class="small">جارٍ التحميل…</div>
-</div>
 </div>
 
 <script src="/js/app.js"></script>
@@ -122,15 +124,21 @@ $('send_btn').addEventListener('click', async () => {
   result.className = 'notif-result';
 
   if (!title || !body) {
-    result.className = 'notif-result err';
-    result.textContent = 'العنوان والنص مطلوبان.';
-    result.style.display = '';
+    App.notify({
+      title: 'بيانات ناقصة',
+      message: 'العنوان والنص مطلوبان.',
+      type: 'error',
+      confirmText: 'حسناً',
+    });
     return;
   }
   if (target === 'ambassador' && !ambassadorId) {
-    result.className = 'notif-result err';
-    result.textContent = 'اختر السفير المستهدف.';
-    result.style.display = '';
+    App.notify({
+      title: 'اختيار مطلوب',
+      message: 'اختر السفير المستهدف.',
+      type: 'error',
+      confirmText: 'حسناً',
+    });
     return;
   }
 
@@ -146,10 +154,22 @@ $('send_btn').addEventListener('click', async () => {
     if (!r.ok) {
       result.className = 'notif-result err';
       result.textContent = d.error || 'فشل الإرسال.';
+      App.notify({
+        title: 'فشل إرسال الإشعار',
+        message: d.error || 'فشل الإرسال.',
+        type: 'error',
+        confirmText: 'إغلاق',
+      });
     } else {
       const nf = App.formatNumber;
       result.className = 'notif-result ok';
       result.textContent = `تم الإرسال بنجاح — وصل: ${nf(d.sent)} | فشل: ${nf(d.failed)} | الإجمالي: ${nf(d.total)}`;
+      App.notify({
+        title: 'تم إرسال الإشعار',
+        message: `وصل: ${nf(d.sent)} | فشل: ${nf(d.failed)} | الإجمالي: ${nf(d.total)}`,
+        type: 'success',
+        confirmText: 'ممتاز',
+      });
       $('n_title').value = '';
       $('n_body').value = '';
       $('n_url').value = '';
@@ -160,6 +180,12 @@ $('send_btn').addEventListener('click', async () => {
     result.className = 'notif-result err';
     result.textContent = 'خطأ في الشبكة.';
     result.style.display = '';
+    App.notify({
+      title: 'خطأ في الشبكة',
+      message: 'تعذر إرسال الإشعار بسبب مشكلة اتصال.',
+      type: 'error',
+      confirmText: 'إغلاق',
+    });
   } finally {
     $('send_btn').disabled = false;
     $('send_btn').textContent = 'إرسال الإشعار';

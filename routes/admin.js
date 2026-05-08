@@ -1,6 +1,7 @@
 const express = require('express');
 const Ambassador = require('../models/Ambassador');
 const PrizeRequest = require('../models/PrizeRequest');
+const AmbassadorActivity = require('../models/AmbassadorActivity');
 const { requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
@@ -46,6 +47,35 @@ router.get('/requests-api', requireAdmin, async (req, res) => {
     .sort({ createdAt: -1 })
     .lean();
   res.json({ requests: list });
+});
+
+router.get('/activities', requireAdmin, async (req, res) => {
+  const qLimit = Number(req.query.limit || 10);
+  const limit = Number.isFinite(qLimit) ? Math.min(50, Math.max(1, qLimit)) : 10;
+
+  const list = await AmbassadorActivity.find({})
+    .populate('ambassador', 'name phone')
+    .sort({ createdAt: -1 })
+    .limit(limit)
+    .lean();
+
+  res.json({
+    activities: list.map((a) => ({
+      _id: a._id,
+      action: a.action || '',
+      details: a.details || {},
+      source: a.source || 'client',
+      path: a.path || '',
+      createdAt: a.createdAt,
+      ambassador: a.ambassador
+        ? {
+            _id: a.ambassador._id,
+            name: a.ambassador.name || 'سفير',
+            phone: a.ambassador.phone || '',
+          }
+        : null,
+    })),
+  });
 });
 
 router.post('/requests/:id/approve', requireAdmin, async (req, res) => {

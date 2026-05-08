@@ -29,6 +29,14 @@
         <div class="stat"><div class="v" id="s_non">0</div><div class="l">من خارج الجمعية</div></div>
       </div>
     </div>
+
+    <div class="card">
+      <div class="section-head">
+        <h2>متابعة أداء المنصة</h2>
+        <button class="btn sm bordered" type="button" id="activityLoadBtn">عرض آخر 10 حركات</button>
+      </div>
+      <div id="activityFeedBody" class="small">اضغط "عرض آخر 10 حركات" لعرض آخر نشاط السفراء.</div>
+    </div>
   </div>
 
   <div class="tab-pane" data-pane="charts">
@@ -95,6 +103,7 @@ let ambassadors = [];
 const charts = [];
 let chartsReady = false;
 let dashboardPayload = null;
+let activityLoading = false;
 const esc = (v) => String(v == null ? '' : v)
   .replace(/&/g, '&amp;')
   .replace(/</g, '&lt;')
@@ -134,7 +143,15 @@ function filterAmbassadors() {
 
 function exportAmbassadors() {
   const list = filterAmbassadors();
-  if (!list.length) { alert('لا توجد بيانات للتصدير'); return; }
+  if (!list.length) {
+    App.notify({
+      title: 'لا توجد بيانات',
+      message: 'لا توجد بيانات للتصدير',
+      type: 'warning',
+      confirmText: 'حسناً',
+    });
+    return;
+  }
   const rows = list.map((a, i) => ({
     '#': i + 1,
     'الاسم': a.name,
@@ -260,6 +277,62 @@ function createCharts(data) {
   );
 }
 
+function toArabicActionLabel(item) {
+  const action = String(item?.action || '');
+  const details = item?.details || {};
+  if (action === 'create_fund' || action === 'create_fund_success') {
+    return `أنشأ صندوقًا جديدًا${details.fundName ? `: ${details.fundName}` : ''}`;
+  }
+  if (action === 'switch_home_tab') return `انتقل إلى تبويب "${details.tab || '-'}"`;
+  if (action === 'request_prize') return `طلب صرف جائزة${details.tier ? ` (${details.tier})` : ''}`;
+  if (action === 'copy_fund_link' || action === 'copy_created_fund_link') return 'نسخ رابط صندوق';
+  if (action === 'share_fund_link' || action === 'share_created_fund_link') return 'شارك رابط صندوق';
+  if (action === 'open_fund_link') return 'فتح رابط صندوق';
+  if (action === 'copy_fund_message') return 'نسخ رسالة نشر الصندوق';
+  if (action === 'click_top_home') return 'ضغط زر الصفحة الرئيسية';
+  if (action === 'open_secret_link_modal') return 'فتح نافذة الرابط السري';
+  if (action === 'copy_secret_link') return 'نسخ الرابط السري';
+  if (action === 'click_notifications_toggle') return 'ضغط زر الإشعارات';
+  return action || 'نشاط غير معروف';
+}
+
+async function loadRecentActivities() {
+  if (activityLoading) return;
+  activityLoading = true;
+  const body = document.getElementById('activityFeedBody');
+  body.innerHTML = 'جارٍ تحميل النشاط...';
+  try {
+    const nf = App.formatNumber;
+    const dtf = App.formatDateTime;
+    const r = await fetch('/admin/activities?limit=10');
+    if (r.status === 401) { location.href = '/admin/login'; return; }
+    const d = await r.json();
+    const list = Array.isArray(d.activities) ? d.activities : [];
+    if (!list.length) {
+      body.innerHTML = '<div class="small">لا يوجد نشاط مسجل حتى الآن.</div>';
+      return;
+    }
+    body.innerHTML = list.map((item) => {
+      const name = item?.ambassador?.name || 'سفير غير معروف';
+      const phone = item?.ambassador?.phone || '-';
+      const when = dtf(item.createdAt);
+      const actionLabel = toArabicActionLabel(item);
+      return `<div class="hist-row">
+        <div class="hist-title">${esc(name)} <span class="small">(${esc(phone)})</span></div>
+        <div class="hist-meta">${esc(when)}</div>
+        <div class="hist-body">${esc(actionLabel)}</div>
+        <div class="hist-meta">المصدر: ${esc(item.source || 'client')}</div>
+      </div>`;
+    }).join('');
+    const btn = document.getElementById('activityLoadBtn');
+    if (btn) btn.textContent = `تحديث (${nf(list.length)})`;
+  } catch (e) {
+    body.innerHTML = '<div class="small">تعذر تحميل سجل النشاط الآن.</div>';
+  } finally {
+    activityLoading = false;
+  }
+}
+
 (async function () {
   const nf = App.formatNumber;
   const r = await fetch('/admin/stats');
@@ -281,6 +354,7 @@ document.getElementById('amb_search').addEventListener('input', () => {
   renderAmbassadors(filterAmbassadors());
 });
 document.getElementById('amb_export').addEventListener('click', exportAmbassadors);
+document.getElementById('activityLoadBtn').addEventListener('click', loadRecentActivities);
 
 document.getElementById('adminDashSegments').addEventListener('click', (e) => {
   const btn = e.target.closest('.segment-btn[data-tab]');

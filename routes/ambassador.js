@@ -3,6 +3,7 @@ const Ambassador = require('../models/Ambassador');
 const PrizeRequest = require('../models/PrizeRequest');
 const Fund = require('../models/Fund');
 const { requireAmbassador } = require('../middleware/auth');
+const { logAmbassadorActivity } = require('../services/activityLog');
 
 
 
@@ -133,6 +134,44 @@ router.get('/me', requireAmbassador, async (req, res) => {
   });
 });
 
+router.get('/entry-link', requireAmbassador, async (req, res) => {
+  const amb = await Ambassador.findById(req.session.ambassadorId, 'referralCode');
+  if (!amb || !amb.referralCode) {
+    return res.status(404).json({ error: 'تعذر إنشاء الرابط السري' });
+  }
+
+  const proto = String(req.get('x-forwarded-proto') || req.protocol || 'http')
+    .split(',')[0]
+    .trim();
+  const host = req.get('x-forwarded-host') || req.get('host');
+  const entryLink = `${proto}://${host}/r/${amb.referralCode}`;
+
+  res.json({
+    ok: true,
+    entryLink,
+    note: 'الدخول السريع بدون رمز عبر هذا الرابط',
+  });
+});
+
+router.post('/activity', requireAmbassador, async (req, res) => {
+  const action = String(req.body?.action || '').trim();
+  if (!action) return res.status(400).json({ error: 'action_required' });
+
+  const detailsRaw = req.body?.details;
+  const details = detailsRaw && typeof detailsRaw === 'object' ? detailsRaw : {};
+  const path = String(req.body?.path || req.originalUrl || '').slice(0, 200);
+
+  await logAmbassadorActivity({
+    ambassadorId: req.session.ambassadorId,
+    action: action.slice(0, 120),
+    details,
+    source: 'client',
+    path,
+  });
+
+  res.json({ ok: true });
+});
+
 router.get('/funds', requireAmbassador, async (req, res) => {
   if (wantsHtmlNavigation(req)) return res.redirect('/ambassador/fund');
   return sendFundsData(req, res);
@@ -161,6 +200,15 @@ router.post('/requests', requireAmbassador, async (req, res) => {
     amount: tier.amount,
     status: 'pending',
   });
+
+  await logAmbassadorActivity({
+    ambassadorId: amb._id,
+    action: 'request_prize',
+    details: { tier: tier.id, amount: tier.amount },
+    source: 'server',
+    path: '/ambassador/requests',
+  });
+
   res.json({ ok: true, request: reqDoc });
 });
 

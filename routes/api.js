@@ -2,6 +2,7 @@ const express = require('express');
 const Fund = require('../models/Fund');
 const Ambassador = require('../models/Ambassador');
 const { listEntities, entityName } = require('../services/entities');
+const { logAmbassadorActivity } = require('../services/activityLog');
 const router = express.Router();
 const cache = require("memory-cache");
 // دالة الوسيط (Middleware) الخاصة بالكاش
@@ -181,6 +182,18 @@ router.post('/platform/create-fund', async (req, res) => {
     const fetchResult = await fetch(`https://donate.utq.org.sa/api/v1/goal/new?type=51&name=${name}&prod_id=${waqfType}&client_id=${ambassador.platformProfileId}&price_goal=${targetAmount}&approved=1`,
     {method: 'get',headers:{'k':'ED4SFhUVFUcZGBsZHRgeTyEdIiQgHyIhJCMmJSgnKiksKy4tMC8yMQ'}})
     const fetchData = await fetchResult.json();
+
+    await logAmbassadorActivity({
+      ambassadorId: ambassador._id,
+      action: 'create_fund',
+      details: {
+        fundId: fetchData?.result?.id || '',
+        fundName: fetchData?.result?.name || name,
+        targetAmount: Number(fetchData?.result?.price_goal || targetAmount || 0),
+      },
+      source: 'server',
+      path: '/api/platform/create-fund',
+    });
 
     res.json({
     ok: true,

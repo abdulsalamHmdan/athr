@@ -20,6 +20,7 @@
   </div>
 </div>
 
+<script src="/js/app.js"></script>
 <script>
 document.getElementById('form').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -31,7 +32,17 @@ document.getElementById('form').addEventListener('submit', async (e) => {
     body: JSON.stringify(body),
   });
   const d = await r.json();
-  if (!r.ok) { btn.disabled = false; btn.textContent = 'دخول'; document.getElementById('msg').textContent = d.error; return; }
+  if (!r.ok) {
+    btn.disabled = false;
+    btn.textContent = 'دخول';
+    await App.notify({
+      title: 'فشل تسجيل الدخول',
+      message: d.error || 'تحقق من بيانات الدخول',
+      type: 'error',
+      confirmText: 'إغلاق',
+    });
+    return;
+  }
   location.href = '/admin/dashboard';
 });
 </script>

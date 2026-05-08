@@ -125,6 +125,7 @@
   </div>
 </div>
 
+<script src="/js/app.js"></script>
 <script>
   const isMember = document.getElementById("isMember");
   const entityWrap = document.getElementById("entityWrap");
@@ -140,10 +141,14 @@
     const body = Object.fromEntries(new FormData(e.target).entries());
     body.isMember = body.isMember === "true";
     if (!/^[1-9][0-9]{8}$/.test(body.phone)) {
-      document.getElementById("msg").textContent =
-        "رقم الجوال يجب أن يكون 9 أرقام بدون صفر أو رمز الدولة";
       btn.disabled = false;
       btn.textContent = "إنشاء الحساب";
+      await App.notify({
+        title: "رقم الجوال غير صحيح",
+        message: "رقم الجوال يجب أن يكون 9 أرقام بدون صفر أو رمز الدولة",
+        type: "error",
+        confirmText: "حسناً",
+      });
       return;
     }
     const r = await fetch("/auth/signup", {
@@ -155,7 +160,12 @@
     btn.disabled = false;
     btn.textContent = "إنشاء الحساب";
     if (!r.ok) {
-      document.getElementById("msg").textContent = data.error || "خطأ";
+      await App.notify({
+        title: "تعذر إنشاء الحساب",
+        message: data.error || "حدث خطأ غير متوقع",
+        type: "error",
+        confirmText: "إغلاق",
+      });
       return;
     }
     document.getElementById("formCard").style.display = "none";
