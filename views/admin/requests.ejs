@@ -1,42 +1,44 @@
 <%- include('../partials/head') %>
 <%- include('../partials/nav-admin') %>
 
-<div class="card">
-  <div class="page-intro" style="margin-bottom:12px;">
-    <span class="page-kicker">طلبات الجوائز</span>
-    <h3 class="page-title">إدارة حالات الصرف ومتابعة التنفيذ</h3>
-    <p class="page-subtitle">فلتر الطلبات حسب الحالة، وراجع إجراءات القبول/الرفض أو تأكيد الصرف.</p>
-  </div>
+<div class="page-intro">
+  <span class="page-kicker">طلبات الجوائز</span>
+  <h3 class="page-title">إدارة حالات الصرف ومتابعة التنفيذ</h3>
+  <p class="page-subtitle">فلتر الطلبات حسب الحالة، وراجع إجراءات القبول/الرفض أو تأكيد الصرف.</p>
+</div>
 
+<div class="card">
   <div class="section-head">
     <h2>طلبات صرف الجوائز</h2>
     <span class="list-count-badge" id="req_count">0</span>
   </div>
 
-  <div class="stat-grid" style="margin-bottom:10px;">
-    <div class="stat"><div class="v" id="c_all">0</div><div class="l">الإجمالي</div></div>
-    <div class="stat"><div class="v" id="c_pending">0</div><div class="l">قيد المراجعة</div></div>
-    <div class="stat"><div class="v" id="c_approved">0</div><div class="l">مقبولة</div></div>
-    <div class="stat"><div class="v" id="c_paid">0</div><div class="l">تم الصرف</div></div>
-    <div class="stat"><div class="v" id="c_rejected">0</div><div class="l">مرفوضة</div></div>
+  <div class="stat-grid" id="reqStats" style="margin-bottom:10px;">
+    <button type="button" class="stat req-stat active" data-f=""><div class="v" id="c_all">0</div><div class="l">الإجمالي</div></button>
+    <button type="button" class="stat req-stat" data-f="pending"><div class="v" id="c_pending">0</div><div class="l">قيد المراجعة</div></button>
+    <button type="button" class="stat req-stat" data-f="approved"><div class="v" id="c_approved">0</div><div class="l">مقبولة</div></button>
+    <button type="button" class="stat req-stat" data-f="paid"><div class="v" id="c_paid">0</div><div class="l">تم الصرف</div></button>
+    <button type="button" class="stat req-stat" data-f="rejected"><div class="v" id="c_rejected">0</div><div class="l">مرفوضة</div></button>
   </div>
 
-  <div class="filters">
-    <a href="#" data-f="" class="filter active">الكل</a>
-    <a href="#" data-f="pending" class="filter">قيد المراجعة</a>
-    <a href="#" data-f="approved" class="filter">المقبولة</a>
-    <a href="#" data-f="paid" class="filter">تم الصرف</a>
-    <a href="#" data-f="rejected" class="filter">المرفوضة</a>
-  </div>
-
-  <div class="toolbar">
-    <div class="search">
-      <input type="search" id="req_search" placeholder="ابحث باسم السفير…" autocomplete="off">
+  <div class="sticky-tools">
+    <div class="filters">
+      <a href="#" data-f="" class="filter active">الكل</a>
+      <a href="#" data-f="pending" class="filter">قيد المراجعة</a>
+      <a href="#" data-f="approved" class="filter">المقبولة</a>
+      <a href="#" data-f="paid" class="filter">تم الصرف</a>
+      <a href="#" data-f="rejected" class="filter">المرفوضة</a>
     </div>
-    <button class="btn export" id="req_export" type="button">تصدير Excel</button>
+
+    <div class="toolbar" style="margin:0;">
+      <div class="search">
+        <input type="search" id="req_search" placeholder="ابحث باسم السفير…" autocomplete="off">
+      </div>
+      <button class="btn export" id="req_export" type="button">تصدير Excel</button>
+    </div>
   </div>
 
-  <%- include('../partials/loader') %>
+  <%- include('../partials/loader', { loaderType: 'table' }) %>
 
   <div class="table-wrap has-cards" data-content style="display:none;">
     <table class="table-cards">
@@ -60,6 +62,12 @@ const statusMap = {
 let currentFilter = '';
 let allRequests = [];
 let approvedByAmb = {};
+const esc = (v) => String(v == null ? '' : v)
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');
 
 function buildWhatsappLink(phone, name, count) {
   const cleanPhone = String(phone || '').replace(/\D/g, '');
@@ -88,18 +96,37 @@ function renderCounters() {
   document.getElementById('c_rejected').textContent = nf(counts.rejected);
 }
 
+function applyFilterUI(filter) {
+  document.querySelectorAll('.filter').forEach((x) => {
+    x.classList.toggle('active', x.dataset.f === filter);
+  });
+  document.querySelectorAll('.req-stat').forEach((x) => {
+    x.classList.toggle('active', x.dataset.f === filter);
+  });
+}
+
+function setFilter(filter) {
+  currentFilter = filter;
+  applyFilterUI(filter);
+  const filtered = filterRequests();
+  document.getElementById('req_count').textContent = App.formatNumber(filtered.length);
+  renderRequests(filtered);
+}
+
 function renderRequests(list) {
   const nf = App.formatNumber;
   const df = App.formatDate;
   const tb = document.getElementById('tbody');
   tb.innerHTML = '';
   if (!list.length) {
-    tb.innerHTML = '<tr><td colspan="6" class="center small">لا يوجد طلبات</td></tr>';
+    tb.innerHTML = '<tr><td colspan="6" class="table-empty">لا يوجد طلبات</td></tr>';
     return;
   }
   for (const r of list) {
     const tr = document.createElement('tr');
-    let actions = '-';
+    const ambassadorName = r.ambassador?.name || '-';
+    const ambassadorPhone = r.ambassador?.phone || '-';
+    let actions = '<span class="table-value">-</span>';
     if (r.status === 'pending') {
       actions = `<div class="row-actions">
         <button class="btn ok sm" data-id="${r._id}" data-a="approve">قبول</button>
@@ -117,11 +144,11 @@ function renderRequests(list) {
       </div>`;
     }
     tr.innerHTML = `
-      <td data-label="التاريخ">${df(r.createdAt)}</td>
-      <td data-label="السفير">${r.ambassador?.name || '-'}</td>
-      <td data-label="الجوال">${r.ambassador?.phone || '-'}</td>
-      <td data-label="المبلغ">${nf(r.amount)} ريال</td>
-      <td data-label="الحالة"><span class="badge ${r.status}">${statusMap[r.status]}</span></td>
+      <td data-label="التاريخ"><span class="table-value is-number">${esc(df(r.createdAt))}</span></td>
+      <td data-label="السفير"><span class="table-value is-ellipsis">${esc(ambassadorName)}</span></td>
+      <td data-label="الجوال"><span class="table-value is-number">${esc(ambassadorPhone)}</span></td>
+      <td data-label="المبلغ"><span class="table-value is-number">${nf(r.amount)} ريال</span></td>
+      <td data-label="الحالة"><span class="table-value is-badge"><span class="badge ${r.status}">${statusMap[r.status]}</span></span></td>
       <td data-label="إجراء">${actions}</td>`;
     tb.appendChild(tr);
   }
@@ -143,8 +170,7 @@ async function load() {
   }
 
   renderCounters();
-  document.getElementById('req_count').textContent = App.formatNumber(filterRequests().length);
-  renderRequests(filterRequests());
+  setFilter(currentFilter);
   App.showContent();
 }
 
@@ -171,14 +197,15 @@ function exportRequests() {
 }
 
 document.addEventListener('click', async (e) => {
+  const statBtn = e.target.closest('.req-stat[data-f]');
+  if (statBtn) {
+    setFilter(statBtn.dataset.f);
+    return;
+  }
   const f = e.target.closest('.filter');
   if (f) {
     e.preventDefault();
-    document.querySelectorAll('.filter').forEach(x => x.classList.remove('active'));
-    f.classList.add('active');
-    currentFilter = f.dataset.f;
-    document.getElementById('req_count').textContent = App.formatNumber(filterRequests().length);
-    renderRequests(filterRequests());
+    setFilter(f.dataset.f);
     return;
   }
   const btn = e.target.closest('button[data-a]');
@@ -197,8 +224,7 @@ document.addEventListener('click', async (e) => {
 });
 
 document.getElementById('req_search').addEventListener('input', () => {
-  document.getElementById('req_count').textContent = App.formatNumber(filterRequests().length);
-  renderRequests(filterRequests());
+  setFilter(currentFilter);
 });
 document.getElementById('req_export').addEventListener('click', exportRequests);
 

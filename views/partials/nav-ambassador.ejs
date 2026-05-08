@@ -1,10 +1,26 @@
+<div class="amb-topbar">
+  <div class="amb-topbar-profile">
+    <img src="/img/logo.png" alt="شعار المنصة">
+    <div class="amb-topbar-meta">
+      <span>لوحة السفير</span>
+      <strong><%= ambassadorName || 'السفير' %></strong>
+    </div>
+  </div>
+  <a href="#" data-logout class="amb-topbar-logout" aria-label="تسجيل الخروج">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+      <path d="m16 17 5-5-5-5"></path>
+      <path d="M21 12H9"></path>
+    </svg>
+  </a>
+</div>
+
 <div class="nav-wrap">
   <nav class="nav">
     <a href="/ambassador/home" class="<%= active==='home' ? 'active' : '' %>">الرئيسية</a>
     <a href="/ambassador/prizes" class="<%= active==='prizes' ? 'active' : '' %>">صرف الجوائز</a>
     <a href="/ambassador/create-fund" class="<%= active==='create-fund' ? 'active' : '' %>">إنشاء صندوق</a>
     <a href="/ambassador/fund" class="<%= active==='funds' ? 'active' : '' %>">قائمة الصناديق</a>
-    <a href="#" data-logout>خروج</a>
   </nav>
 </div>
 
@@ -42,14 +58,6 @@
         <path d="M7 16h8"></path>
       </svg>
       <span>الصناديق</span>
-    </a>
-    <a href="#" data-logout class="danger">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-        <path d="m16 17 5-5-5-5"></path>
-        <path d="M21 12H9"></path>
-      </svg>
-      <span>خروج</span>
     </a>
   </div>
 </nav>

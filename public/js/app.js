@@ -1,4 +1,10 @@
 (function () {
+  const motionApi =
+    typeof window !== 'undefined' &&
+    window.Motion &&
+    typeof window.Motion.animate === 'function'
+      ? window.Motion
+      : null;
   const numberFormatter = new Intl.NumberFormat('en-US');
   const dateFormatter = new Intl.DateTimeFormat('ar-SA-u-nu-latn');
   const dateTimeFormatter = new Intl.DateTimeFormat('ar-SA-u-nu-latn', {
@@ -57,19 +63,28 @@
 
   function animateNumbers(root) {
     root.querySelectorAll(
-      '.stat .v, .tier-amount, .goal-nums b, .cc-total-v, .dash-total-value, .dash-tile-value, .dash-rank-val'
+      '.stat .v, .tier-amount, .goal-nums b, .cc-total-v, .dash-total-value, .dash-tile-value, .dash-rank-val, .portfolio-value strong, .portfolio-meta-item b'
     ).forEach(animateNumber);
   }
 
   function revealCollections(root) {
     const targets = root.querySelectorAll(
-      '.stat, .tier, .goal-item, .center-card, .hist-row, .table-cards tbody tr, .dash-rank-item, .dash-tile'
+      '.stat, .tier, .goal-item, .center-card, .hist-row, .table-cards tbody tr, .dash-rank-item, .dash-tile, .chart-card'
     );
     targets.forEach((el, i) => {
       if (el.dataset.revealed === '1') return;
       el.dataset.revealed = '1';
-      el.style.setProperty('--reveal-delay', `${Math.min(i * 28, 360)}ms`);
-      el.classList.add('reveal-item');
+      const delay = Math.min(i * 0.028, 0.36);
+      if (motionApi) {
+        motionApi.animate(
+          el,
+          { opacity: [0, 1], transform: ['translateY(8px) scale(0.99)', 'translateY(0px) scale(1)'] },
+          { duration: 0.42, delay, easing: [0.22, 1, 0.36, 1], fill: 'both' }
+        );
+      } else {
+        el.style.setProperty('--reveal-delay', `${Math.min(i * 28, 360)}ms`);
+        el.classList.add('reveal-item');
+      }
     });
   }
 

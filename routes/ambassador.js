@@ -60,29 +60,14 @@ async function getStats(amb) {
   };
 }
 
-router.get('/me', requireAmbassador, async (req, res) => {
-  const amb = await Ambassador.findById(req.session.ambassadorId);
-  if (!amb) return res.status(404).json({ error: 'غير موجود' });
-  const stats = await getStats(amb);
-  const link = `${req.protocol}://${req.get('host')}/r/${amb.referralCode}`;
-  amb.totalDonations = stats.totalDonations;
-  amb.orderCount = stats.orderCount;
-  amb.donationsUpdatedAt = new Date();
-  amb.save().catch((e) => console.error('[get /me] failed to update donations:', e.message));
-  res.json({
-    ambassador: {
-      name: amb.name,
-      phone: amb.phone,
-      isMember: amb.isMember,
-      entity: amb.entity,
-      referralCode: amb.referralCode,
-      referralLink: link,
-    },
-    stats,
-  });
-});
+function wantsHtmlNavigation(req) {
+  const accept = String(req.get('accept') || '').toLowerCase();
+  const secFetchDest = String(req.get('sec-fetch-dest') || '').toLowerCase();
+  const secFetchMode = String(req.get('sec-fetch-mode') || '').toLowerCase();
+  return secFetchDest === 'document' || secFetchMode === 'navigate' || accept.includes('text/html');
+}
 
-router.get('/funds', requireAmbassador, async (req, res) => {
+async function sendFundsData(req, res) {
   try {
     const amb = await Ambassador.findById(req.session.ambassadorId);
     if (!amb) return res.status(404).json({ error: 'غير موجود' });
@@ -124,7 +109,36 @@ router.get('/funds', requireAmbassador, async (req, res) => {
     console.error('[ambassador/funds] failed:', e.message);
     res.json({ results: [], stats: { total: 0, completed: 0, incomplete: 0 }, error: 'fetch_failed' });
   }
+}
+
+router.get('/me', requireAmbassador, async (req, res) => {
+  const amb = await Ambassador.findById(req.session.ambassadorId);
+  if (!amb) return res.status(404).json({ error: 'غير موجود' });
+  const stats = await getStats(amb);
+  const link = `${req.protocol}://${req.get('host')}/r/${amb.referralCode}`;
+  amb.totalDonations = stats.totalDonations;
+  amb.orderCount = stats.orderCount;
+  amb.donationsUpdatedAt = new Date();
+  amb.save().catch((e) => console.error('[get /me] failed to update donations:', e.message));
+  res.json({
+    ambassador: {
+      name: amb.name,
+      phone: amb.phone,
+      isMember: amb.isMember,
+      entity: amb.entity,
+      referralCode: amb.referralCode,
+      referralLink: link,
+    },
+    stats,
+  });
 });
+
+router.get('/funds', requireAmbassador, async (req, res) => {
+  if (wantsHtmlNavigation(req)) return res.redirect('/ambassador/fund');
+  return sendFundsData(req, res);
+});
+
+router.get('/funds-data', requireAmbassador, sendFundsData);
 
 router.get('/requests', requireAmbassador, async (req, res) => {
   const list = await PrizeRequest.find({ ambassador: req.session.ambassadorId })

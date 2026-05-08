@@ -33,60 +33,95 @@
         <h2>بيانات الصندوق</h2>
       </div>
 
-      <form id="fundForm">
-        <div class="form-section">
-          <p class="form-section-title">المعلومات الأساسية</p>
-          <label for="name">اسم الصندوق</label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            required
-            placeholder="مثل: صندوق عن فلان رحمه الله أو مبادرة فريق..."
-          />
+      <form id="fundForm" novalidate>
+        <div class="wizard">
+          <ol class="wizard-steps" id="wizardSteps">
+            <li class="wizard-step active" data-step="1"><b>الخطوة 1</b><small>البيانات الأساسية</small></li>
+            <li class="wizard-step" data-step="2"><b>الخطوة 2</b><small>إعداد الحملة</small></li>
+            <li class="wizard-step" data-step="3"><b>الخطوة 3</b><small>المراجعة والإنشاء</small></li>
+          </ol>
 
-          <div class="form-grid">
-            <div>
-              <label for="waqfType">مجال التبرع</label>
-              <select id="waqfType" name="waqfType" required>
-                <option value="">— اختر مجال التبرع —</option>
-                <option value="1">محطة جيل القران 2 (السفير)</option>
-                <option value="2">كفالة حلقة</option>
-                <option value="3">المحفظة الإستثمارية</option>
-              </select>
+          <section class="wizard-pane" data-step="1">
+            <div class="form-section" style="margin-top:0;">
+              <p class="form-section-title">المعلومات الأساسية</p>
+              <label for="name">اسم الصندوق</label>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                required
+                placeholder="مثل: صندوق عن فلان رحمه الله أو مبادرة فريق..."
+              />
+
+              <label for="ownerPhone">رقم صاحب الصندوق <span class="small">(اختياري)</span></label>
+              <input
+                type="tel"
+                id="ownerPhone"
+                name="ownerPhone"
+                placeholder="مثل: 05XXXXXXXX"
+              />
             </div>
-            <div>
-              <label for="targetAmount">القيمة المستهدفة للحملة</label>
-              <select id="targetAmount" name="targetAmount" required>
-                <option value="">— اختر المجال —</option>
-              </select>
+            <div class="wizard-actions">
+              <button type="button" class="btn lg" id="nextStep1">التالي</button>
             </div>
-          </div>
+          </section>
 
-          <label for="ownerPhone">رقم صاحب الصندوق <span class="small">(اختياري)</span></label>
-          <input
-            type="tel"
-            id="ownerPhone"
-            name="ownerPhone"
-            placeholder="مثل: 05XXXXXXXX"
-          />
+          <section class="wizard-pane" data-step="2" hidden>
+            <div class="form-section" style="margin-top:0;">
+              <p class="form-section-title">تفاصيل الحملة</p>
+              <div class="form-grid">
+                <div>
+                  <label for="waqfType">مجال التبرع</label>
+                  <select id="waqfType" name="waqfType" required>
+                    <option value="">— اختر مجال التبرع —</option>
+                    <option value="1">محطة جيل القران 2 (السفير)</option>
+                    <option value="2">كفالة حلقة</option>
+                    <option value="3">المحفظة الإستثمارية</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="targetAmount">القيمة المستهدفة للحملة</label>
+                  <select id="targetAmount" name="targetAmount" required>
+                    <option value="">— اختر المجال —</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <p class="form-section-title">إعدادات النشر</p>
+              <label for="fundType">نوع الصندوق</label>
+              <label class="fund-option-label">
+                <input type="checkbox" id="fundType" name="fundType" />
+                <span>نشره ضمن قائمة الصناديق الأكثر تفاعلاً.</span>
+              </label>
+              <p class="small" style="margin-top: 8px">
+                ملاحظة: سيتاح استقبال التبرعات حتى بعد الوصول للمستهدف.
+              </p>
+            </div>
+            <div class="wizard-actions">
+              <button type="button" class="btn bordered" id="prevStep2">السابق</button>
+              <button type="button" class="btn lg" id="nextStep2">مراجعة البيانات</button>
+            </div>
+          </section>
+
+          <section class="wizard-pane" data-step="3" hidden>
+            <div class="form-section" style="margin-top:0;">
+              <p class="form-section-title">مراجعة البيانات</p>
+              <div class="wizard-review">
+                <div class="wizard-review-row"><span>اسم الصندوق</span><b id="reviewName">-</b></div>
+                <div class="wizard-review-row"><span>مجال التبرع</span><b id="reviewType">-</b></div>
+                <div class="wizard-review-row"><span>القيمة المستهدفة</span><b id="reviewTarget">-</b></div>
+                <div class="wizard-review-row"><span>رقم صاحب الصندوق</span><b id="reviewPhone">-</b></div>
+                <div class="wizard-review-row"><span>ظهور الصندوق</span><b id="reviewVisibility">-</b></div>
+              </div>
+            </div>
+            <div class="wizard-actions">
+              <button type="button" class="btn bordered" id="prevStep3">تعديل البيانات</button>
+              <button class="btn ok lg" id="submitBtn" type="submit">إنشاء الصندوق</button>
+            </div>
+          </section>
         </div>
-
-        <div class="form-section">
-          <p class="form-section-title">إعدادات النشر</p>
-          <label for="fundType">نوع الصندوق</label>
-          <label class="fund-option-label">
-            <input type="checkbox" id="fundType" name="fundType" />
-            <span>نشره ضمن قائمة الصناديق الأكثر تفاعلاً.</span>
-          </label>
-          <p class="small" style="margin-top: 8px">
-            ملاحظة: سيتاح استقبال التبرعات حتى بعد الوصول للمستهدف.
-          </p>
-        </div>
-
-        <button class="btn block ok lg" id="submitBtn" type="submit" style="margin-top: 12px">
-          إنشاء الصندوق
-        </button>
         <div class="msg" id="msg"></div>
       </form>
     </div>
@@ -163,47 +198,6 @@
 
 <script src="/js/app.js"></script>
 <script>
-  document.getElementById("waqfType").onchange = function () {
-    const val = this.value;
-    const targetSelect = document.getElementById("targetAmount");
-    if (val === "3") {
-      targetSelect.innerHTML = '<option value="">— اختر عدد الأسهم —</option>';
-      targetSelect.innerHTML +=
-        '<option value="800">سهم واحد — 800 ريال</option>';
-      targetSelect.innerHTML +=
-        '<option value="1600">سهمان — 1,600 ريال</option>';
-      targetSelect.innerHTML +=
-        '<option value="4000">5 أسهم — 4,000 ريال</option>';
-      targetSelect.innerHTML +=
-        '<option value="8000">10 أسهم — 8,000 ريال</option>';
-    } else if (val === "2") {
-      targetSelect.innerHTML = '<option value="">— اختر عدد الأشهر —</option>';
-      targetSelect.innerHTML += '<option value="800">شهر — 800 ريال</option>';
-      targetSelect.innerHTML +=
-        '<option value="1600">شهرين — 1,600 ريال</option>';
-      targetSelect.innerHTML +=
-        '<option value="2400">3 أشهر — 2,400 ريال</option>';
-      targetSelect.innerHTML +=
-        '<option value="5000">فصل دراسي — 5,000 ريال</option>';
-      targetSelect.innerHTML +=
-        '<option value="10000">سنة كاملة — 10,000 ريال</option>';
-    } else if (val === "1") {
-      targetSelect.innerHTML = '<option value="">— اختر عدد الأمتار —</option>';
-      targetSelect.innerHTML +=
-        '<option value="1465">متر — 1,465 ريال</option>';
-      targetSelect.innerHTML +=
-        '<option value="2930">مترين — 2,930 ريال</option>';
-      targetSelect.innerHTML +=
-        '<option value="4395">3 أمتار — 4,395 ريال</option>';
-      targetSelect.innerHTML +=
-        '<option value="7325">5 أمتار — 7,325 ريال</option>';
-      targetSelect.innerHTML +=
-        '<option value="14650">10 أمتار — 14,650 ريال</option>';
-    } else {
-      targetSelect.innerHTML =
-        '<option value="">— اختر المجال أولاً —</option>';
-    }
-  };
   (async function () {
     document.getElementById("formCard").style.display = "";
     document.getElementById("fundGuideCard").style.display = "";
@@ -211,17 +205,173 @@
     const form = document.getElementById("fundForm");
     const msg = document.getElementById("msg");
     const btn = document.getElementById("submitBtn");
+    const waqfTypeEl = document.getElementById("waqfType");
+    const targetSelect = document.getElementById("targetAmount");
+    const wizardPanes = Array.from(document.querySelectorAll(".wizard-pane"));
+    const wizardSteps = Array.from(document.querySelectorAll(".wizard-step"));
+    let currentStep = 1;
+
+    const targetOptions = {
+      "3": {
+        placeholder: "— اختر عدد الأسهم —",
+        items: [
+          { value: "800", label: "سهم واحد — 800 ريال" },
+          { value: "1600", label: "سهمان — 1,600 ريال" },
+          { value: "4000", label: "5 أسهم — 4,000 ريال" },
+          { value: "8000", label: "10 أسهم — 8,000 ريال" },
+        ],
+      },
+      "2": {
+        placeholder: "— اختر عدد الأشهر —",
+        items: [
+          { value: "800", label: "شهر — 800 ريال" },
+          { value: "1600", label: "شهرين — 1,600 ريال" },
+          { value: "2400", label: "3 أشهر — 2,400 ريال" },
+          { value: "5000", label: "فصل دراسي — 5,000 ريال" },
+          { value: "10000", label: "سنة كاملة — 10,000 ريال" },
+        ],
+      },
+      "1": {
+        placeholder: "— اختر عدد الأمتار —",
+        items: [
+          { value: "1465", label: "متر — 1,465 ريال" },
+          { value: "2930", label: "مترين — 2,930 ريال" },
+          { value: "4395", label: "3 أمتار — 4,395 ريال" },
+          { value: "7325", label: "5 أمتار — 7,325 ريال" },
+          { value: "14650", label: "10 أمتار — 14,650 ريال" },
+        ],
+      },
+    };
+
+    function showMessage(type, text) {
+      msg.className = "msg " + type;
+      msg.textContent = text;
+    }
+
+    function clearMessage() {
+      msg.className = "msg";
+      msg.textContent = "";
+    }
+
+    function renderTargetsByType(type) {
+      const data = targetOptions[type];
+      targetSelect.innerHTML = "";
+      const first = document.createElement("option");
+      first.value = "";
+      first.textContent = data ? data.placeholder : "— اختر المجال أولاً —";
+      targetSelect.appendChild(first);
+      if (!data) return;
+      data.items.forEach((item) => {
+        const option = document.createElement("option");
+        option.value = item.value;
+        option.textContent = item.label;
+        targetSelect.appendChild(option);
+      });
+    }
+
+    function setStep(step) {
+      currentStep = step;
+      wizardPanes.forEach((pane) => {
+        pane.hidden = Number(pane.dataset.step) !== step;
+      });
+      wizardSteps.forEach((item) => {
+        const n = Number(item.dataset.step);
+        item.classList.toggle("active", n === step);
+        item.classList.toggle("done", n < step);
+      });
+      clearMessage();
+    }
+
+    function validOwnerPhone(raw) {
+      if (!raw) return true;
+      const cleaned = String(raw).replace(/\D/g, "");
+      return /^(05\d{8}|5\d{8}|9665\d{8})$/.test(cleaned);
+    }
+
+    function validateStep(step) {
+      const name = document.getElementById("name").value.trim();
+      const ownerPhone = document.getElementById("ownerPhone").value.trim();
+      const waqfType = waqfTypeEl.value;
+      const targetAmount = targetSelect.value;
+
+      if (step === 1) {
+        if (!name) {
+          showMessage("err", "الرجاء إدخال اسم الصندوق.");
+          return false;
+        }
+        if (!validOwnerPhone(ownerPhone)) {
+          showMessage("err", "رقم صاحب الصندوق غير صحيح. استخدم 05XXXXXXXX أو 5XXXXXXXX.");
+          return false;
+        }
+      }
+
+      if (step === 2) {
+        if (!waqfType) {
+          showMessage("err", "اختر مجال التبرع أولاً.");
+          return false;
+        }
+        if (!targetAmount) {
+          showMessage("err", "اختر القيمة المستهدفة للحملة.");
+          return false;
+        }
+      }
+      return true;
+    }
+
+    function updateReview() {
+      const name = document.getElementById("name").value.trim();
+      const ownerPhone = document.getElementById("ownerPhone").value.trim();
+      const targetLabel = targetSelect.options[targetSelect.selectedIndex]?.textContent || "-";
+      const typeLabel = waqfTypeEl.options[waqfTypeEl.selectedIndex]?.textContent || "-";
+      document.getElementById("reviewName").textContent = name || "-";
+      document.getElementById("reviewType").textContent = typeLabel || "-";
+      document.getElementById("reviewTarget").textContent = targetLabel || "-";
+      document.getElementById("reviewPhone").textContent = ownerPhone || "غير مضاف";
+      document.getElementById("reviewVisibility").textContent =
+        document.getElementById("fundType").checked ? "يظهر ضمن الأكثر تفاعلاً" : "ظهور عادي";
+    }
+
+    waqfTypeEl.addEventListener("change", () => {
+      renderTargetsByType(waqfTypeEl.value);
+    });
+
+    document.getElementById("nextStep1").addEventListener("click", () => {
+      if (!validateStep(1)) return;
+      setStep(2);
+    });
+    document.getElementById("prevStep2").addEventListener("click", () => setStep(1));
+    document.getElementById("nextStep2").addEventListener("click", () => {
+      if (!validateStep(2)) return;
+      updateReview();
+      setStep(3);
+    });
+    document.getElementById("prevStep3").addEventListener("click", () => setStep(2));
+
+    form.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter") return;
+      if (e.target.tagName === "TEXTAREA") return;
+      if (currentStep === 1) {
+        e.preventDefault();
+        document.getElementById("nextStep1").click();
+      } else if (currentStep === 2) {
+        e.preventDefault();
+        document.getElementById("nextStep2").click();
+      }
+    });
+
+    renderTargetsByType("");
+    setStep(1);
 
     form.onsubmit = async (e) => {
       e.preventDefault();
-      msg.textContent = "";
-      msg.className = "msg";
+      if (!validateStep(1) || !validateStep(2)) return;
+      clearMessage();
       btn.disabled = true;
       btn.textContent = "جاري الإرسال...";
-      const waqfType = document.getElementById("waqfType").value;
+      const waqfType = waqfTypeEl.value;
       const body = {
         name: document.getElementById("name").value.trim(),
-        targetAmount: document.getElementById("targetAmount").value,
+        targetAmount: targetSelect.value,
         waqfType: waqfType == "1" ? "45" : waqfType == "2" ? "3" : "22",
         acceptAfterTarget: document.getElementById("fundType").checked,
         ownerPhone: document.getElementById("ownerPhone").value.trim(),
@@ -238,14 +388,14 @@
       // console.log("Create fund response:", rd);
 
       if (!r.ok) {
-        msg.className = "msg err";
-        msg.textContent = rd.error || "حدث خطأ، حاول مرة أخرى";
+        showMessage("err", rd.error || "حدث خطأ، حاول مرة أخرى");
         return;
       }
-      msg.className = "msg ok";
-      msg.textContent = "تم إنشاء الصندوق بنجاح ✓";
+      showMessage("ok", "تم إنشاء الصندوق بنجاح ✓");
       showFundSuccess(rd.fund, body.ownerPhone);
       form.reset();
+      renderTargetsByType("");
+      setStep(1);
     };
 
     // ===== POP UP: عرض معلومات الصندوق بعد الإنشاء =====

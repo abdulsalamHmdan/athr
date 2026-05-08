@@ -1,7 +1,7 @@
 <%- include('../partials/head') %>
 <%- include('../partials/nav-admin') %>
 
-<%- include('../partials/loader') %>
+<%- include('../partials/loader', { loaderType: 'table' }) %>
 
 <div data-content style="display:none;">
   <div class="page-intro">
@@ -10,60 +10,118 @@
     <p class="page-subtitle">راقب المؤشرات الكلية، ثم ابحث في قائمة السفراء أو صدّر البيانات مباشرة.</p>
   </div>
 
-  <div class="card">
-    <div class="section-head">
-      <h2>ملخص عام</h2>
-    </div>
-    <div class="stat-grid">
-      <div class="stat"><div class="v" id="s_total">0</div><div class="l">مجموع التبرعات (ريال)</div></div>
-      <div class="stat"><div class="v" id="s_prizes">0</div><div class="l">مجموع الجوائز المصروفة (ريال)</div></div>
-      <div class="stat"><div class="v" id="s_amb">0</div><div class="l">عدد السفراء</div></div>
-      <div class="stat"><div class="v" id="s_mem">0</div><div class="l">من منسوبي الجمعية</div></div>
-      <div class="stat"><div class="v" id="s_non">0</div><div class="l">من خارج الجمعية</div></div>
+  <div class="segment-control" id="adminDashSegments">
+    <button class="segment-btn active" type="button" data-tab="overview">الملخص</button>
+    <button class="segment-btn" type="button" data-tab="charts">الرسومات</button>
+    <button class="segment-btn" type="button" data-tab="ambassadors">السفراء</button>
+  </div>
+
+  <div class="tab-pane active" data-pane="overview">
+    <div class="card">
+      <div class="section-head">
+        <h2>ملخص عام</h2>
+      </div>
+      <div class="stat-grid">
+        <div class="stat"><div class="v" id="s_total">0</div><div class="l">مجموع التبرعات (ريال)</div></div>
+        <div class="stat"><div class="v" id="s_prizes">0</div><div class="l">مجموع الجوائز المصروفة (ريال)</div></div>
+        <div class="stat"><div class="v" id="s_amb">0</div><div class="l">عدد السفراء</div></div>
+        <div class="stat"><div class="v" id="s_mem">0</div><div class="l">من منسوبي الجمعية</div></div>
+        <div class="stat"><div class="v" id="s_non">0</div><div class="l">من خارج الجمعية</div></div>
+      </div>
     </div>
   </div>
 
-  <div class="card">
-    <div class="section-head">
-      <h2>قائمة السفراء</h2>
-      <span class="list-count-badge" id="amb_count">0</span>
-    </div>
-    <div class="toolbar">
-      <div class="search">
-        <input type="search" id="amb_search" placeholder="ابحث باسم السفير…" autocomplete="off">
+  <div class="tab-pane" data-pane="charts">
+    <div class="card">
+      <div class="section-head">
+        <h2>تحليلات مرئية</h2>
+        <p class="small">ملخص بصري سريع لاتخاذ القرار</p>
       </div>
-      <button class="btn export" id="amb_export" type="button">تصدير Excel</button>
+      <div class="chart-grid">
+        <article class="chart-card">
+          <h3>التبرعات مقابل الجوائز</h3>
+          <div class="chart-canvas-wrap">
+            <canvas id="kpiChart" aria-label="مخطط التبرعات والجوائز"></canvas>
+          </div>
+          <div class="chart-note">يعرض الفرق بين إجمالي التبرعات والجوائز المصروفة.</div>
+        </article>
+
+        <article class="chart-card">
+          <h3>توزيع السفراء</h3>
+          <div class="chart-canvas-wrap">
+            <canvas id="membersChart" aria-label="مخطط توزيع السفراء"></canvas>
+          </div>
+          <div class="chart-note">نسبة منسوبي الجمعية مقابل غير المنسوبين.</div>
+        </article>
+
+        <article class="chart-card" style="grid-column: 1 / -1;">
+          <h3>أعلى الجهات بعدد السفراء</h3>
+          <div class="chart-canvas-wrap">
+            <canvas id="entitiesChart" aria-label="مخطط أعلى الجهات"></canvas>
+          </div>
+          <div class="chart-note">أكثر الجهات مساهمة بعدد السفراء المسجلين.</div>
+        </article>
+      </div>
     </div>
-    <div class="table-wrap has-cards">
-      <table class="table-cards">
-        <thead><tr><th>#</th><th>الاسم</th><th>الجوال</th><th>منسوب</th><th>الجهة</th><th>الرمز</th></tr></thead>
-        <tbody id="tbody"></tbody>
-      </table>
+  </div>
+
+  <div class="tab-pane" data-pane="ambassadors">
+    <div class="card">
+      <div class="section-head">
+        <h2>قائمة السفراء</h2>
+        <span class="list-count-badge" id="amb_count">0</span>
+      </div>
+      <div class="toolbar">
+        <div class="search">
+          <input type="search" id="amb_search" placeholder="ابحث باسم السفير…" autocomplete="off">
+        </div>
+        <button class="btn export" id="amb_export" type="button">تصدير Excel</button>
+      </div>
+      <div class="table-wrap has-cards">
+        <table class="table-cards">
+          <thead><tr><th>#</th><th>الاسم</th><th>الجوال</th><th>منسوب</th><th>الجهة</th><th>الرمز</th></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>
 
 <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script src="/js/app.js"></script>
 <script>
 let ambassadors = [];
+const charts = [];
+let chartsReady = false;
+let dashboardPayload = null;
+const esc = (v) => String(v == null ? '' : v)
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');
 
 function renderAmbassadors(list) {
   const tb = document.getElementById('tbody');
   tb.innerHTML = '';
   if (!list.length) {
-    tb.innerHTML = '<tr><td colspan="6" class="center small">لا يوجد سفراء</td></tr>';
+    tb.innerHTML = '<tr><td colspan="6" class="table-empty">لا يوجد سفراء</td></tr>';
     return;
   }
   list.forEach((a, i) => {
+    const name = a.name || '-';
+    const phone = a.phone || '-';
+    const entity = a.entity || '-';
+    const code = a.referralCode || '-';
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td data-label="#">${i+1}</td>
-      <td data-label="الاسم">${a.name}</td>
-      <td data-label="الجوال">${a.phone}</td>
-      <td data-label="منسوب">${a.isMember ? 'نعم' : 'لا'}</td>
-      <td data-label="الجهة">${a.entity || '-'}</td>
-      <td data-label="الرمز">${a.referralCode}</td>`;
+      <td data-label="التسلسل"><span class="table-value is-number">${i + 1}</span></td>
+      <td data-label="الاسم"><span class="table-value is-ellipsis">${esc(name)}</span></td>
+      <td data-label="الجوال"><span class="table-value is-number">${esc(phone)}</span></td>
+      <td data-label="منسوب"><span class="table-value">${a.isMember ? 'نعم' : 'لا'}</span></td>
+      <td data-label="الجهة"><span class="table-value is-ellipsis">${esc(entity)}</span></td>
+      <td data-label="الرمز"><span class="table-value is-number">${esc(code)}</span></td>`;
     tb.appendChild(tr);
   });
 }
@@ -94,11 +152,120 @@ function exportAmbassadors() {
   XLSX.writeFile(wb, `ambassadors-${today}.xlsx`);
 }
 
+function destroyCharts() {
+  charts.forEach((c) => c && c.destroy && c.destroy());
+  charts.length = 0;
+}
+
+function createCharts(data) {
+  if (typeof Chart === 'undefined') return;
+  destroyCharts();
+
+  const styles = getComputedStyle(document.documentElement);
+  const primary = styles.getPropertyValue('--primary').trim();
+  const accent = styles.getPropertyValue('--accent').trim();
+  const secondary = styles.getPropertyValue('--secondary').trim() || '#6366f1';
+  const success = styles.getPropertyValue('--success').trim();
+  const text = styles.getPropertyValue('--text').trim();
+  const grid = styles.getPropertyValue('--border').trim();
+
+  const commonOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { labels: { color: text, font: { family: 'IBM Plex Sans Arabic', size: 12 } } },
+      tooltip: { bodyFont: { family: 'IBM Plex Sans Arabic' }, titleFont: { family: 'IBM Plex Sans Arabic' } },
+    },
+    scales: {
+      x: { ticks: { color: text }, grid: { color: grid } },
+      y: { ticks: { color: text }, grid: { color: grid } },
+    },
+  };
+
+  const donations = Number(data.totalDonations || 0);
+  const prizes = Number(data.totalPrizes || 0);
+  const remaining = Math.max(0, donations - prizes);
+  charts.push(
+    new Chart(document.getElementById('kpiChart'), {
+      type: 'bar',
+      data: {
+        labels: ['التبرعات', 'الجوائز', 'الصافي'],
+        datasets: [
+          {
+            data: [donations, prizes, remaining],
+            backgroundColor: [primary, accent, success],
+            borderRadius: 8,
+            maxBarThickness: 48,
+          },
+        ],
+      },
+      options: {
+        ...commonOptions,
+        plugins: { ...commonOptions.plugins, legend: { display: false } },
+      },
+    })
+  );
+
+  charts.push(
+    new Chart(document.getElementById('membersChart'), {
+      type: 'doughnut',
+      data: {
+        labels: ['منسوبو الجمعية', 'من خارج الجمعية'],
+        datasets: [
+          {
+            data: [Number(data.members || 0), Number(data.nonMembers || 0)],
+            backgroundColor: [secondary, primary],
+            borderWidth: 0,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: commonOptions.plugins,
+      },
+    })
+  );
+
+  const entityCounts = {};
+  (data.ambassadors || []).forEach((a) => {
+    const key = (a.entity || 'غير محدد').trim() || 'غير محدد';
+    entityCounts[key] = (entityCounts[key] || 0) + 1;
+  });
+  const ranked = Object.entries(entityCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8);
+  const entityLabels = ranked.map(([name]) => name);
+  const entityValues = ranked.map(([, count]) => count);
+  charts.push(
+    new Chart(document.getElementById('entitiesChart'), {
+      type: 'bar',
+      data: {
+        labels: entityLabels.length ? entityLabels : ['لا بيانات'],
+        datasets: [
+          {
+            data: entityValues.length ? entityValues : [0],
+            backgroundColor: primary,
+            borderRadius: 8,
+            maxBarThickness: 42,
+          },
+        ],
+      },
+      options: {
+        ...commonOptions,
+        indexAxis: 'y',
+        plugins: { ...commonOptions.plugins, legend: { display: false } },
+      },
+    })
+  );
+}
+
 (async function () {
   const nf = App.formatNumber;
   const r = await fetch('/admin/stats');
   if (r.status === 401) { location.href = '/admin/login'; return; }
   const d = await r.json();
+  dashboardPayload = d;
   document.getElementById('s_total').textContent = nf(d.totalDonations);
   document.getElementById('s_prizes').textContent = nf(d.totalPrizes);
   document.getElementById('s_amb').textContent = nf(d.ambassadorsCount);
@@ -114,6 +281,25 @@ document.getElementById('amb_search').addEventListener('input', () => {
   renderAmbassadors(filterAmbassadors());
 });
 document.getElementById('amb_export').addEventListener('click', exportAmbassadors);
+
+document.getElementById('adminDashSegments').addEventListener('click', (e) => {
+  const btn = e.target.closest('.segment-btn[data-tab]');
+  if (!btn) return;
+  const tab = btn.dataset.tab;
+  document.querySelectorAll('#adminDashSegments .segment-btn').forEach((x) => {
+    x.classList.toggle('active', x === btn);
+  });
+  document.querySelectorAll('.tab-pane[data-pane]').forEach((pane) => {
+    pane.classList.toggle('active', pane.dataset.pane === tab);
+  });
+  if (tab === 'charts') {
+    if (!chartsReady && dashboardPayload) {
+      createCharts(dashboardPayload);
+      chartsReady = true;
+    }
+    setTimeout(() => charts.forEach((c) => c && c.resize && c.resize()), 40);
+  }
+});
 </script>
 
 <%- include('../partials/foot') %>

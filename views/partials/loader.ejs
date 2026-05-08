@@ -1,16 +1,111 @@
-<div class="loader" data-loader>
-  <div class="loader-skeleton">
-    <div class="skeleton loader-sk-title"></div>
-    <div class="skeleton loader-sk-line"></div>
-    <div class="loader-sk-grid">
-      <div class="skeleton loader-sk-card"></div>
-      <div class="skeleton loader-sk-card"></div>
-      <div class="skeleton loader-sk-card"></div>
+<%
+const type = (typeof loaderType === 'string' && loaderType) ? loaderType : 'default';
+%>
+<div class="loader" data-loader data-loader-type="<%= type %>">
+  <% if (type === 'funds') { %>
+    <div class="loader-skeleton loader-skeleton-funds">
+      <% for (let i = 0; i < 3; i++) { %>
+        <article class="loader-fund-card">
+          <div class="loader-fund-head">
+            <div class="loader-fund-brand">
+              <div class="skeleton loader-fund-avatar"></div>
+              <div class="loader-fund-meta">
+                <div class="skeleton loader-fund-name"></div>
+                <div class="skeleton loader-fund-sub"></div>
+              </div>
+            </div>
+            <div class="skeleton loader-fund-state"></div>
+          </div>
+          <div class="skeleton loader-fund-title"></div>
+          <div class="loader-fund-tags">
+            <div class="skeleton loader-fund-tag"></div>
+            <div class="skeleton loader-fund-tag"></div>
+            <div class="skeleton loader-fund-tag short"></div>
+            <div class="skeleton loader-fund-tag short"></div>
+          </div>
+          <div class="skeleton loader-fund-progress"></div>
+          <div class="skeleton loader-fund-divider"></div>
+          <div class="loader-fund-footer">
+            <div class="loader-fund-amount">
+              <div class="skeleton loader-fund-total"></div>
+              <div class="skeleton loader-fund-goal"></div>
+            </div>
+            <div class="loader-fund-actions">
+              <div class="skeleton loader-fund-btn sm"></div>
+              <div class="skeleton loader-fund-btn"></div>
+            </div>
+          </div>
+        </article>
+      <% } %>
     </div>
-    <div class="skeleton loader-sk-row"></div>
-    <div class="skeleton loader-sk-row"></div>
-    <div class="skeleton loader-sk-row"></div>
-  </div>
+  <% } else if (type === 'centers') { %>
+    <div class="loader-skeleton loader-skeleton-centers">
+      <div class="skeleton loader-centers-hero"></div>
+      <div class="loader-centers-toolbar">
+        <div class="skeleton loader-centers-seg"></div>
+        <div class="skeleton loader-centers-search"></div>
+      </div>
+      <div class="loader-centers-grid">
+        <% for (let i = 0; i < 4; i++) { %>
+          <article class="loader-center-card">
+            <div class="loader-center-top">
+              <div class="skeleton loader-center-avatar"></div>
+              <div class="loader-center-meta">
+                <div class="skeleton loader-center-name"></div>
+                <div class="skeleton loader-center-kind"></div>
+              </div>
+            </div>
+            <div class="loader-center-pills">
+              <div class="skeleton loader-center-pill"></div>
+              <div class="skeleton loader-center-pill"></div>
+            </div>
+            <div class="skeleton loader-center-total"></div>
+          </article>
+        <% } %>
+      </div>
+    </div>
+  <% } else if (type === 'table') { %>
+    <div class="loader-skeleton loader-skeleton-table">
+      <div class="skeleton loader-table-toolbar"></div>
+      <% for (let i = 0; i < 4; i++) { %>
+        <article class="loader-table-card">
+          <div class="loader-table-row">
+            <div class="skeleton loader-table-label"></div>
+            <div class="skeleton loader-table-value"></div>
+          </div>
+          <div class="loader-table-row">
+            <div class="skeleton loader-table-label"></div>
+            <div class="skeleton loader-table-value"></div>
+          </div>
+          <div class="loader-table-row">
+            <div class="skeleton loader-table-label"></div>
+            <div class="skeleton loader-table-value short"></div>
+          </div>
+          <div class="loader-table-row">
+            <div class="skeleton loader-table-label"></div>
+            <div class="skeleton loader-table-value"></div>
+          </div>
+          <div class="loader-table-actions">
+            <div class="skeleton loader-table-btn"></div>
+            <div class="skeleton loader-table-btn"></div>
+          </div>
+        </article>
+      <% } %>
+    </div>
+  <% } else { %>
+    <div class="loader-skeleton">
+      <div class="skeleton loader-sk-title"></div>
+      <div class="skeleton loader-sk-line"></div>
+      <div class="loader-sk-grid">
+        <div class="skeleton loader-sk-card"></div>
+        <div class="skeleton loader-sk-card"></div>
+        <div class="skeleton loader-sk-card"></div>
+      </div>
+      <div class="skeleton loader-sk-row"></div>
+      <div class="skeleton loader-sk-row"></div>
+      <div class="skeleton loader-sk-row"></div>
+    </div>
+  <% } %>
   <div class="loader-meta">
     <div class="spinner"></div>
     <div class="loader-txt">جاري تحميل البيانات...</div>

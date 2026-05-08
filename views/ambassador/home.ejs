@@ -2,53 +2,78 @@
 <%- include('../partials/nav-ambassador') %>
 <%- include('../partials/loader') %>
 <div data-content style="display:none;">
-  <div class="hero-card">
-    <div class="hero-badge">لوحة السفير</div>
-    <h2 id="hello">أهلاً بك</h2>
-    <p>تنافس عبر رابطك الخاص للوصول إلى فئات الجوائز: <b>البرونزية (2000 ريال)</b>، <b>الفضية (5000 ريال)</b>، <b>الذهبية (10000 ريال)</b>.</p>
-    <div class="card-note">
-      <span class="small" id="heroTargetNote">هدفك القادم سيظهر بعد تحميل بياناتك.</span>
-    </div>
-  </div>
+  <div class="home-layout">
+    <div class="card portfolio-card card-elevated">
+      <div class="portfolio-head">
+        <div>
+          <span class="portfolio-label">رصيدك المتاح</span>
+          <div class="portfolio-value"><strong id="s_balance">0</strong><small>نقطة</small></div>
+        </div>
+        <span class="trend-chip" id="balanceTrend">+0%</span>
+      </div>
 
-  <div class="panel-grid panel-grid-2">
-    <div class="card">
-      <div class="section-head">
-        <h2>الرابط والإشعارات</h2>
+      <div class="portfolio-meta-grid">
+        <div class="portfolio-meta-item"><span>إجمالي التبرعات</span><b id="s_total">0</b></div>
+        <div class="portfolio-meta-item"><span>المصروف كمكافآت</span><b id="s_paid">0</b></div>
+        <div class="portfolio-meta-item"><span>الهدف القادم</span><b id="s_next">—</b></div>
+        <div class="portfolio-meta-item"><span id="s_next_lbl">المتبقي</span><b id="remainingToNext">0</b></div>
       </div>
-      <div>
-        <label>رابطك الخاص</label>
-        <div class="link-box"><span id="link"></span><button class="btn" id="copyBtn" type="button">نسخ</button></div>
+
+      <div class="progress portfolio-progress"><div id="bar" style="width:0%"></div></div>
+      <div class="small" id="progressLbl"></div>
+
+      <div class="action-pill-row">
+        <a class="btn sm" href="/ambassador/create-fund">إنشاء صندوق</a>
+        <a class="btn sm secondary" href="/ambassador/fund">قائمة الصناديق</a>
+        <a class="btn sm secondary" href="/ambassador/prizes">صرف الجوائز</a>
+        <button class="btn sm flat" id="copyBtn" type="button">نسخ الرابط</button>
       </div>
-      <div style="margin-top:14px;">
-        <label>الإشعارات</label>
+    </div>
+
+    <div class="card insight-card">
+      <div class="insight-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="M12 3a7 7 0 0 0-4 12.8V20a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-4.2A7 7 0 0 0 12 3z"></path>
+          <path d="M9 17h6"></path>
+        </svg>
+      </div>
+      <div class="insight-content">
+        <div class="insight-title-row">
+          <h2>تحليل الأداء</h2>
+          <span class="chip new-chip">جديد</span>
+        </div>
+        <p id="heroTargetNote">هدفك القادم سيظهر بعد تحميل بياناتك.</p>
+        <div class="link-box">
+          <span id="link"></span>
+          <button class="btn sm bordered" id="quickCopy" type="button">نسخ الرابط</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="segment-control" id="homeSegments">
+      <button class="segment-btn active" type="button" data-tab="overview">الملخص</button>
+      <button class="segment-btn" type="button" data-tab="goals">الصناديق</button>
+    </div>
+
+    <div class="tab-pane active" data-pane="overview">
+      <div class="card">
+        <div class="section-head">
+          <h2>الإشعارات</h2>
+        </div>
         <button class="btn block bordered" type="button" data-push-subscribe>تفعيل الإشعارات</button>
         <p class="small" style="margin-top:8px;">فعّل الإشعارات لتصلك تنبيهات وتذكيرات من إدارة المنصة على متصفحك.</p>
       </div>
     </div>
 
-    <div class="card">
-      <div class="section-head">
-        <h2>تقدمك الحالي</h2>
-      </div>
-      <div class="progress"><div id="bar" style="width:0%"></div></div>
-      <div class="small" id="progressLbl"></div>
-
-      <div class="stat-grid" style="margin-top:16px;">
-        <div class="stat"><div class="v" id="s_total">0</div><div class="l">مجموع التبرعات (ريال)</div></div>
-        <div class="stat"><div class="v" id="s_paid">0</div><div class="l">صُرف كمكافأة (نقاط)</div></div>
-        <div class="stat"><div class="v" id="s_balance">0</div><div class="l">رصيدك المتاح (نقاط)</div></div>
-        <div class="stat stat-text"><div class="v" id="s_next">—</div><div class="l" id="s_next_lbl">الهدف القادم</div></div>
+    <div class="tab-pane" data-pane="goals">
+      <div class="card" id="goalsCard" style="display:none;">
+        <div class="section-head">
+          <h2>الصناديق</h2>
+          <span class="list-count-badge" id="goalsCount">0</span>
+        </div>
+        <div id="goalsBody" class="goals-list"></div>
       </div>
     </div>
-  </div>
-
-  <div class="card" id="goalsCard" style="display:none;">
-    <div class="section-head">
-      <h2>الصناديق</h2>
-      <span class="list-count-badge" id="goalsCount">0</span>
-    </div>
-    <div id="goalsBody" class="goals-list"></div>
   </div>
 </div>
 
@@ -59,11 +84,20 @@
   const r = await fetch('/ambassador/me');
   if (r.status === 401) { location.href = '/login'; return; }
   const d = await r.json();
-  document.getElementById('hello').textContent = 'أهلاً ' + d.ambassador.name;
   document.getElementById('link').textContent = d.ambassador.referralLink;
   document.getElementById('copyBtn').onclick = () => {
     navigator.clipboard.writeText(d.ambassador.referralLink);
     document.getElementById('copyBtn').textContent = 'تم النسخ ✓';
+    setTimeout(() => {
+      document.getElementById('copyBtn').textContent = 'نسخ الرابط';
+    }, 1200);
+  };
+  document.getElementById('quickCopy').onclick = () => {
+    navigator.clipboard.writeText(d.ambassador.referralLink);
+    document.getElementById('quickCopy').textContent = 'تم النسخ ✓';
+    setTimeout(() => {
+      document.getElementById('quickCopy').textContent = 'نسخ الرابط';
+    }, 1200);
   };
   const s = d.stats;
   document.getElementById('s_total').textContent = nf(s.totalDonations);
@@ -73,9 +107,12 @@
   // document.getElementById('s_next').textContent = nf(next.amount);
   // document.getElementById('s_next_lbl').textContent = next.name ? `${next.name} (ريال)` : 'الهدف القادم (ريال)';
   document.getElementById('s_next').textContent = next.name;
-  document.getElementById('s_next_lbl').textContent = 'الهدف القادم';
+  document.getElementById('s_next_lbl').textContent = 'المتبقي';
   const pct = next.amount > 0 ? Math.min(100, (s.availableBalance / next.amount) * 100) : 100;
+  const remaining = Math.max(0, (next.amount || 0) - (s.availableBalance || 0));
+  document.getElementById('remainingToNext').textContent = nf(remaining);
   document.getElementById('bar').style.width = pct + '%';
+  document.getElementById('balanceTrend').textContent = '+' + Math.round(pct) + '%';
   document.getElementById('progressLbl').textContent =
     `${nf(s.availableBalance)} من ${nf(next.amount)} ريال نحو ${next.name || 'الجائزة القادمة'}`;
   document.getElementById('heroTargetNote').textContent =
@@ -91,8 +128,9 @@
     const buildMsg = (g) => {
       const total = g.total || 0;
       const goal = g.goal || 0;
+      const completion = goal > 0 ? Math.ceil((total / goal) * 100) : 0;
       return `صندوق : ${g.name || '-'}\n` +
-             `نسبة الاكتمال : ${Math.ceil(total/goal*100)}%\n` +
+             `نسبة الاكتمال : ${completion}%\n` +
              `رابط الصندوق:https://donate.utq.org.sa/goal_${g.pk}\n\n` +
              `ساهم في إكمال صندوق الوقف\nليكون لك أجرٌ جارٍ لا ينقطع،`;
     };
@@ -143,7 +181,19 @@
     });
 
     document.getElementById('goalsCard').style.display = '';
+  } else {
+    document.getElementById('goalsCount').textContent = '0';
   }
+
+  document.getElementById('homeSegments').addEventListener('click', (e) => {
+    const btn = e.target.closest('.segment-btn[data-tab]');
+    if (!btn) return;
+    const tab = btn.dataset.tab;
+    document.querySelectorAll('.segment-btn').forEach((x) => x.classList.toggle('active', x === btn));
+    document.querySelectorAll('.tab-pane[data-pane]').forEach((pane) => {
+      pane.classList.toggle('active', pane.dataset.pane === tab);
+    });
+  });
 
   App.showContent();
 })();

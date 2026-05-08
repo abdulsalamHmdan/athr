@@ -1,5 +1,5 @@
 <%- include('../partials/head') %>
-<%- include('../partials/loader') %>
+<%- include('../partials/loader', { loaderType: 'table' }) %>
 
 <div data-content style="display:none;">
   <div class="card">
@@ -41,27 +41,28 @@
 <script>
 const ENTITY_ID = <%- JSON.stringify(entityId) %>;
 let ambassadors = [];
+const esc = (v) => String(v == null ? '' : v)
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');
 
 function fmt(n){ return App.formatNumber(n || 0); }
-function maskPhone(p){
-  const s = String(p || '');
-  if (s.length < 4) return s;
-  return s.slice(0, 3) + '••••' + s.slice(-2);
-}
 
 function render(list){
   const tb = document.getElementById('tbody');
   if (!list.length){
-    tb.innerHTML = '<tr><td colspan="5" class="center small">لا يوجد سفراء في هذا المجمع</td></tr>';
+    tb.innerHTML = '<tr><td colspan="5" class="table-empty">لا يوجد سفراء في هذا المجمع</td></tr>';
     return;
   }
   tb.innerHTML = list.map((a, i) => `
     <tr>
-      <td data-label="#">${i+1}</td>
-      <td data-label="الاسم">${a.name}</td>
-      <td data-label="عدد الصناديق">${fmt(a.fundsCount)}</td>
-      <td data-label="عدد التبرعات">${fmt(a.orderCount)}</td>
-      <td data-label="إجمالي التبرعات">${fmt(a.totalDonations)} ريال</td>
+      <td data-label="التسلسل"><span class="table-value is-number">${i + 1}</span></td>
+      <td data-label="الاسم"><span class="table-value is-ellipsis">${esc(a.name || '-')}</span></td>
+      <td data-label="عدد الصناديق"><span class="table-value is-number">${fmt(a.fundsCount)}</span></td>
+      <td data-label="عدد التبرعات"><span class="table-value is-number">${fmt(a.orderCount)}</span></td>
+      <td data-label="إجمالي التبرعات"><span class="table-value is-number">${fmt(a.totalDonations)} ريال</span></td>
     </tr>
   `).join('');
 }

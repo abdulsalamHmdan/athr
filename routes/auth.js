@@ -43,6 +43,7 @@ router.post('/signup', async (req, res) => {
     });
 
     req.session.ambassadorId = amb._id;
+    req.session.ambassadorName = amb.name || 'السفير';
 
     // try {
     //   await syncAmbassador(amb);
@@ -68,6 +69,7 @@ router.post('/login', async (req, res) => {
     const ok = await bcrypt.compare(password, amb.password);
     if (!ok) return res.status(400).json({ error: 'بيانات غير صحيحة' });
     req.session.ambassadorId = amb._id;
+    req.session.ambassadorName = amb.name || 'السفير';
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: 'خطأ في الخادم' });

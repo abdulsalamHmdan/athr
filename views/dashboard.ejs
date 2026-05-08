@@ -172,13 +172,13 @@ const ambBoxShare = pct(stats.ambassadorBoxes, stats.totalBoxes);
         <div class="dash-diff-value"><span class="dash-num" data-target="16" data-suffix="%">0</span></div>
       </div>
       <div class="dash-donut-wrap">
-        <div class="dash-donut" style="--pct-final: <%= genderSplit.men %>; --ring: #e76f51;">
+        <div class="dash-donut" style="--pct-final: <%= genderSplit.men %>; --ring: var(--primary-600);">
           <span><%= genderSplit.men %>%</span>
         </div>
         <div class="dash-donut-label">الرجال</div>
       </div>
       <div class="dash-donut-wrap">
-        <div class="dash-donut" style="--pct-final: <%= genderSplit.women %>; --ring: #f4a261;">
+        <div class="dash-donut" style="--pct-final: <%= genderSplit.women %>; --ring: var(--accent-600);">
           <span><%= genderSplit.women %>%</span>
         </div>
         <div class="dash-donut-label">النساء</div>

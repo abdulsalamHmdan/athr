@@ -1,7 +1,7 @@
 <%- include('../partials/head') %>
 <%- include('../partials/nav-ambassador') %>
 
-<%- include('../partials/loader') %>
+<%- include('../partials/loader', { loaderType: 'table' }) %>
 
 <div data-content style="display:none;">
   <div class="page-intro">
@@ -41,6 +41,12 @@
 <script>
 const statusMap = { pending: 'قيد المراجعة', approved: 'مقبولة', rejected: 'مرفوضة', paid: 'تم الصرف' };
 const tierNameByAmount = { 2000: 'برونزية', 5000: 'فضية', 10000: 'ذهبية' };
+const esc = (v) => String(v == null ? '' : v)
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');
 
 function renderTiers(tiers) {
   const grid = document.getElementById('tierGrid');
@@ -71,17 +77,18 @@ async function load() {
   const tb = document.getElementById('tbody');
   tb.innerHTML = '';
   if (!rd.requests.length) {
-    tb.innerHTML = '<tr><td colspan="5" class="center small">لا توجد طلبات بعد</td></tr>';
+    tb.innerHTML = '<tr><td colspan="5" class="table-empty">لا توجد طلبات بعد</td></tr>';
   } else {
     for (const r of rd.requests) {
       const tierName = tierNameByAmount[r.amount] || '-';
+      const note = r.note || '-';
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td data-label="التاريخ">${df(r.createdAt)}</td>
-        <td data-label="الجائزة">${tierName}</td>
-        <td data-label="النقاط">${nf(r.amount)} نقطة</td>
-        <td data-label="الحالة"><span class="badge ${r.status}">${statusMap[r.status]}</span></td>
-        <td data-label="ملاحظة">${r.note || '-'}</td>`;
+        <td data-label="التاريخ"><span class="table-value is-number">${esc(df(r.createdAt))}</span></td>
+        <td data-label="الجائزة"><span class="table-value is-ellipsis">${esc(tierName)}</span></td>
+        <td data-label="النقاط"><span class="table-value is-number">${nf(r.amount)} نقطة</span></td>
+        <td data-label="الحالة"><span class="table-value is-badge"><span class="badge ${r.status}">${statusMap[r.status]}</span></span></td>
+        <td data-label="ملاحظة"><span class="table-value">${esc(note)}</span></td>`;
       tb.appendChild(tr);
     }
   }
