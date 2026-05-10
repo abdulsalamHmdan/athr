@@ -52,15 +52,15 @@ app.use("/api", apiRoutes);
 app.use("/", pushRoutes);
 app.use("/", pagesRoutes);
 
-cron.schedule("0 * * * *", async () => {
-  // console.log("[cron] hourly sync tick", new Date().toISOString());
-  try {
-    const result = await syncStale();
-    console.log("[cron] sync done:", result);
-  } catch (e) {
-    console.error("[cron] sync error:", e.message);
-  }
-});
+// cron.schedule("0 * * * *", async () => {
+//   // console.log("[cron] hourly sync tick", new Date().toISOString());
+//   try {
+//     const result = await syncStale();
+//     console.log("[cron] sync done:", result);
+//   } catch (e) {
+//     console.error("[cron] sync error:", e.message);
+//   }
+// });
 // (async () => {
 // try {
 //     console.log("[cron] hourly sync tick", new Date().toISOString());
