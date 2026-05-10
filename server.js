@@ -64,14 +64,11 @@ cron.schedule("0 * * * *", async () => {
 // (async () => {
 // try {
 //     console.log("[cron] hourly sync tick", new Date().toISOString());
-
 //     const result = await syncStale();
 //     console.log("[cron] sync done:", result);
 //   } catch (e) {
 //     console.error("[cron] sync error:", e.message);
 //   }
-
-
 // })();
 
 const PORT = process.env.PORT || 3000;

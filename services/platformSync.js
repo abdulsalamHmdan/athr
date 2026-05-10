@@ -5,7 +5,7 @@ const VERIFY_URL = process.env.PLATFORM_VERIFY_URL || `${BASE}/verify-or-create`
 const API_KEY = process.env.PLATFORM_API_KEY || 'mock-key';
 const GOALS_API = 'https://donate.utq.org.sa/api/v1/orders/report/goals:ED4SFhUVFUcZGBsZHRgeTyEdIiQgHyIhJCMmJSgnKiksKy4tMC8yMQ';
 
-const STALE_MS = 24 * 0 * 60 * 60 * 1000;
+const STALE_MS = 24 * 60 * 60 * 1000;
 
 function authHeaders() {
   return {
