@@ -26,10 +26,16 @@ router.post('/signup', async (req, res) => {
     const hash = await bcrypt.hash(password, 10);
     const referralCode = crypto.randomBytes(4).toString('hex');
 
-    const fetchResult = await fetch(`http://donate.utq.org.sa/api/v1/clients/new?phone=${"966"+phone}&name=${name}`,{method: 'get',headers:{'k':'ED4SFhUVFUcZGBsZHRgeTyEdIiQgHyIhJCMmJSgnKiksKy4tMC8yMQ'}})
-    const fetchData = await fetchResult.json();
-    if (fetchData.status == 'fail' && !fetchData.id) {
-      return res.status(500).json({ error: fetchData.msg || 'خطأ في الخادم' });
+    let fetchData;
+    try {
+      const fetchResult = await fetch(`http://donate.utq.org.sa/api/v1/clients/new?phone=${"966"+phone}&name=${encodeURIComponent(name)}`,{method: 'get',headers:{'k':'ED4SFhUVFUcZGBsZHRgeTyEdIiQgHyIhJCMmJSgnKiksKy4tMC8yMQ'}});
+      fetchData = await fetchResult.json();
+    } catch (e) {
+      console.error('[signup] platform fetch failed:', e.message);
+      return res.status(503).json({ error: 'تعذر الاتصال بمنصة التبرع، حاول لاحقاً' });
+    }
+    if (!fetchData || !fetchData.id) {
+      return res.status(500).json({ error: fetchData?.msg || 'خطأ في الخادم' });
     }
 
     const amb = await Ambassador.create({
