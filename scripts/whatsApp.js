@@ -1,17 +1,16 @@
 require('dotenv').config();
-const path = require('path');
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
+const express = require('express');
 const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
-const Ambassador = require(path.join(__dirname, '..', 'models', 'Ambassador'));
-const BASE_URL = process.env.PUBLIC_URL || 'sfeer.site';
-const LOGIN_URL = `${BASE_URL}/r/`;
-const SIGNUP_URL = `${BASE_URL}/signup`;
-const RESET_PASSWORD = '1234';
-// حالات المحادثة: chatId -> { step: 'awaitingResetChoice', ambassadorId }
-const sessions = new Map();
-// تحويل الرقم إلى صيغة قاعدة البيانات (9 أرقام بدون صفر/رمز الدولة)
+
+const PORT = process.env.WHATSAPP_PORT || 3100;
+const API_KEY = process.env.WHATSAPP_API_KEY || '';
+const COUNTRY_CODE = '966';
+const PHONE_RE = /^5[0-9]{8}$/;
+
+let waClient = null;
+let waReady = false;
+
 function normalizePhone(raw) {
   const digits = String(raw || '').replace(/\D/g, '');
   let local = digits.startsWith('966') ? digits.slice(3) : digits;
@@ -19,87 +18,83 @@ function normalizePhone(raw) {
   return local;
 }
 
-async function handleMessage(client, msg) {
-  if (msg.from.endsWith('@g.us')) return; // تجاهل المجموعات
-  if (msg.fromMe) return;
-  const chatId = msg.from;
-  const text = (msg.body || '').trim();
-  let phone;
-  const contact = await msg.getContact();
-      if (contact && contact.number) {
-        phone = normalizePhone(contact.number);
-      }
+async function sendWhatsappMessage(phone9, text) {
+  if (!waClient || !waReady) throw new Error('WhatsApp client not ready');
+  const chatId = `${COUNTRY_CODE}${phone9}@c.us`;
+  await waClient.sendMessage(chatId, text);
+}
 
-  if (!phone) {
-    console.log('تعذّر استخراج رقم الجوال للمرسل:', chatId);
-    return;
-  }
-  const state = sessions.get(chatId);
-  // إذا كان في انتظار طلب إعادة تعيين كلمة المرور
+function buildHttpServer() {
+  const app = express();
+  app.use(express.json());
 
-
-  if (state && state.step === 'awaitingResetChoice') {
-    if (text === '1') {
-      try {
-        const hash = await bcrypt.hash(RESET_PASSWORD, 10);
-        await Ambassador.updateOne({ _id: state.ambassadorId }, { $set: { password: hash } });
-        await client.sendMessage(
-          chatId,
-          `✅ تم إعادة تعيين كلمة المرور.\nكلمة المرور الجديدة: *${RESET_PASSWORD}*\nيرجى تسجيل الدخول وتغييرها لاحقاً.`
-        );
-      } catch (err) {
-        console.error('reset error:', err);
-        await client.sendMessage(chatId, '⚠️ حدث خطأ أثناء إعادة تعيين كلمة المرور، حاول لاحقاً.');
-      }
-      sessions.delete(chatId);
-      return;
+  app.use((req, res, next) => {
+    if (req.path === '/health') return next();
+    if (!API_KEY) return next();
+    if (req.headers['x-api-key'] !== API_KEY) {
+      return res.status(401).json({ error: 'Unauthorized' });
     }
-    // أي رد آخر — نتجاهله ونُنهي الحالة
-    sessions.delete(chatId);
-    return;
-  }
+    next();
+  });
 
-  // محادثة جديدة — تحقق من وجود السفير
-  try {
-    const amb = await Ambassador.findOne({ phone });
-    if (amb) {
-      sessions.set(chatId, { step: 'awaitingResetChoice', ambassadorId: amb._id });
-      await client.sendMessage(
-        chatId,
-        `مرحباً ${amb.name} 👋\nرابط تسجيل الدخول:\n${LOGIN_URL}${amb.referralCode}\n\nإذا كنت ترغب بإعادة تعيين كلمة المرور، أرسل الرقم *1*`
-      );
-    } else {
-      console.log(`رقم ${phone} غير مسجل كسفير`);
+  app.post('/send', async (req, res) => {
+    try {
+      const phone = normalizePhone(req.body && req.body.phone);
+      const message = req.body && req.body.message;
+      if (!PHONE_RE.test(phone)) {
+        return res.status(400).json({ error: 'رقم الجوال غير صحيح' });
+      }
+      if (!message || typeof message !== 'string') {
+        return res.status(400).json({ error: 'الرسالة مطلوبة' });
+      }
+      if (!waReady) {
+        return res.status(503).json({ error: 'خدمة واتساب غير جاهزة' });
+      }
+      await sendWhatsappMessage(phone, message);
+      return res.json({ ok: true });
+    } catch (err) {
+      console.error('send error:', err);
+      return res.status(500).json({ error: 'فشل إرسال الرسالة' });
     }
-  } catch (err) {
-    console.error('lookup error:', err);
-  }
+  });
+
+  app.get('/health', (req, res) => res.json({ ok: true, waReady }));
+
+  return app;
 }
 
 async function main() {
-  if (!process.env.MONGO_URI) {
-    console.error('MONGO_URI غير معرف في .env');
-    process.exit(1);
-  }
-  await mongoose.connect(process.env.MONGO_URI);
-  console.log('MongoDB connected');
-
-  const client = new Client({
+  waClient = new Client({
     authStrategy: new LocalAuth({ clientId: 'athr-points-bot' }),
-    puppeteer: { args: ['--no-sandbox', '--disable-setuid-sandbox'] },
+    puppeteer: {
+        args: ['--no-sandbox'],
+        headless: false
+    },
+    // puppeteer: { args: ['--no-sandbox', '--disable-setuid-sandbox'] },
   });
 
-  client.on('qr', (qr) => {
+  waClient.on('qr', (qr) => {
     console.log('امسح رمز QR التالي من تطبيق واتساب:');
     qrcode.generate(qr, { small: true });
   });
 
-  client.on('ready', () => console.log('✅ بوت واتساب جاهز'));
-  client.on('auth_failure', (m) => console.error('auth failure:', m));
-  client.on('disconnected', (r) => console.warn('disconnected:', r));
-  client.on('message', (msg) => handleMessage(client, msg).catch((e) => console.error(e)));
+  waClient.on('ready', () => {
+    waReady = true;
+    console.log('✅ خدمة واتساب جاهزة');
+  });
+  waClient.on('auth_failure', (m) => {
+    waReady = false;
+    console.error('auth failure:', m);
+  });
+  waClient.on('disconnected', (r) => {
+    waReady = false;
+    console.warn('disconnected:', r);
+  });
 
-  await client.initialize();
+  await waClient.initialize();
+
+  const app = buildHttpServer();
+  app.listen(PORT, () => console.log(`✅ خدمة واتساب تعمل على المنفذ ${PORT}`));
 }
 
 main().catch((err) => {

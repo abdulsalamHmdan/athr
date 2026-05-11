@@ -12,6 +12,8 @@ const AmbassadorSchema = new mongoose.Schema(
     totalDonations: { type: Number, default: 0 },
     orderCount: { type: Number, default: 0 },
     donationsUpdatedAt: { type: Date, default: null },
+    resetOtp: { type: String, default: null },
+    resetOtpExpires: { type: Date, default: null },
   },
   { timestamps: true }
 );
