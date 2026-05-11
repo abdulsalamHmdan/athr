@@ -27,7 +27,6 @@
             <th>#</th>
             <th>الاسم</th>
             <th>عدد الصناديق</th>
-            <th>عدد التبرعات</th>
             <th>إجمالي التبرعات</th>
           </tr>
         </thead>
@@ -61,8 +60,7 @@ function render(list){
       <td data-label="التسلسل"><span class="table-value is-number">${i + 1}</span></td>
       <td data-label="الاسم"><span class="table-value is-ellipsis">${esc(a.name || '-')}</span></td>
       <td data-label="عدد الصناديق"><span class="table-value is-number">${fmt(a.fundsCount)}</span></td>
-      <td data-label="عدد التبرعات"><span class="table-value is-number">${fmt(a.orderCount)}</span></td>
-      <td data-label="إجمالي التبرعات"><span class="table-value is-number">${fmt(a.totalDonations)} ريال</span></td>
+      <td data-label="إجمالي التبرعات"><span class="table-value is-number">***</span></td>
     </tr>
   `).join('');
 }
