@@ -54,7 +54,7 @@
         <div id="entityWrap" style="display: none">
           <label>الجهة</label>
           <select name="entity">
-            <option value="">الإدارة</option>
+            <option value="330">الإدارة</option>
             <option value="48">البديعة الصباحية</option>
             <option value="70">التلقين المسائية</option>
             <option value="72">جامع التميمي</option>
@@ -151,6 +151,7 @@
       });
       return;
     }
+    body.entity = body.isMember ? body.entity : "550";
     const r = await fetch("/auth/signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
