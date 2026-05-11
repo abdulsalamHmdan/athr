@@ -209,66 +209,90 @@ router.post("/platform/create-fund", async (req, res) => {
     return res.status(400).json({ error: "جميع الحقول مطلوبة" });
   }
 
-  let saved = null;
-  try {
-    if (req.session && req.session.ambassadorId) {
-      const ambassador = await Ambassador.findById(req.session.ambassadorId);
-      if (!ambassador) {
-        return res.status(401).json({ error: "Unauthorized" });
-      }
-      const fetchResult = await fetch(
-        `https://donate.utq.org.sa/api/v1/goal/new?type=51&name=${name}&prod_id=${waqfType}&client_id=${ambassador.platformProfileId}&price_goal=${targetAmount}&approved=1`,
-        {
-          method: "get",
-          headers: {
-            k: "ED4SFhUVFUcZGBsZHRgeTyEdIiQgHyIhJCMmJSgnKiksKy4tMC8yMQ",
-          },
-        },
-      );
-      const fetchData = await fetchResult.json();
-
-      await logAmbassadorActivity({
-        ambassadorId: ambassador._id,
-        action: "create_fund",
-        details: {
-          fundId: fetchData?.result?.id || "",
-          fundName: fetchData?.result?.name || name,
-          targetAmount: Number(
-            fetchData?.result?.price_goal || targetAmount || 0,
-          ),
-        },
-        source: "server",
-        path: "/api/platform/create-fund",
-      });
-      saved = await Fund.create({
-        ambassador: req.session.ambassadorId,
-        name,
-        externalId: String(fetchData?.result?.id || ""),
-        targetAmount: Number(fetchData.result.price_goal),
-        waqfType,
-        ownerPhone: ownerPhone || "",
-      });
-
-      res.json({
-        ok: true,
-        fund: {
-          id: fetchData.result.id,
-          externalId: fetchData.result.id,
-          name: fetchData.result.name,
-          targetAmount: Number(fetchData.result.price_goal),
-          waqfType,
-          acceptAfterTarget: !!acceptAfterTarget,
-          phone: ambassador.phone || "",
-          ownerPhone: ownerPhone || "",
-          shareUrl: `https://donate.utq.org.sa/goal_${fetchData.result.id}`,
-          createdAt: new Date().toISOString(),
-        },
-      });
-    }
-  } catch (e) {
-    console.error("Error creating fund:", e);
-    return res.status(500).json({ error: "فشل حفظ الصندوق" });
+  if (!req.session || !req.session.ambassadorId) {
+    return res.status(401).json({ error: "Unauthorized" });
   }
+
+  let ambassador;
+  try {
+    ambassador = await Ambassador.findById(req.session.ambassadorId);
+  } catch (e) {
+    console.error("Error finding ambassador:", e);
+    return res.status(500).json({ error: "فشل التحقق من السفير" });
+  }
+  if (!ambassador) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  let fetchData;
+  try {
+    const fetchResult = await fetch(
+      `https://donate.utq.org.sa/api/v1/goal/new?type=51&name=${name}&prod_id=${waqfType}&client_id=${ambassador.platformProfileId}&price_goal=${targetAmount}&approved=1`,
+      {
+        method: "get",
+        headers: {
+          k: "ED4SFhUVFUcZGBsZHRgeTyEdIiQgHyIhJCMmJSgnKiksKy4tMC8yMQ",
+        },
+      },
+    );
+    fetchData = await fetchResult.json();
+  } catch (e) {
+    console.error("Error creating fund on platform:", e);
+    return res.status(500).json({ error: "فشل إنشاء الصندوق" });
+  }
+
+  if (!fetchData?.result?.id) {
+    console.error("Platform did not return fund id:", fetchData);
+    return res.status(500).json({ error: "فشل إنشاء الصندوق" });
+  }
+
+  // الصندوق أُنشئ على المنصة بنجاح — أي خطأ بعد هذه النقطة لا يُرجع للمستخدم
+  try {
+    await logAmbassadorActivity({
+      ambassadorId: ambassador._id,
+      action: "create_fund",
+      details: {
+        fundId: fetchData?.result?.id || "",
+        fundName: fetchData?.result?.name || name,
+        targetAmount: Number(
+          fetchData?.result?.price_goal || targetAmount || 0,
+        ),
+      },
+      source: "server",
+      path: "/api/platform/create-fund",
+    });
+  } catch (e) {
+    console.error("Error logging activity:", e);
+  }
+
+  try {
+    await Fund.create({
+      ambassador: req.session.ambassadorId,
+      name,
+      externalId: String(fetchData?.result?.id || ""),
+      targetAmount: Number(fetchData.result.price_goal),
+      waqfType,
+      ownerPhone: ownerPhone || "",
+    });
+  } catch (e) {
+    console.error("Error saving fund locally:", e);
+  }
+
+  return res.json({
+    ok: true,
+    fund: {
+      id: fetchData.result.id,
+      externalId: fetchData.result.id,
+      name: fetchData.result.name,
+      targetAmount: Number(fetchData.result.price_goal),
+      waqfType,
+      acceptAfterTarget: !!acceptAfterTarget,
+      phone: ambassador.phone || "",
+      ownerPhone: ownerPhone || "",
+      shareUrl: `https://donate.utq.org.sa/goal_${fetchData.result.id}`,
+      createdAt: new Date().toISOString(),
+    },
+  });
 
   // const fundId = saved ? String(saved._id);
   // const shareUrl = `${PLATFORM_URL.replace(/\/+$/, '')}/funds/${encodeURIComponent(externalId)}`;
