@@ -588,10 +588,7 @@
       btn.textContent = old;
       if (!ok) return;
 
-      await loadRequests();
-      fillOverviewAndTop();
-      renderPrizeTiers();
-      renderPrizeHistory();
+      await loadAndRenderMainData();
     });
   }
 

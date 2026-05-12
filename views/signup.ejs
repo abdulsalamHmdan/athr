@@ -70,7 +70,7 @@
             <option value="64">دار الفهد الصباحية</option>
             <option value="67">دار الفهد المسائية</option>
             <option value="55">دار الفيحاء المسائية</option>
-            <option value="68">دار المطار المسائية</option>
+            <option value="68">دار حصة السليم</option>
             <option value="63">دار المقرأة الالكترونية</option>
             <option value="50">دار الملك خالد الصباحية</option>
             <option value="58">دار الملك خالد المسائية</option>
@@ -112,9 +112,34 @@
   </div>
 </div>
 
+<div class="card card-elevated" id="otpCard" style="display: none">
+  <h2>تحقق من رقم الجوال</h2>
+  <p class="small" id="otpHint" style="margin-bottom: 8px"></p>
+  <form id="otpForm">
+    <label>رمز التحقق</label>
+    <input
+      name="otp"
+      type="tel"
+      inputmode="numeric"
+      required
+      pattern="[0-9]{6}"
+      maxlength="6"
+      minlength="6"
+      placeholder="123456"
+    />
+    <div class="small">الرمز صالح لمدة 10 دقائق.</div>
+    <button class="btn block lg" type="submit" style="margin-top: 12px">
+      تحقق وإنشاء الحساب
+    </button>
+    <button class="btn secondary block" type="button" id="resendBtn" style="margin-top: 8px">
+      إعادة إرسال الرمز
+    </button>
+  </form>
+</div>
+
 <div class="card card-elevated" id="doneCard" style="display: none">
   <h2>تم التسجيل بنجاح</h2>
-  <p>هذا هو رابط تسجيل الدخول السريع، لا تشاركه مع أحد:</p>
+  <p id="doneMsg">هذا هو رابط تسجيل الدخول السريع، لا تشاركه مع أحد:</p>
   <div class="link-box">
     <span id="link"></span
     ><button class="btn" id="copyBtn" type="button">نسخ</button>
@@ -132,6 +157,29 @@
   isMember.addEventListener("change", () => {
     entityWrap.style.display = isMember.value === "true" ? "block" : "none";
   });
+
+  const formCard = document.getElementById("formCard");
+  const otpCard = document.getElementById("otpCard");
+  const doneCard = document.getElementById("doneCard");
+  const otpHint = document.getElementById("otpHint");
+  const otpForm = document.getElementById("otpForm");
+  const resendBtn = document.getElementById("resendBtn");
+
+  function showDone(data) {
+    formCard.style.display = "none";
+    otpCard.style.display = "none";
+    doneCard.style.display = "block";
+    if (data.verified === false) {
+      document.getElementById("doneMsg").textContent =
+        (data.notice || "تم إنشاء الحساب بدون تحقق واتساب، حسابك مفعّل لكن غير متحقق منه.") +
+        " هذا هو رابط تسجيل الدخول السريع، لا تشاركه مع أحد:";
+    }
+    document.getElementById("link").textContent = data.referralLink;
+    document.getElementById("copyBtn").onclick = () => {
+      navigator.clipboard.writeText(data.referralLink);
+      document.getElementById("copyBtn").textContent = "تم النسخ ✓";
+    };
+  }
 
   document.getElementById("form").addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -169,13 +217,81 @@
       });
       return;
     }
-    document.getElementById("formCard").style.display = "none";
-    document.getElementById("doneCard").style.display = "block";
-    document.getElementById("link").textContent = data.referralLink;
-    document.getElementById("copyBtn").onclick = () => {
-      navigator.clipboard.writeText(data.referralLink);
-      document.getElementById("copyBtn").textContent = "تم النسخ ✓";
-    };
+
+    if (data.requiresOtp) {
+      formCard.style.display = "none";
+      otpCard.style.display = "block";
+      otpHint.textContent = `تم إرسال رمز التحقق إلى الرقم 0${data.phone} عبر واتساب.`;
+      otpForm.otp.focus();
+      return;
+    }
+
+    showDone(data);
+  });
+
+  otpForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const btn = e.target.querySelector("button[type=submit]");
+    btn.disabled = true;
+    btn.textContent = "جاري التحقق...";
+    const otp = otpForm.otp.value.trim();
+    if (!/^[0-9]{6}$/.test(otp)) {
+      btn.disabled = false;
+      btn.textContent = "تحقق وإنشاء الحساب";
+      await App.notify({
+        title: "رمز غير صحيح",
+        message: "الرمز يجب أن يكون 6 أرقام",
+        type: "error",
+        confirmText: "حسناً",
+      });
+      return;
+    }
+    const r = await fetch("/auth/signup/verify-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ otp }),
+    });
+    const data = await r.json();
+    btn.disabled = false;
+    btn.textContent = "تحقق وإنشاء الحساب";
+    if (!r.ok) {
+      await App.notify({
+        title: "فشل التحقق",
+        message: data.error || "حدث خطأ غير متوقع",
+        type: "error",
+        confirmText: "إغلاق",
+      });
+      return;
+    }
+    showDone(data);
+  });
+
+  resendBtn.addEventListener("click", async () => {
+    resendBtn.disabled = true;
+    resendBtn.textContent = "جاري إعادة الإرسال...";
+    const r = await fetch("/auth/signup/resend-otp", { method: "POST" });
+    const data = await r.json();
+    resendBtn.disabled = false;
+    resendBtn.textContent = "إعادة إرسال الرمز";
+    if (!r.ok) {
+      await App.notify({
+        title: "تعذر إعادة الإرسال",
+        message: data.error || "حدث خطأ غير متوقع",
+        type: "error",
+        confirmText: "إغلاق",
+      });
+      return;
+    }
+    if (data.fallback) {
+      showDone(data);
+      return;
+    }
+    await App.notify({
+      title: "تم إعادة الإرسال",
+      message: "تم إرسال رمز جديد عبر واتساب.",
+      type: "success",
+      confirmText: "حسناً",
+    });
   });
 </script>
 

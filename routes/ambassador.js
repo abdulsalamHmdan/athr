@@ -4,6 +4,7 @@ const PrizeRequest = require('../models/PrizeRequest');
 const Fund = require('../models/Fund');
 const { requireAmbassador } = require('../middleware/auth');
 const { logAmbassadorActivity } = require('../services/activityLog');
+const { trySendWhatsapp } = require('../services/whatsapp');
 
 
 
@@ -208,6 +209,12 @@ router.post('/requests', requireAmbassador, async (req, res) => {
     source: 'server',
     path: '/ambassador/requests',
   });
+
+  await trySendWhatsapp(
+    amb.phone,
+    `مرحباً ${amb.name} 👋\nتم استلام طلبك لـ${tier.name} بقيمة ${tier.amount} ريال.\nسيتم مراجعة الطلب قريباً، وعند تغيّر حالة الطلب سيتم التواصل معك بشكل مباشر.`,
+    'prize-request'
+  );
 
   res.json({ ok: true, request: reqDoc });
 });

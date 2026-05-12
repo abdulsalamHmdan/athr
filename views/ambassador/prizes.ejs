@@ -71,7 +71,6 @@ async function load() {
   document.getElementById('s_balance').textContent = nf(d.stats.availableBalance);
   document.getElementById('s_paid').textContent = nf(d.stats.paid);
   renderTiers(d.stats.tiers || []);
-
   const rr = await fetch('/ambassador/requests');
   const rd = await rr.json();
   const tb = document.getElementById('tbody');

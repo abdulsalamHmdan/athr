@@ -3,8 +3,49 @@ const Ambassador = require('../models/Ambassador');
 const PrizeRequest = require('../models/PrizeRequest');
 const AmbassadorActivity = require('../models/AmbassadorActivity');
 const { requireAdmin } = require('../middleware/auth');
+const { trySendWhatsapp } = require('../services/whatsapp');
 
 const router = express.Router();
+
+function formatAmount(n) {
+  return Number(n || 0).toLocaleString('en-US');
+}
+
+function buildStatusMessage(status, reqDoc, note) {
+  const name = reqDoc.ambassador && reqDoc.ambassador.name ? reqDoc.ambassador.name : 'السفير';
+  const amount = formatAmount(reqDoc.amount);
+  const tail = note ? `\n\nملاحظة: ${note}` : '';
+  if (status === 'approved') {
+    return `مرحباً ${name} ✅\nتم قبول طلب جائزتك بقيمة ${amount} ريال.\nسيتم التواصل معك قريباً لإتمام إجراءات الصرف.${tail}`;
+  }
+  if (status === 'rejected') {
+    const reason = note ? `\nسبب الرفض: ${note}` : '';
+    return `مرحباً ${name} ❌\nنأسف لإبلاغك بأنه تم رفض طلب جائزتك بقيمة ${amount} ريال.${reason}`;
+  }
+  if (status === 'paid') {
+    return `مرحباً ${name} 💸\nتم صرف جائزتك بقيمة ${amount} ريال بنجاح.\nشكراً لجهودك في منصة "نقاط الأثر".${tail}`;
+  }
+  return '';
+}
+
+async function updateRequestStatus(req, res, status) {
+  const note = (req.body && req.body.note) || '';
+  const r = await PrizeRequest.findByIdAndUpdate(
+    req.params.id,
+    { status, note },
+    { new: true }
+  ).populate('ambassador', 'name phone');
+  if (!r) return res.status(404).json({ error: 'غير موجود' });
+
+  if (r.ambassador && r.ambassador.phone) {
+    const message = buildStatusMessage(status, r, note);
+    if (message) {
+      await trySendWhatsapp(r.ambassador.phone, message, `prize-${status}`);
+    }
+  }
+
+  res.json({ ok: true, request: r });
+}
 
 router.get('/stats', requireAdmin, async (req, res) => {
   const ambassadors = await Ambassador.find({}).lean();
@@ -78,34 +119,8 @@ router.get('/activities', requireAdmin, async (req, res) => {
   });
 });
 
-router.post('/requests/:id/approve', requireAdmin, async (req, res) => {
-  const r = await PrizeRequest.findByIdAndUpdate(
-    req.params.id,
-    { status: 'approved', note: req.body.note || '' },
-    { new: true }
-  );
-  if (!r) return res.status(404).json({ error: 'غير موجود' });
-  res.json({ ok: true, request: r });
-});
-
-router.post('/requests/:id/reject', requireAdmin, async (req, res) => {
-  const r = await PrizeRequest.findByIdAndUpdate(
-    req.params.id,
-    { status: 'rejected', note: req.body.note || '' },
-    { new: true }
-  );
-  if (!r) return res.status(404).json({ error: 'غير موجود' });
-  res.json({ ok: true, request: r });
-});
-
-router.post('/requests/:id/paid', requireAdmin, async (req, res) => {
-  const r = await PrizeRequest.findByIdAndUpdate(
-    req.params.id,
-    { status: 'paid', note: req.body.note || '' },
-    { new: true }
-  );
-  if (!r) return res.status(404).json({ error: 'غير موجود' });
-  res.json({ ok: true, request: r });
-});
+router.post('/requests/:id/approve', requireAdmin, (req, res) => updateRequestStatus(req, res, 'approved'));
+router.post('/requests/:id/reject', requireAdmin, (req, res) => updateRequestStatus(req, res, 'rejected'));
+router.post('/requests/:id/paid', requireAdmin, (req, res) => updateRequestStatus(req, res, 'paid'));
 
 module.exports = router;

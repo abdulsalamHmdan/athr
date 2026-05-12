@@ -4,14 +4,13 @@ const crypto = require('crypto');
 const Ambassador = require('../models/Ambassador');
 const Admin = require('../models/Admin');
 const { syncAmbassador } = require('../services/platformSync');
+const { sendWhatsapp, trySendWhatsapp } = require('../services/whatsapp');
 
 const router = express.Router();
 
 const PHONE_RE = /^5[0-9]{8}$/;
 const OTP_RE = /^[0-9]{6}$/;
 const OTP_TTL_MS = 10 * 60 * 1000;
-const WHATSAPP_SERVICE_URL = process.env.WHATSAPP_SERVICE_URL || 'http://localhost:3100';
-const WHATSAPP_API_KEY = process.env.WHATSAPP_API_KEY || '';
 
 function isValidPhone(phone) {
   return typeof phone === 'string' && PHONE_RE.test(phone);
@@ -23,30 +22,24 @@ function generateNumericCode(len) {
   return s;
 }
 
-async function sendWhatsapp(phone, message) {
-  const headers = { 'Content-Type': 'application/json' };
-  if (WHATSAPP_API_KEY) headers['x-api-key'] = WHATSAPP_API_KEY;
-  let r;
-  try {
-    r = await fetch(`${WHATSAPP_SERVICE_URL}/send`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({ phone, message }),
-    });
-  } catch (e) {
-    const err = new Error(`لا يمكن الاتصال بخدمة واتساب على ${WHATSAPP_SERVICE_URL} (${e.code || e.message})`);
-    err.userMessage = 'خدمة واتساب غير متصلة. تأكد من تشغيل البوت.';
-    throw err;
-  }
-  if (!r.ok) {
-    let body = null;
-    try { body = await r.json(); } catch (_) {}
-    const serverMsg = body && body.error ? body.error : `HTTP ${r.status}`;
-    const err = new Error(`whatsapp service ${r.status}: ${serverMsg}`);
-    err.userMessage = serverMsg;
-    err.status = r.status;
-    throw err;
-  }
+async function finalizeSignup(req, pending, isVerified) {
+  const amb = await Ambassador.create({
+    name: pending.name,
+    phone: pending.phone,
+    password: pending.passwordHash,
+    isMember: !!pending.isMember,
+    platformProfileId: pending.platformProfileId,
+    entity: pending.isMember ? pending.entity || '' : '',
+    referralCode: pending.referralCode,
+    isVerified: !!isVerified,
+    verifiedAt: isVerified ? new Date() : null,
+  });
+
+  req.session.ambassadorId = amb._id;
+  req.session.ambassadorName = amb.name || 'السفير';
+
+  const link = `${req.protocol}://${req.get('host')}/r/${pending.referralCode}`;
+  return { amb, link };
 }
 
 router.post('/signup', async (req, res) => {
@@ -60,7 +53,7 @@ router.post('/signup', async (req, res) => {
     const exists = await Ambassador.findOne({ phone });
     if (exists) return res.status(400).json({ error: 'رقم الجوال مسجل مسبقاً' });
 
-    const hash = await bcrypt.hash(password, 10);
+    const passwordHash = await bcrypt.hash(password, 10);
     const referralCode = crypto.randomBytes(4).toString('hex');
 
     let fetchData;
@@ -71,33 +64,142 @@ router.post('/signup', async (req, res) => {
       console.error('[signup] platform fetch failed:', e.message);
       return res.status(503).json({ error: 'تعذر الاتصال بمنصة التبرع، حاول لاحقاً' });
     }
-    if (!fetchData || !fetchData.id) {
-      return res.status(500).json({ error: fetchData?.msg || 'خطأ في الخادم' });
+    // console.log('[signup] platform response:', JSON.stringify(fetchData));
+    const platformId =
+      fetchData?.id ||
+      fetchData?.clientId ||
+      fetchData?.client_id ||
+      fetchData?.data?.id ||
+      fetchData?.client?.id ||
+      fetchData?.result?.id;
+    if (!platformId) {
+      const msg = typeof fetchData?.msg === 'string' ? fetchData.msg : '';
+      const looksLikeSuccess = /نجاح|بنجاح|success/i.test(msg);
+      if (!looksLikeSuccess) {
+        return res.status(500).json({ error: msg || 'خطأ في الخادم' });
+      }
+      console.warn('[signup] platform returned success without id, continuing without platformProfileId');
     }
 
-    const amb = await Ambassador.create({
+    const pending = {
       name,
       phone,
-      password: hash,
+      passwordHash,
       isMember: !!isMember,
-      platformProfileId: fetchData.id,
       entity: isMember ? entity || '' : '',
+      platformProfileId: platformId || null,
       referralCode,
+    };
+
+    const otp = generateNumericCode(6);
+    let whatsappOk = false;
+    try {
+      await sendWhatsapp(
+        phone,
+        `مرحباً ${name} 👋\nرمز التحقق لإكمال تسجيلك كسفير:\n*${otp}*\nصالح لمدة 10 دقائق.`
+      );
+      whatsappOk = true;
+    } catch (e) {
+      console.error('[signup] whatsapp send failed:', e.message);
+    }
+
+    if (whatsappOk) {
+      const otpHash = await bcrypt.hash(otp, 10);
+      req.session.pendingSignup = {
+        ...pending,
+        otpHash,
+        otpExpires: Date.now() + OTP_TTL_MS,
+      };
+      return res.json({ ok: true, requiresOtp: true, phone });
+    }
+
+    const { link } = await finalizeSignup(req, pending, false);
+    return res.json({
+      ok: true,
+      requiresOtp: false,
+      verified: false,
+      referralLink: link,
+      referralCode: pending.referralCode,
+      notice: 'تم إنشاء حسابك دون تحقق واتساب، حسابك مفعّل لكن غير متحقق منه.',
     });
-
-    req.session.ambassadorId = amb._id;
-    req.session.ambassadorName = amb.name || 'السفير';
-
-    // try {
-    //   await syncAmbassador(amb);
-    // } catch (e) {
-    //   console.error('[signup] platform sync failed:', e.message);
-    // }
-
-    const link = `${req.protocol}://${req.get('host')}/r/${referralCode}`;
-    res.json({ ok: true, referralLink: link, referralCode });
   } catch (err) {
     console.error(err);
+    res.status(500).json({ error: 'خطأ في الخادم' });
+  }
+});
+
+router.post('/signup/verify-otp', async (req, res) => {
+  try {
+    const pending = req.session.pendingSignup;
+    if (!pending) return res.status(400).json({ error: 'لا توجد عملية تسجيل قيد التحقق' });
+    if (!pending.otpExpires || pending.otpExpires < Date.now()) {
+      delete req.session.pendingSignup;
+      return res.status(400).json({ error: 'انتهت صلاحية رمز التحقق، أعد التسجيل' });
+    }
+
+    const { otp } = req.body;
+    if (!otp || !OTP_RE.test(String(otp)))
+      return res.status(400).json({ error: 'رمز التحقق يجب أن يكون 6 أرقام' });
+
+    const ok = await bcrypt.compare(String(otp), pending.otpHash);
+    if (!ok) return res.status(400).json({ error: 'رمز التحقق غير صحيح' });
+
+    const exists = await Ambassador.findOne({ phone: pending.phone });
+    if (exists) {
+      delete req.session.pendingSignup;
+      return res.status(400).json({ error: 'رقم الجوال مسجل مسبقاً' });
+    }
+
+    const { link } = await finalizeSignup(req, pending, true);
+    delete req.session.pendingSignup;
+
+    await trySendWhatsapp(
+      pending.phone,
+      `مرحباً ${pending.name} 🎉\nتم إنشاء حسابك كسفير في منصة "نقاط الأثر" بنجاح.\n\nهذا هو رابط الدخول السريع الخاص بك، لا تشاركه مع أحد:\n${link}`,
+      'signup/verify-otp'
+    );
+
+    return res.json({ ok: true, verified: true, referralLink: link, referralCode: pending.referralCode });
+  } catch (err) {
+    console.error('[signup/verify-otp] error:', err);
+    res.status(500).json({ error: 'خطأ في الخادم' });
+  }
+});
+
+router.post('/signup/resend-otp', async (req, res) => {
+  try {
+    const pending = req.session.pendingSignup;
+    if (!pending) return res.status(400).json({ error: 'لا توجد عملية تسجيل قيد التحقق' });
+
+    const otp = generateNumericCode(6);
+    try {
+      await sendWhatsapp(
+        pending.phone,
+        `مرحباً ${pending.name} 👋\nرمز التحقق لإكمال تسجيلك كسفير:\n*${otp}*\nصالح لمدة 10 دقائق.`
+      );
+    } catch (e) {
+      console.error('[signup/resend-otp] whatsapp send failed:', e.message);
+      const { link } = await finalizeSignup(req, pending, false);
+      delete req.session.pendingSignup;
+      return res.json({
+        ok: true,
+        fallback: true,
+        verified: false,
+        referralLink: link,
+        referralCode: pending.referralCode,
+        notice: 'خدمة واتساب غير متاحة، تم إنشاء الحساب بدون تحقق.',
+      });
+    }
+
+    const otpHash = await bcrypt.hash(otp, 10);
+    req.session.pendingSignup = {
+      ...pending,
+      otpHash,
+      otpExpires: Date.now() + OTP_TTL_MS,
+    };
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('[signup/resend-otp] error:', err);
     res.status(500).json({ error: 'خطأ في الخادم' });
   }
 });
