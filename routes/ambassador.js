@@ -97,7 +97,7 @@ async function sendFundsData(req, res) {
       const stats = g.stats || {};
       const priceGoal = Number(g.price_goal || 0);
       const currentTotal = Number(g.currentTotal || 0);
-      const soldTotal = currentTotal || Number(stats.sold_total || 0);
+      const soldTotal = Number(stats.sold_total || 0);
       const progress = priceGoal > 0 ? Math.min(100, (soldTotal / priceGoal) * 100) : Number(stats.progress || 0);
       return {
         id: g.id,
