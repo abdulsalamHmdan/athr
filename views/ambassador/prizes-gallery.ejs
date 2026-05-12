@@ -182,7 +182,7 @@
   });
 
   try {
-    const res = await fetch('/data/prizes2.json', { cache: 'no-cache' });
+    const res = await fetch('/data/prizes3.json', { cache: 'no-cache' });
     const data = await res.json();
     prizes = Array.isArray(data.prizes) ? data.prizes : [];
   } catch (e) {

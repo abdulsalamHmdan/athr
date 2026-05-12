@@ -738,7 +738,7 @@
   async function loadPrizeCatalog() {
     if (prizeCatalog.length) return prizeCatalog;
     try {
-      const res = await fetch('/data/prizes2.json', { cache: 'no-cache' });
+      const res = await fetch('/data/prizes3.json', { cache: 'no-cache' });
       const data = await res.json();
       prizeCatalog = Array.isArray(data.prizes) ? data.prizes : [];
     } catch (e) {
@@ -936,13 +936,15 @@
     }
 
     async function shareFundLink(link, fundName) {
-      const shareText = `صندوق: ${fundName || 'صندوق وقفي'}\n${link}`;
+      const shareText =
+        `صندوق : ${fundName || "-"}\n` +
+        `رابط الصندوق: ${link}\n\n` +
+        `ساهم في إكمال صندوق الوقف\nليكون لك أجرٌ جارٍ لا ينقطع،`;
       if (navigator.share) {
         try {
           await navigator.share({
             title: fundName || 'صندوق وقفي',
             text: shareText,
-            url: link,
           });
           return true;
         } catch (e) {
