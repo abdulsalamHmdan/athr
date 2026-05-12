@@ -85,6 +85,28 @@
         </div>
       </div>
 
+      <div class="card campaign-activity-card">
+        <div class="section-head">
+          <h2>النشاط من بداية الحملة</h2>
+          <p class="small">إجمالي ما تم جمعه ومساهمة كل صندوق</p>
+        </div>
+
+        <div class="campaign-total">
+          <span class="campaign-total-label">إجمالي المبلغ المُحصَّل</span>
+          <div class="campaign-total-value">
+            <strong id="campaignTotalAmount">0</strong>
+            <small>ر.س</small>
+          </div>
+        </div>
+
+        <div class="campaign-funds-head">
+          <h3>الصناديق الفعالة</h3>
+          <span class="campaign-funds-count" id="campaignFundsCount">0</span>
+        </div>
+
+        <div class="campaign-funds-list" id="campaignFundsList"></div>
+      </div>
+
       <div class="card install-card" id="a2hsCard" hidden>
         <div data-a2hs-prompt>
           <div class="section-head">
@@ -663,6 +685,51 @@
     document.getElementById('p_balance').textContent = nf(stats.availableBalance || 0);
     document.getElementById('p_paid').textContent = nf(stats.paid || 0);
 
+    renderCampaignActivity();
+  }
+
+  function renderCampaignActivity() {
+    const totalEl = document.getElementById('campaignTotalAmount');
+    const listEl = document.getElementById('campaignFundsList');
+    const countEl = document.getElementById('campaignFundsCount');
+    if (!totalEl || !listEl || !countEl) return;
+
+    const campaignTotal = allFunds.reduce(
+      (sum, g) => sum + (Number(g.currentTotal) || 0),
+      0
+    );
+    totalEl.textContent = nf(campaignTotal);
+
+    const activeFunds = allFunds
+      .filter((g) =>  (Number(g.currentTotal) || 0) > 0)
+      .sort((a, b) => (Number(b.currentTotal) || 0) - (Number(a.currentTotal) || 0));
+
+    countEl.textContent = nf(activeFunds.length);
+
+    if (!activeFunds.length) {
+      listEl.innerHTML = '<p class="small center campaign-empty">لا توجد صناديق نشطة بنشاط بعد</p>';
+      return;
+    }
+
+    listEl.innerHTML = activeFunds.map((g) => {
+      const amount = Number(g.currentTotal) || 0;
+      const pct = campaignTotal > 0 ? (amount / campaignTotal) * 100 : 0;
+      const pctTxt = pct.toFixed(1) + '%';
+      const initial = (g.name || 'ص').trim().charAt(0);
+      return `
+        <div class="campaign-fund-row">
+          <span class="campaign-fund-avatar">${esc(initial)}</span>
+          <div class="campaign-fund-meta">
+            <div class="campaign-fund-top">
+              <b class="campaign-fund-name">${esc(g.name || '-')}</b>
+              <span class="campaign-fund-pct">${pctTxt}</span>
+            </div>
+            <div class="campaign-fund-bar"><div style="width:${Math.min(100, pct)}%"></div></div>
+            <span class="campaign-fund-amount">${nf(amount)} ر.س من الإجمالي</span>
+          </div>
+        </div>
+      `;
+    }).join('');
   }
 
   let prizeCatalog = [];

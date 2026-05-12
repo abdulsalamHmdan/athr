@@ -3602,6 +3602,145 @@ button.quick-action-card {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.campaign-activity-card .section-head { margin-bottom: 12px; }
+.campaign-total {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 14px 14px;
+  border-radius: var(--radius-medium);
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  margin-bottom: 14px;
+}
+.campaign-total-label {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+.campaign-total-value {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.campaign-total-value strong {
+  font-size: clamp(24px, 7vw, 32px);
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1;
+}
+.campaign-total-value small {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+.campaign-funds-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.campaign-funds-head h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--navy-2);
+}
+.campaign-funds-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+.campaign-funds-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.campaign-empty {
+  color: var(--muted);
+  padding: 10px 0;
+}
+.campaign-fund-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-medium);
+  min-width: 0;
+}
+.campaign-fund-avatar {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--navy-2);
+  font-weight: 800;
+  font-size: 14px;
+}
+.campaign-fund-meta {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.campaign-fund-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.campaign-fund-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.campaign-fund-pct {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--success-700, #16a34a);
+}
+.campaign-fund-bar {
+  width: 100%;
+  height: 6px;
+  background: var(--card);
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.campaign-fund-bar > div {
+  height: 100%;
+  background: linear-gradient(90deg, var(--success-700, #16a34a), var(--success-500, #22c55e));
+  border-radius: 999px;
+  transition: width var(--t-base, .25s) var(--ease-out, ease);
+}
+.campaign-fund-amount {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 600;
+}
 .auth-shell {
   display: grid;
   gap: 12px;
