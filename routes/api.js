@@ -5,6 +5,8 @@ const { listEntities, entityName } = require("../services/entities");
 const { logAmbassadorActivity } = require("../services/activityLog");
 const router = express.Router();
 const cache = require("memory-cache");
+dotenv = require("dotenv");
+dotenv.config();
 // دالة الوسيط (Middleware) الخاصة بالكاش
 let cacheM = (duration) => {
   return (req, res, next) => {
@@ -231,7 +233,7 @@ router.post("/platform/create-fund", async (req, res) => {
       {
         method: "get",
         headers: {
-          k: "ED4SFhUVFUcZGBsZHRgeTyEdIiQgHyIhJCMmJSgnKiksKy4tMC8yMQ",
+          k: process.env.Donate_token || "",
         },
       },
     );
