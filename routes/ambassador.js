@@ -2,6 +2,7 @@ const express = require('express');
 const Ambassador = require('../models/Ambassador');
 const PrizeRequest = require('../models/PrizeRequest');
 const Fund = require('../models/Fund');
+const AllFund = require('../models/AllFund');
 const { requireAmbassador } = require('../middleware/auth');
 const { logAmbassadorActivity } = require('../services/activityLog');
 const { trySendWhatsapp } = require('../services/whatsapp');
@@ -20,18 +21,28 @@ const PRIZE_TIERS = [
 const TIER_BY_ID = Object.fromEntries(PRIZE_TIERS.map((t) => [t.id, t]));
 
 async function getStats(amb) {
-  const baseUrl = `http://localhost:${process.env.PORT || 3000}`;
   let totalDonations = 0;
   let orderCount = 0;
   let goals = [];
   try {
-    const r = await fetch(`${baseUrl}/api/donations/${encodeURIComponent(amb.phone)}`);
-    const data = await r.json();
-    totalDonations = data.total || 0;
-    orderCount = data.orderCount || 0;
-    goals = Array.isArray(data.items) ? data.items : [];
+    const clientId = amb.platformProfileId ? Number(amb.platformProfileId) : null;
+    if (clientId) {
+      const funds = await AllFund.find({ client_id: clientId }).lean();
+      totalDonations = funds.reduce((s, f) => s + (Number(f.currentTotal) || 0), 0);
+      // console.log(`[getStats] totalDonations for ${amb.phone}:`, funds);
+      orderCount = funds.reduce(
+        (s, f) => s + ((Number(f.currentTotal) || 0) > 0 ? (Number(f.orderCount) || 0) : 0),
+        0,
+      );
+      goals = funds.map((f) => ({
+        pk: f.id,
+        name: f.name || '',
+        total: Number(f.currentTotal) || 0,
+        goal: Number(f.price_goal) || 800,
+      }));
+    }
   } catch (e) {
-    console.error(`[getStats] failed to fetch donations for ${amb.phone}:`, e.message);
+    console.error(`[getStats] failed to read funds for ${amb.phone}:`, e.message);
   }
 
   const approved = await PrizeRequest.find({ ambassador: amb._id, status: { $in: ['approved', 'paid'] } });
@@ -79,20 +90,22 @@ async function sendFundsData(req, res) {
       return res.json({ results: [], stats: { total: 0, completed: 0, incomplete: 0 } });
     }
 
-    const url = `https://donate.utq.org.sa/api/v1/goal/list?client_id=${encodeURIComponent(amb.platformProfileId)}`;
-    const r = await fetch(url, { headers: { k: 'ED4SFhUVFUcZGBsZHRgeTyEdIiQgHyIhJCMmJSgnKiksKy4tMC8yMQ' } });
-    const data = await r.json();
-    const results = Array.isArray(data?.results) ? data.results : [];
+    const clientId = Number(amb.platformProfileId);
+    const funds = await AllFund.find({ client_id: clientId }).lean();
 
-    const items = results.map((g) => {
+    const items = funds.map((g) => {
       const stats = g.stats || {};
-      const progress = Number(stats.progress || 0);
+      const priceGoal = Number(g.price_goal || 0);
+      const currentTotal = Number(g.currentTotal || 0);
+      const soldTotal = currentTotal || Number(stats.sold_total || 0);
+      const progress = priceGoal > 0 ? Math.min(100, (soldTotal / priceGoal) * 100) : Number(stats.progress || 0);
       return {
         id: g.id,
         name: g.name || '',
-        priceGoal: Number(g.price_goal || 0),
-        soldTotal: Number(stats.sold_total || 0),
-        soldCount: Number(stats.sold_count || 0),
+        priceGoal,
+        soldTotal,
+        currentTotal,
+        soldCount: Number(g.orderCount || stats.sold_count || 0),
         visits: Number(stats.visits || 0),
         progress,
         completed: progress >= 100,

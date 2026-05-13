@@ -2,8 +2,11 @@ const express = require('express');
 const Ambassador = require('../models/Ambassador');
 const PrizeRequest = require('../models/PrizeRequest');
 const AmbassadorActivity = require('../models/AmbassadorActivity');
+const Fund = require('../models/Fund');
+const Notification = require('../models/Notification');
+const PushSubscription = require('../models/PushSubscription');
 const { requireAdmin } = require('../middleware/auth');
-const { trySendWhatsapp } = require('../services/whatsapp');
+const { trySendWhatsapp, sendWhatsapp } = require('../services/whatsapp');
 
 const router = express.Router();
 
@@ -122,5 +125,43 @@ router.get('/activities', requireAdmin, async (req, res) => {
 router.post('/requests/:id/approve', requireAdmin, (req, res) => updateRequestStatus(req, res, 'approved'));
 router.post('/requests/:id/reject', requireAdmin, (req, res) => updateRequestStatus(req, res, 'rejected'));
 router.post('/requests/:id/paid', requireAdmin, (req, res) => updateRequestStatus(req, res, 'paid'));
+
+router.post('/ambassadors/:id/send-link', requireAdmin, async (req, res) => {
+  const amb = await Ambassador.findById(req.params.id);
+  if (!amb) return res.status(404).json({ error: 'السفير غير موجود' });
+  if (!amb.phone) return res.status(400).json({ error: 'لا يوجد رقم جوال لهذا السفير' });
+  if (!amb.referralCode) return res.status(400).json({ error: 'لا يوجد رمز إحالة لهذا السفير' });
+
+  const proto = String(req.get('x-forwarded-proto') || req.protocol || 'http').split(',')[0].trim();
+  const host = req.get('x-forwarded-host') || req.get('host');
+  const baseUrl = process.env.PUBLIC_URL || `${proto}://${host}`;
+  const link = `${baseUrl}/r/${amb.referralCode}`;
+  const message = `مرحباً ${amb.name} 👋\nهذا رابط الدخول السريع الخاص بك:\n${link}\n\nلا تشاركه مع أحد.`;
+
+  try {
+    await sendWhatsapp(amb.phone, message);
+    res.json({ ok: true, link });
+  } catch (e) {
+    console.error('[admin send-link] whatsapp send failed:', e.message);
+    res.status(502).json({ error: e.userMessage || 'تعذّر إرسال الرابط عبر واتساب' });
+  }
+});
+
+router.delete('/ambassadors/:id', requireAdmin, async (req, res) => {
+  const id = req.params.id;
+  const amb = await Ambassador.findById(id);
+  if (!amb) return res.status(404).json({ error: 'السفير غير موجود' });
+
+  await Promise.all([
+    Fund.deleteMany({ ambassador: id }),
+    PrizeRequest.deleteMany({ ambassador: id }),
+    AmbassadorActivity.deleteMany({ ambassador: id }),
+    PushSubscription.deleteMany({ ambassador: id }),
+    Notification.deleteMany({ ambassador: id }),
+  ]);
+  await Ambassador.deleteOne({ _id: id });
+
+  res.json({ ok: true });
+});
 
 module.exports = router;

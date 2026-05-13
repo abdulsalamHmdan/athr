@@ -87,7 +87,7 @@
       </div>
       <div class="table-wrap has-cards">
         <table class="table-cards">
-          <thead><tr><th>#</th><th>الاسم</th><th>الجوال</th><th>منسوب</th><th>الجهة</th><th>الرمز</th></tr></thead>
+          <thead><tr><th>#</th><th>الاسم</th><th>الجوال</th><th>منسوب</th><th>الجهة</th><th>الرمز</th><th>إجراءات</th></tr></thead>
           <tbody id="tbody"></tbody>
         </table>
       </div>
@@ -115,7 +115,7 @@ function renderAmbassadors(list) {
   const tb = document.getElementById('tbody');
   tb.innerHTML = '';
   if (!list.length) {
-    tb.innerHTML = '<tr><td colspan="6" class="table-empty">لا يوجد سفراء</td></tr>';
+    tb.innerHTML = '<tr><td colspan="7" class="table-empty">لا يوجد سفراء</td></tr>';
     return;
   }
   list.forEach((a, i) => {
@@ -130,9 +130,93 @@ function renderAmbassadors(list) {
       <td data-label="الجوال"><span class="table-value is-number">${esc(phone)}</span></td>
       <td data-label="منسوب"><span class="table-value">${a.isMember ? 'نعم' : 'لا'}</span></td>
       <td data-label="الجهة"><span class="table-value is-ellipsis">${esc(entity)}</span></td>
-      <td data-label="الرمز"><span class="table-value is-number">${esc(code)}</span></td>`;
+      <td data-label="الرمز"><span class="table-value is-number">${esc(code)}</span></td>
+      <td data-label="إجراءات">
+        <div class="row-actions" style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="btn sm bordered" type="button" data-action="send-link" data-id="${esc(a._id)}" data-name="${esc(name)}">إرسال الرابط</button>
+          <button class="btn err sm" type="button" data-action="delete-amb" data-id="${esc(a._id)}" data-name="${esc(name)}">حذف نهائي</button>
+        </div>
+      </td>`;
     tb.appendChild(tr);
   });
+}
+
+async function handleSendLink(id, name) {
+  const ok = await App.confirm({
+    title: 'إرسال الرابط الخاص',
+    message: `سيتم إرسال رابط الدخول الخاص للسفير "${name}" عبر واتساب. هل تريد المتابعة؟`,
+    type: 'info',
+    confirmText: 'إرسال',
+    cancelText: 'إلغاء',
+  });
+  if (!ok) return;
+  try {
+    const r = await fetch(`/admin/ambassadors/${id}/send-link`, { method: 'POST' });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) {
+      App.notify({
+        title: 'تعذّر الإرسال',
+        message: d.error || 'حدث خطأ أثناء إرسال الرابط',
+        type: 'error',
+        confirmText: 'حسناً',
+      });
+      return;
+    }
+    App.notify({
+      title: 'تم الإرسال',
+      message: `تم إرسال الرابط الخاص للسفير "${name}" بنجاح.`,
+      type: 'success',
+      confirmText: 'حسناً',
+    });
+  } catch (e) {
+    App.notify({
+      title: 'خطأ في الشبكة',
+      message: 'تعذّر الاتصال بالخادم',
+      type: 'error',
+      confirmText: 'حسناً',
+    });
+  }
+}
+
+async function handleDeleteAmbassador(id, name) {
+  const ok = await App.confirm({
+    title: 'حذف نهائي',
+    message: `سيتم حذف السفير "${name}" وجميع بياناته (الصناديق، الطلبات، النشاط، الإشعارات) نهائياً ولا يمكن التراجع. هل تريد المتابعة؟`,
+    type: 'warning',
+    confirmText: 'حذف',
+    cancelText: 'إلغاء',
+  });
+  if (!ok) return;
+  try {
+    const r = await fetch(`/admin/ambassadors/${id}`, { method: 'DELETE' });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) {
+      App.notify({
+        title: 'تعذّر الحذف',
+        message: d.error || 'حدث خطأ أثناء الحذف',
+        type: 'error',
+        confirmText: 'حسناً',
+      });
+      return;
+    }
+    ambassadors = ambassadors.filter((a) => String(a._id) !== String(id));
+    document.getElementById('amb_count').textContent = App.formatNumber(ambassadors.length);
+    document.getElementById('s_amb').textContent = App.formatNumber(ambassadors.length);
+    renderAmbassadors(filterAmbassadors());
+    App.notify({
+      title: 'تم الحذف',
+      message: `تم حذف السفير "${name}" وجميع بياناته.`,
+      type: 'success',
+      confirmText: 'حسناً',
+    });
+  } catch (e) {
+    App.notify({
+      title: 'خطأ في الشبكة',
+      message: 'تعذّر الاتصال بالخادم',
+      type: 'error',
+      confirmText: 'حسناً',
+    });
+  }
 }
 
 function filterAmbassadors() {
@@ -355,6 +439,16 @@ document.getElementById('amb_search').addEventListener('input', () => {
 });
 document.getElementById('amb_export').addEventListener('click', exportAmbassadors);
 document.getElementById('activityLoadBtn').addEventListener('click', loadRecentActivities);
+
+document.getElementById('tbody').addEventListener('click', (e) => {
+  const btn = e.target.closest('button[data-action]');
+  if (!btn) return;
+  const id = btn.dataset.id;
+  const name = btn.dataset.name || 'السفير';
+  if (!id) return;
+  if (btn.dataset.action === 'send-link') return handleSendLink(id, name);
+  if (btn.dataset.action === 'delete-amb') return handleDeleteAmbassador(id, name);
+});
 
 document.getElementById('adminDashSegments').addEventListener('click', (e) => {
   const btn = e.target.closest('.segment-btn[data-tab]');

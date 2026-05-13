@@ -27,7 +27,7 @@
     </div>
     <div class="filters" id="fundStatusFilters">
       <a href="#" class="filter active" data-status="all">الكل</a>
-      <a href="#" class="filter" data-status="active">نشطة</a>
+      <a href="#" class="filter" data-status="active">غير مكتملة</a>
       <a href="#" class="filter" data-status="complete">مكتملة</a>
     </div>
     <div id="goalsBody" class="fund-jobs-grid"></div>
@@ -77,7 +77,7 @@
 
     if (!list.length) {
       const emptyTxt = statusFilter === 'active'
-        ? 'لا توجد صناديق نشطة'
+        ? 'لا توجد صناديق غير مكتملة'
         : statusFilter === 'complete'
           ? 'لا توجد صناديق مكتملة'
           : 'لا توجد صناديق بعد';
@@ -88,7 +88,7 @@
     body.innerHTML = list.map((g, i) => {
       const pct = Math.min(100, Number(g.progress || 0));
       const pctTxt = (g.progress != null ? Number(g.progress).toFixed(1) : '0') + '%';
-      const doneLabel = g.completed ? 'مكتمل' : 'نشط';
+      const doneLabel = g.completed ? 'مكتمل' : 'غير مكتمل';
       const doneClass = g.completed ? 'saved' : 'active';
       const initial = (g.name || 'ص').trim().charAt(0);
       return `

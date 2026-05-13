@@ -1,5 +1,6 @@
 const express = require("express");
 const Fund = require("../models/Fund");
+const AllFund = require("../models/AllFund");
 const Ambassador = require("../models/Ambassador");
 const { listEntities, entityName } = require("../services/entities");
 const { logAmbassadorActivity } = require("../services/activityLog");
@@ -35,38 +36,46 @@ router.get("/public/centers", async (req, res) => {
     const entities = listEntities();
     const ambassadors = await Ambassador.find(
       {},
-      "entity totalDonations",
+      "entity platformProfileId",
     ).lean();
-    const fundsAgg = await Fund.aggregate([
-      {
-        $lookup: {
-          from: "ambassadors",
-          localField: "ambassador",
-          foreignField: "_id",
-          as: "a",
-        },
-      },
-      { $unwind: "$a" },
-      { $group: { _id: "$a.entity", count: { $sum: 1 } } },
-    ]);
-    const fundsByEntity = Object.fromEntries(
-      fundsAgg.map((x) => [String(x._id || ""), x.count]),
-    );
+
+    const clientIds = ambassadors
+      .map((a) => Number(a.platformProfileId))
+      .filter((n) => Number.isFinite(n));
+    const fundsList = await AllFund.find(
+      { client_id: { $in: clientIds } },
+      "client_id currentTotal",
+    ).lean();
+
+    const totalsByClient = new Map();
+    const countByClient = new Map();
+    for (const f of fundsList) {
+      const cid = Number(f.client_id);
+      const amount = Number(f.currentTotal) || 0;
+      totalsByClient.set(cid, (totalsByClient.get(cid) || 0) + amount);
+      if (amount > 0) {
+        countByClient.set(cid, (countByClient.get(cid) || 0) + 1);
+      }
+    }
 
     const stats = entities.map((e) => {
       const ambs = ambassadors.filter(
         (a) => String(a.entity || "") === String(e.id),
       );
-      const totalDonations = ambs.reduce(
-        (s, a) => s + (a.totalDonations || 0),
-        0,
-      );
+      let totalDonations = 0;
+      let fundsCount = 0;
+      for (const a of ambs) {
+        const cid = Number(a.platformProfileId);
+        if (!Number.isFinite(cid)) continue;
+        totalDonations += totalsByClient.get(cid) || 0;
+        fundsCount += countByClient.get(cid) || 0;
+      }
       return {
         id: e.id,
         name: e.name,
         ambassadorsCount: ambs.length,
         totalDonations,
-        fundsCount: fundsByEntity[e.id] || 0,
+        fundsCount,
       };
     });
 
@@ -82,26 +91,41 @@ router.get("/public/centers/:id", async (req, res) => {
     const id = String(req.params.id);
     const ambassadors = await Ambassador.find(
       { entity: id },
-      "name phone totalDonations donationsUpdatedAt",
+      "name phone platformProfileId donationsUpdatedAt",
     ).lean();
 
-    const ids = ambassadors.map((a) => a._id);
-    const fundsAgg = await Fund.aggregate([
-      { $match: { ambassador: { $in: ids } } },
-      { $group: { _id: "$ambassador", count: { $sum: 1 } } },
-    ]);
-    const fundsByAmb = Object.fromEntries(
-      fundsAgg.map((x) => [String(x._id), x.count]),
-    );
+    const clientIds = ambassadors
+      .map((a) => Number(a.platformProfileId))
+      .filter((n) => Number.isFinite(n));
+    const fundsList = await AllFund.find(
+      { client_id: { $in: clientIds } },
+      "client_id currentTotal",
+    ).lean();
 
-    const list = ambassadors.map((a) => ({
-      id: String(a._id),
-      name: a.name,
-      phone: a.phone,
-      totalDonations: a.totalDonations || 0,
-      fundsCount: fundsByAmb[String(a._id)] || 0,
-      donationsUpdatedAt: a.donationsUpdatedAt,
-    }));
+    const totalsByClient = new Map();
+    const countByClient = new Map();
+    for (const f of fundsList) {
+      const cid = Number(f.client_id);
+      const amount = Number(f.currentTotal) || 0;
+      totalsByClient.set(cid, (totalsByClient.get(cid) || 0) + amount);
+      if (amount > 0) {
+        countByClient.set(cid, (countByClient.get(cid) || 0) + 1);
+      }
+    }
+
+    const list = ambassadors.map((a) => {
+      const cid = Number(a.platformProfileId);
+      const total = Number.isFinite(cid) ? totalsByClient.get(cid) || 0 : 0;
+      const count = Number.isFinite(cid) ? countByClient.get(cid) || 0 : 0;
+      return {
+        id: String(a._id),
+        name: a.name,
+        phone: a.phone,
+        totalDonations: total,
+        fundsCount: count,
+        donationsUpdatedAt: a.donationsUpdatedAt,
+      };
+    });
     list.sort((a, b) => b.totalDonations - a.totalDonations);
 
     const totalDonations = list.reduce((s, a) => s + a.totalDonations, 0);
@@ -127,15 +151,19 @@ const GOALS_API =
 
 router.get("/donations-all", async (req, res) => {
   try {
-    // const r = await fetch(`${GOALS_API}`);
-    const r = await fetch(
-      `${GOALS_API}?ts=1777755600-${Math.ceil(Date.now() / 1000)}`,
-    );
-
-    const data = await r.json();
+    const agg = await AllFund.aggregate([
+      {
+        $group: {
+          _id: null,
+          total: { $sum: { $ifNull: ["$currentTotal", 0] } },
+          orderCount: { $sum: { $ifNull: ["$orderCount", 0] } },
+        },
+      },
+    ]);
+    const row = agg[0] || { total: 0, orderCount: 0 };
     res.json({
-      total: data?.totals?.total || 0,
-      orderCount: data?.totals?.order_count || 0,
+      total: row.total || 0,
+      orderCount: row.orderCount || 0,
       currency: "SAR",
       updatedAt: new Date().toISOString(),
     });
@@ -152,22 +180,29 @@ router.get("/donations-all", async (req, res) => {
 router.get("/donations/:phone", cacheM(5), async (req, res) => {
   const phone = req.params.phone;
   try {
-    const r = await fetch(
-      `${GOALS_API}?goal_creator=${encodeURIComponent(phone)}&ts=1777755600-${Math.ceil(Date.now() / 1000)}`,
-    );
-    // const r = await fetch(`${GOALS_API}?goal_creator=${encodeURIComponent(phone)}`);
-    const data = await r.json();
-    // console.log(data);
-    const total = data?.totals?.total || 0;
-    const orderCount = data?.totals?.order_count || 0;
-    const items = Array.isArray(data?.items)
-      ? data.items.map((it) => ({
-          pk: it.pk,
-          name: it.name,
-          total: it.total || 0,
-          goal: it.goal || 800,
-        }))
-      : [];
+    const amb = await Ambassador.findOne({ phone }).lean();
+    const clientId = amb && amb.platformProfileId ? Number(amb.platformProfileId) : null;
+
+    if (!clientId) {
+      return res.json({
+        phone,
+        total: 0,
+        orderCount: 0,
+        items: [],
+        currency: "SAR",
+        updatedAt: new Date().toISOString(),
+      });
+    }
+
+    const funds = await AllFund.find({ client_id: clientId }).lean();
+    const total = funds.reduce((s, f) => s + (Number(f.currentTotal) || 0), 0);
+    const orderCount = funds.reduce((s, f) => s + (Number(f.orderCount) || 0), 0);
+    const items = funds.map((f) => ({
+      pk: f.id,
+      name: f.name || "",
+      total: Number(f.currentTotal) || 0,
+      goal: Number(f.price_goal) || 800,
+    }));
     res.json({
       phone,
       total,
@@ -267,13 +302,19 @@ router.post("/platform/create-fund", async (req, res) => {
   }
 
   try {
-    await Fund.create({
-      ambassador: req.session.ambassadorId,
-      name,
-      externalId: String(fetchData?.result?.id || ""),
-      targetAmount: Number(fetchData.result.price_goal),
-      waqfType,
-      ownerPhone: ownerPhone || "",
+    await AllFund.create({
+      id: Number(fetchData.result.id),
+      name: fetchData.result.name || name,
+      price_goal: Number(fetchData.result.price_goal || targetAmount || 0),
+      client_id: Number(ambassador.platformProfileId) || null,
+      prod_id: Number(waqfType) || null,
+      type: 51,
+      total: 0,
+      currentTotal: 0,
+      orderCount: 0,
+      done: "c",
+      phone: ownerPhone || "",
+      stats: {},
     });
   } catch (e) {
     console.error("Error saving fund locally:", e);
