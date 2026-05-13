@@ -1,0 +1,559 @@
+<%- include('../partials/head') %>
+<%- include('../partials/nav-ambassador') %>
+
+<div class="maint-page">
+  <!-- Hero: حالة الصيانة -->
+  <section class="maint-hero card">
+    <div class="maint-badge">
+      <span class="maint-pulse"></span>
+      <span>صيانة جارية</span>
+    </div>
+
+    <div class="maint-icon" aria-hidden="true">
+      <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M41.5 14.5a8 8 0 0 0-10.6 10.6L14 41.9a3.5 3.5 0 1 0 4.95 4.95l16.8-16.8a8 8 0 0 0 10.6-10.6l-4.78 4.78-4.95-1.41-1.41-4.95 4.78-4.78z"/>
+        <circle cx="50" cy="50" r="3"/>
+        <path d="M52 32a20 20 0 0 0-20-20"/>
+      </svg>
+    </div>
+
+    <h1 class="maint-title">النظام مغلق مؤقتاً للصيانة</h1>
+    <p class="maint-sub">
+      نعمل حالياً على تحسينات وتحديثات جوهرية تخدم تجربتك في منصة <b>نقاط الأثر</b>.
+      يمكنك متابعة المؤقت أدناه لمعرفة وقت العودة، ويبقى بإمكانك إنشاء صناديق وقفية جديدة من نفس هذه الصفحة.
+    </p>
+
+    <div class="maint-countdown" id="maintCountdown" aria-live="polite">
+      <div class="maint-cd-cell">
+        <span class="maint-cd-num" id="cdDays">00</span>
+        <span class="maint-cd-lbl">يوم</span>
+      </div>
+      <span class="maint-cd-sep">:</span>
+      <div class="maint-cd-cell">
+        <span class="maint-cd-num" id="cdHours">00</span>
+        <span class="maint-cd-lbl">ساعة</span>
+      </div>
+      <span class="maint-cd-sep">:</span>
+      <div class="maint-cd-cell">
+        <span class="maint-cd-num" id="cdMinutes">00</span>
+        <span class="maint-cd-lbl">دقيقة</span>
+      </div>
+      <span class="maint-cd-sep">:</span>
+      <div class="maint-cd-cell">
+        <span class="maint-cd-num" id="cdSeconds">00</span>
+        <span class="maint-cd-lbl">ثانية</span>
+      </div>
+    </div>
+
+    <div class="maint-eta" id="maintEta">
+      موعد عودة الخدمة المتوقّع: <b id="maintEtaDate">—</b>
+    </div>
+
+    <div class="maint-progress">
+      <div class="maint-progress-bar" id="maintProgressBar"></div>
+    </div>
+  </section>
+
+  <!-- قسم إنشاء صندوق -->
+  <section class="card maint-create-card">
+    <div class="section-head">
+      <h2>إنشاء صندوق وقفي</h2>
+      <p class="small">يمكنك متابعة إنشاء صناديقك أثناء فترة الصيانة</p>
+    </div>
+
+    <form id="quickCreateFundForm" novalidate>
+      <label for="cf_name">اسم الصندوق</label>
+      <input id="cf_name" type="text" required placeholder="مثل: وقف عن فلان رحمه الله">
+
+      <label for="cf_ownerPhone">رقم صاحب الصندوق <span class="small">(اختياري)</span></label>
+      <input id="cf_ownerPhone" type="tel" placeholder="05XXXXXXXX">
+
+      <label for="cf_waqfType">مجال التبرع</label>
+      <select id="cf_waqfType" required>
+        <option value="">— اختر مجال التبرع —</option>
+        <option value="1">محطة جيل القران 2 (السفير)</option>
+        <option value="2">كفالة حلقة</option>
+        <option value="3">المحفظة الإستثمارية</option>
+      </select>
+
+      <label for="cf_targetAmount">القيمة المستهدفة للحملة</label>
+      <select id="cf_targetAmount" required>
+        <option value="">— اختر المجال أولاً —</option>
+      </select>
+
+      <label class="fund-option-label" style="margin-top:12px;">
+        <input type="checkbox" id="cf_fundType">
+        <span>نشره ضمن قائمة الصناديق الأكثر تفاعلاً</span>
+      </label>
+
+      <button class="btn block ok" id="cf_submit" type="submit" style="margin-top:14px;">إنشاء الصندوق</button>
+    </form>
+
+    <div class="msg" id="cf_msg"></div>
+
+    <div class="link-box" id="cf_linkBox" style="display:none; margin-top:10px;">
+      <span id="cf_createdLink"></span>
+      <button class="btn sm bordered" type="button" id="cf_copyLink">نسخ الرابط</button>
+      <button class="btn sm secondary" type="button" id="cf_shareLink">مشاركة</button>
+      <a class="btn sm ok" id="cf_openLink" href="#" target="_blank" rel="noopener">فتح</a>
+    </div>
+  </section>
+
+  <p class="maint-foot-note small">
+    إذا كنت بحاجة إلى مساعدة عاجلة، تواصل معنا عبر زر واتساب أسفل الصفحة.
+  </p>
+</div>
+
+<style>
+  .maint-page {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 8px 0 28px;
+  }
+
+  .maint-hero {
+    position: relative;
+    text-align: center;
+    padding: 28px 22px 24px;
+    background:
+      radial-gradient(120% 80% at 50% 0%, var(--primary-soft) 0%, transparent 60%),
+      linear-gradient(180deg, var(--primary-50) 0%, #ffffff 70%);
+    border: 1px solid var(--primary-200);
+    border-radius: var(--radius-large);
+    overflow: hidden;
+  }
+
+  .maint-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+    border: 1px solid var(--primary-200);
+    color: var(--primary-700);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: var(--radius-full);
+    margin-bottom: 16px;
+  }
+  .maint-pulse {
+    position: relative;
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--primary-600);
+  }
+  .maint-pulse::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    background: var(--primary-soft);
+    animation: maint-pulse 1.6s ease-out infinite;
+  }
+  @keyframes maint-pulse {
+    0%   { transform: scale(0.6); opacity: 0.9; }
+    100% { transform: scale(1.8); opacity: 0; }
+  }
+
+  .maint-icon {
+    width: 84px;
+    height: 84px;
+    margin: 0 auto 14px;
+    border-radius: 50%;
+    background: #fff;
+    border: 1px solid var(--primary-200);
+    color: var(--primary-700);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: maint-float 4.5s ease-in-out infinite;
+  }
+  .maint-icon svg { width: 44px; height: 44px; }
+  @keyframes maint-float {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-6px); }
+  }
+
+  .maint-title {
+    margin: 4px 0 8px;
+    font-size: 22px;
+    color: var(--navy-2);
+    font-weight: 700;
+  }
+  .maint-sub {
+    margin: 0 auto 18px;
+    max-width: 520px;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.8;
+  }
+  .maint-sub b { color: var(--primary-700); }
+
+  .maint-countdown {
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    gap: 6px;
+    flex-wrap: nowrap;
+    direction: ltr;
+    margin: 6px auto 12px;
+    max-width: 460px;
+  }
+  .maint-cd-cell {
+    flex: 1 1 0;
+    min-width: 0;
+    background: #fff;
+    border: 1px solid var(--primary-200);
+    border-radius: var(--radius-small);
+    padding: 12px 6px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .maint-cd-num {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--primary-700);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+  .maint-cd-lbl {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 500;
+  }
+  .maint-cd-sep {
+    display: flex;
+    align-items: center;
+    color: var(--primary-400);
+    font-size: 22px;
+    font-weight: 700;
+    padding-bottom: 18px;
+  }
+
+  .maint-eta {
+    font-size: 13px;
+    color: var(--muted);
+    margin: 4px 0 14px;
+  }
+  .maint-eta b { color: var(--navy-2); }
+
+  .maint-progress {
+    width: 100%;
+    height: 6px;
+    background: var(--primary-100);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+  }
+  .maint-progress-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--primary-400), var(--primary-700));
+    transition: width 0.6s var(--ease-out);
+  }
+
+  .maint-create-card .section-head h2 {
+    color: var(--navy-2);
+  }
+
+  .maint-foot-note {
+    text-align: center;
+    color: var(--muted);
+    margin: 4px 8px 0;
+  }
+
+  .maint-done {
+    display: none;
+    margin-top: 8px;
+    color: var(--success);
+    font-weight: 600;
+  }
+  .maint-page.is-done .maint-countdown,
+  .maint-page.is-done .maint-eta,
+  .maint-page.is-done .maint-progress {
+    display: none;
+  }
+  .maint-page.is-done .maint-done { display: block; }
+
+  @media (max-width: 380px) {
+    .maint-cd-num { font-size: 22px; }
+    .maint-cd-cell { padding: 10px 4px 8px; }
+    .maint-cd-sep  { font-size: 18px; padding-bottom: 16px; }
+  }
+</style>
+
+<div class="maint-done" id="maintDone">
+  انتهت فترة الصيانة — يُرجى تحديث الصفحة للعودة إلى لوحة السفير.
+</div>
+
+<script src="/js/app.js"></script>
+<script>
+(function () {
+  // ============================================================
+  // ضبط وقت انتهاء الصيانة — عدّل التاريخ هنا حسب الحاجة
+  // (التوقيت بصيغة ISO — بتوقيت السعودية UTC+3)
+  // ============================================================
+  const MAINT_END_ISO   = '2026-05-14T00:00:00+03:00';
+  const MAINT_START_ISO = '2026-05-13T00:00:00+03:00';
+
+  const endTs   = new Date(MAINT_END_ISO).getTime();
+  const startTs = new Date(MAINT_START_ISO).getTime();
+
+  const elD = document.getElementById('cdDays');
+  const elH = document.getElementById('cdHours');
+  const elM = document.getElementById('cdMinutes');
+  const elS = document.getElementById('cdSeconds');
+  const elEta = document.getElementById('maintEtaDate');
+  const elBar = document.getElementById('maintProgressBar');
+  const pageEl = document.querySelector('.maint-page');
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  function fmtDate(ts) {
+    try {
+      return new Intl.DateTimeFormat('ar-SA', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        hour: '2-digit',
+        minute: '2-digit',
+      }).format(new Date(ts));
+    } catch (e) {
+      return new Date(ts).toLocaleString('ar-SA');
+    }
+  }
+
+  function tick() {
+    const now = Date.now();
+    let diff = endTs - now;
+    if (diff <= 0) {
+      elD.textContent = elH.textContent = elM.textContent = elS.textContent = '00';
+      elBar.style.width = '100%';
+      pageEl.classList.add('is-done');
+      return false;
+    }
+    const days = Math.floor(diff / 86400000); diff -= days * 86400000;
+    const hours = Math.floor(diff / 3600000); diff -= hours * 3600000;
+    const mins  = Math.floor(diff / 60000);   diff -= mins * 60000;
+    const secs  = Math.floor(diff / 1000);
+
+    elD.textContent = pad(days);
+    elH.textContent = pad(hours);
+    elM.textContent = pad(mins);
+    elS.textContent = pad(secs);
+
+    const total = Math.max(1, endTs - startTs);
+    const elapsed = Math.max(0, Math.min(total, now - startTs));
+    elBar.style.width = ((elapsed / total) * 100).toFixed(2) + '%';
+    return true;
+  }
+
+  elEta.textContent = fmtDate(endTs);
+  tick();
+  const timer = setInterval(() => {
+    if (!tick()) clearInterval(timer);
+  }, 1000);
+})();
+
+// ============================================================
+// نموذج إنشاء الصندوق (نفس منطق الصفحة الرئيسية)
+// ============================================================
+(function initQuickCreateFund() {
+  const targetOptions = {
+    "3": {
+      placeholder: "— اختر عدد الأسهم —",
+      items: [
+        { value: "800",  label: "سهم واحد — 800 ريال" },
+        { value: "1600", label: "سهمان — 1,600 ريال" },
+        { value: "4000", label: "5 أسهم — 4,000 ريال" },
+        { value: "8000", label: "10 أسهم — 8,000 ريال" },
+      ],
+    },
+    "2": {
+      placeholder: "— اختر عدد الأشهر —",
+      items: [
+        { value: "800",   label: "شهر — 800 ريال" },
+        { value: "1600",  label: "شهرين — 1,600 ريال" },
+        { value: "2400",  label: "3 أشهر — 2,400 ريال" },
+        { value: "5000",  label: "فصل دراسي — 5,000 ريال" },
+        { value: "10000", label: "سنة كاملة — 10,000 ريال" },
+      ],
+    },
+    "1": {
+      placeholder: "— اختر عدد الأمتار —",
+      items: [
+        { value: "1465",  label: "متر — 1,465 ريال" },
+        { value: "2930",  label: "مترين — 2,930 ريال" },
+        { value: "4395",  label: "3 أمتار — 4,395 ريال" },
+        { value: "7325",  label: "5 أمتار — 7,325 ريال" },
+        { value: "14650", label: "10 أمتار — 14,650 ريال" },
+      ],
+    },
+  };
+
+  const form = document.getElementById('quickCreateFundForm');
+  if (!form) return;
+  const typeEl = document.getElementById('cf_waqfType');
+  const targetEl = document.getElementById('cf_targetAmount');
+  const submitBtn = document.getElementById('cf_submit');
+  const linkBox = document.getElementById('cf_linkBox');
+  const createdLinkEl = document.getElementById('cf_createdLink');
+  const copyBtn = document.getElementById('cf_copyLink');
+  const shareBtn = document.getElementById('cf_shareLink');
+  const openLink = document.getElementById('cf_openLink');
+
+  async function copyText(text) {
+    try { await navigator.clipboard.writeText(text); return true; }
+    catch (e) { return false; }
+  }
+
+  async function shareFundLink(link, fundName) {
+    const shareText = `صندوق: ${fundName || 'صندوق وقفي'}\n${link}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: fundName || 'صندوق وقفي', text: shareText, url: link });
+        return true;
+      } catch (e) { return false; }
+    }
+    window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank');
+    return true;
+  }
+
+  async function showCreatedFundActions(fundName, link) {
+    const action = await App.actions({
+      title: 'تم إنشاء الصندوق',
+      message: `${fundName || 'الصندوق'}\nاختر الإجراء المناسب الآن`,
+      type: 'success',
+      actions: [
+        { id: 'copy',  label: 'نسخ رابط الصندوق' },
+        { id: 'share', label: 'مشاركة الصندوق', className: 'btn secondary' },
+        { id: 'open',  label: 'فتح الصندوق', className: 'btn flat' },
+      ],
+    });
+    if (!action) return;
+    if (action === 'copy') {
+      const ok = await copyText(link);
+      await App.notify({
+        title: ok ? 'تم النسخ' : 'تعذر النسخ',
+        message: ok ? 'تم نسخ رابط الصندوق بنجاح' : 'تعذر نسخ الرابط، حاول مرة أخرى',
+        type: ok ? 'success' : 'error',
+        confirmText: 'حسناً',
+      });
+      return;
+    }
+    if (action === 'share') { await shareFundLink(link, fundName); return; }
+    if (action === 'open')  { window.open(link, '_blank', 'noopener'); }
+  }
+
+  function showMsg(type, text) {
+    App.notify({
+      title: type === 'err' ? 'تنبيه' : 'تمت العملية',
+      message: text,
+      type: type === 'err' ? 'error' : 'success',
+      confirmText: 'حسناً',
+    });
+  }
+
+  function renderTargetsByType(type) {
+    const data = targetOptions[type];
+    targetEl.innerHTML = '';
+    const first = document.createElement('option');
+    first.value = '';
+    first.textContent = data ? data.placeholder : '— اختر المجال أولاً —';
+    targetEl.appendChild(first);
+    if (!data) return;
+    data.items.forEach((item) => {
+      const o = document.createElement('option');
+      o.value = item.value;
+      o.textContent = item.label;
+      targetEl.appendChild(o);
+    });
+  }
+
+  function validOwnerPhone(raw) {
+    if (!raw) return true;
+    const cleaned = String(raw).replace(/\D/g, '');
+    return /^(05\d{8}|5\d{8}|9665\d{8})$/.test(cleaned);
+  }
+
+  typeEl.addEventListener('change', () => renderTargetsByType(typeEl.value));
+  renderTargetsByType('');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    linkBox.style.display = 'none';
+
+    const name = document.getElementById('cf_name').value.trim();
+    const ownerPhone = document.getElementById('cf_ownerPhone').value.trim();
+    const waqfType = typeEl.value;
+    const targetAmount = targetEl.value;
+    const acceptAfterTarget = document.getElementById('cf_fundType').checked;
+
+    if (!name) return showMsg('err', 'الرجاء إدخال اسم الصندوق.');
+    if (!waqfType) return showMsg('err', 'اختر مجال التبرع.');
+    if (!targetAmount) return showMsg('err', 'اختر القيمة المستهدفة.');
+    if (!validOwnerPhone(ownerPhone)) return showMsg('err', 'رقم صاحب الصندوق غير صحيح.');
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'جاري الإنشاء...';
+    try {
+      const body = {
+        name,
+        targetAmount,
+        waqfType: waqfType === '1' ? '45' : waqfType === '2' ? '3' : '22',
+        acceptAfterTarget,
+        ownerPhone,
+      };
+      const r = await fetch('/api/platform/create-fund', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const d = await r.json();
+      if (!r.ok) { showMsg('err', d.error || 'تعذر إنشاء الصندوق.'); return; }
+
+      const link = d?.fund?.shareUrl || '';
+      const fundName = d?.fund?.name || name;
+      if (link) {
+        createdLinkEl.textContent = link;
+        openLink.href = link;
+        linkBox.dataset.fundName = fundName;
+        linkBox.style.display = '';
+        await showCreatedFundActions(fundName, link);
+      } else {
+        showMsg('ok', 'تم إنشاء الصندوق بنجاح ✓');
+      }
+      form.reset();
+      renderTargetsByType('');
+    } catch (err) {
+      showMsg('err', 'حدث خطأ بالشبكة. حاول مرة أخرى.');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'إنشاء الصندوق';
+    }
+  });
+
+  copyBtn.addEventListener('click', () => {
+    const link = createdLinkEl.textContent.trim();
+    if (!link) return;
+    copyText(link).then((ok) => {
+      if (!ok) return;
+      const old = copyBtn.textContent;
+      copyBtn.textContent = 'تم النسخ ✓';
+      setTimeout(() => { copyBtn.textContent = old; }, 1300);
+    });
+  });
+
+  shareBtn.addEventListener('click', async () => {
+    const link = createdLinkEl.textContent.trim();
+    if (!link) return;
+    await shareFundLink(link, linkBox.dataset.fundName || 'صندوق وقفي');
+  });
+})();
+</script>
+
+<%- include('../partials/foot') %>

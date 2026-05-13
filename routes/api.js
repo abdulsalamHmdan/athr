@@ -246,7 +246,6 @@ router.post("/platform/create-fund", async (req, res) => {
     return res.status(500).json({ error: "فشل إنشاء الصندوق" });
   }
 
-  // الصندوق أُنشئ على المنصة بنجاح — أي خطأ بعد هذه النقطة لا يُرجع للمستخدم
   try {
     await logAmbassadorActivity({
       ambassadorId: ambassador._id,

@@ -33,7 +33,7 @@ router.get('/forgot-password', (req, res) => res.render('forgot-password', { tit
 router.get('/dashboard', (req, res) => res.render('dashboard', { title: 'لوحة الإحصائيات' }));
 
 router.get('/ambassador/home', (req, res) => {
-  return renderAmbassadorPage(req, res, 'ambassador/home', { title: 'صفحتي', active: 'home' });
+  return renderAmbassadorPage(req, res, 'ambassador/maintenance', { title: 'صيانة', active: 'home' });
 });
 router.get('/ambassador/prizes', (req, res) => {
   if (!req.session.ambassadorId) return res.redirect('/login');
