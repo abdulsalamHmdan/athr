@@ -40,6 +40,13 @@ router.get('/ambassador/prizes', (req, res) => {
   return res.redirect('/ambassador/home?tab=prizes');
 });
 
+router.get('/ambassador/prizes-gallery', (req, res) => {
+  return renderAmbassadorPage(req, res, 'ambassador/prizes-gallery', {
+    title: 'معرض الجوائز',
+    active: 'prizes-gallery',
+  });
+});
+
 router.get('/ambassador/create-fund', (req, res) => {
   if (!req.session.ambassadorId) return res.redirect('/login');
   return res.redirect('/ambassador/home?tab=create');

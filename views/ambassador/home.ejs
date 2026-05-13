@@ -125,6 +125,7 @@
       <div class="card">
         <div class="section-head">
           <h2>الرصيد والاستحقاق</h2>
+          <a href="/ambassador/prizes-gallery" class="btn sm bordered">معرض الجوائز</a>
         </div>
         <div class="stat-grid">
           <div class="stat"><div class="v" id="p_balance">0</div><div class="l">رصيدك المتاح (نقاط)</div></div>
@@ -194,6 +195,117 @@
       </div>
     </section>
   </div>
+
+  <div class="prize-pick-modal" id="prizePickModal" hidden>
+    <div class="prize-pick-backdrop" data-prize-close></div>
+    <div class="prize-pick-card" role="dialog" aria-modal="true" aria-labelledby="prizePickTitle">
+      <button type="button" class="prize-pick-close" data-prize-close aria-label="إغلاق">×</button>
+      <h3 id="prizePickTitle">اختر الجائزة</h3>
+      <p class="prize-pick-sub" id="prizePickSub">اختر إحدى الجوائز المتوفرة من فئتك ثم أرسل الطلب.</p>
+
+      <div class="prize-pick-preview" id="prizePickPreview" hidden>
+        <img id="prizePickImg" src="" alt="">
+        <div class="prize-pick-info">
+          <b id="prizePickName"></b>
+          <span id="prizePickDesc" class="small"></span>
+          <span class="prize-pick-stock" id="prizePickStock"></span>
+        </div>
+      </div>
+
+      <label for="prizePickSelect" class="small">الجائزة</label>
+      <select id="prizePickSelect"></select>
+
+      <div class="prize-pick-actions">
+        <button type="button" class="btn secondary" data-prize-close>إلغاء</button>
+        <button type="button" class="btn ok" id="prizePickConfirm">إرسال الطلب</button>
+      </div>
+      <div class="msg" id="prizePickMsg"></div>
+    </div>
+  </div>
+
+  <style>
+    .prize-pick-modal {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9000;
+      padding: 16px;
+    }
+    .prize-pick-modal[hidden] { display: none; }
+    .prize-pick-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.55);
+      backdrop-filter: blur(2px);
+    }
+    .prize-pick-card {
+      position: relative;
+      background: #fff;
+      border-radius: 18px;
+      padding: 22px 18px 18px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.25);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .prize-pick-close {
+      position: absolute;
+      top: 8px;
+      inset-inline-end: 10px;
+      background: transparent;
+      border: 0;
+      font-size: 24px;
+      cursor: pointer;
+      color: #6b7280;
+    }
+    .prize-pick-card h3 { margin: 0; font-size: 18px; color: var(--navy-2, #1f2937); }
+    .prize-pick-sub { margin: 0 0 6px; font-size: 13px; color: var(--muted, #6b7280); }
+    .prize-pick-card select {
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border, #e5e7eb);
+      background: #f9fafb;
+      font-size: 14px;
+      font-family: inherit;
+    }
+    .prize-pick-preview {
+      display: flex;
+      gap: 12px;
+      padding: 10px;
+      border-radius: 12px;
+      background: #f8fafc;
+      border: 1px solid var(--border, #e5e7eb);
+      align-items: center;
+    }
+    .prize-pick-preview img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 10px;
+      background: #fff;
+      flex-shrink: 0;
+    }
+    .prize-pick-info { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+    .prize-pick-info b { font-size: 14px; color: var(--navy-2, #1f2937); }
+    .prize-pick-info .small { font-size: 12px; color: var(--muted, #6b7280); line-height: 1.45; }
+    .prize-pick-stock {
+      font-size: 12px;
+      font-weight: 600;
+      color: #16a34a;
+      margin-top: 2px;
+    }
+    .prize-pick-stock.low { color: #f59e0b; }
+    .prize-pick-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      margin-top: 6px;
+    }
+  </style>
 
   <button type="button" id="createFundFab" class="create-fund-fab" aria-label="إنشاء صندوق وقفي" title="إنشاء صندوق وقفي">
     <span class="create-fund-fab-icon">+</span>
@@ -409,11 +521,12 @@
     }
     for (const r of requestsList) {
       const tierName = tierNameByAmount[r.amount] || '-';
+      const prizeLabel = r.prizeName ? `${r.prizeName} (${tierName})` : tierName;
       const note = r.note || '-';
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td data-label="التاريخ"><span class="table-value is-number">${esc(df(r.createdAt))}</span></td>
-        <td data-label="الجائزة"><span class="table-value is-ellipsis">${esc(tierName)}</span></td>
+        <td data-label="الجائزة"><span class="table-value is-ellipsis">${esc(prizeLabel)}</span></td>
         <td data-label="النقاط"><span class="table-value is-number">${nf(r.amount)} نقطة</span></td>
         <td data-label="الحالة"><span class="table-value is-badge"><span class="badge ${r.status}">${statusMap[r.status] || '-'}</span></span></td>
         <td data-label="ملاحظة"><span class="table-value">${esc(note)}</span></td>`;
@@ -551,43 +664,153 @@
 
   }
 
-  async function requestPrize(tier) {
+  let prizeCatalog = [];
+  const tierLabel = { bronze: 'برونزية', silver: 'فضية', gold: 'ذهبية' };
+
+  async function loadPrizeCatalog() {
+    if (prizeCatalog.length) return prizeCatalog;
+    try {
+      const res = await fetch('/data/prizes2.json', { cache: 'no-cache' });
+      const data = await res.json();
+      prizeCatalog = Array.isArray(data.prizes) ? data.prizes : [];
+    } catch (e) {
+      prizeCatalog = [];
+    }
+    return prizeCatalog;
+  }
+
+  async function requestPrize(tier, prize) {
+    const body = { tier };
+    if (prize) {
+      body.prizeId = prize.id;
+      body.prizeName = prize.name;
+    }
     const r = await fetch('/ambassador/requests', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tier }),
+      body: JSON.stringify(body),
     });
-    const d = await r.json();
+    const d = await r.json().catch(() => ({}));
     if (!r.ok) {
-      await App.notify({
-        title: 'تعذر إرسال الطلب',
-        message: d.error || 'تعذر إرسال الطلب.',
-        type: 'error',
-        confirmText: 'إغلاق',
-      });
-      return false;
+      return { ok: false, error: d.error || 'تعذر إرسال الطلب.' };
     }
-    await App.notify({
-      title: 'تم الإرسال بنجاح',
-      message: 'تم إرسال طلب الصرف بنجاح',
-      type: 'success',
-      confirmText: 'ممتاز',
+    return { ok: true };
+  }
+
+  function openPrizePicker(tier) {
+    return new Promise(async (resolve) => {
+      const modal = document.getElementById('prizePickModal');
+      const select = document.getElementById('prizePickSelect');
+      const titleEl = document.getElementById('prizePickTitle');
+      const subEl = document.getElementById('prizePickSub');
+      const msgEl = document.getElementById('prizePickMsg');
+      const confirmBtn = document.getElementById('prizePickConfirm');
+      const preview = document.getElementById('prizePickPreview');
+      const imgEl = document.getElementById('prizePickImg');
+      const nameEl = document.getElementById('prizePickName');
+      const descEl = document.getElementById('prizePickDesc');
+      const stockEl = document.getElementById('prizePickStock');
+
+      await loadPrizeCatalog();
+      const list = prizeCatalog.filter((p) => p.tier === tier && Number(p.stock || 0) > 0);
+
+      titleEl.textContent = `اختر الجائزة ${tierLabel[tier] || ''}`;
+      msgEl.textContent = '';
+
+      if (!list.length) {
+        await App.notify({
+          title: 'لا توجد جوائز متاحة',
+          message: `لا توجد جوائز ${tierLabel[tier] || ''} متاحة حالياً في المخزون.`,
+          type: 'warning',
+          confirmText: 'حسناً',
+        });
+        return resolve(null);
+      }
+
+      subEl.textContent = `الجوائز ${tierLabel[tier] || ''} المتوفرة (${list.length})`;
+      select.innerHTML = list.map((p) => `
+        <option value="${p.id}">${p.name} — المخزون ${p.stock}</option>
+      `).join('');
+
+      function refreshPreview() {
+        const p = list.find((x) => x.id === select.value) || list[0];
+        if (!p) {
+          preview.hidden = true;
+          return;
+        }
+        preview.hidden = false;
+        imgEl.src = p.image || '';
+        imgEl.alt = p.name || '';
+        nameEl.textContent = p.name || '';
+        descEl.textContent = p.description || '';
+        const stock = Number(p.stock || 0);
+        stockEl.textContent = `المخزون المتاح: ${stock}`;
+        stockEl.classList.toggle('low', stock > 0 && stock <= 3);
+      }
+
+      select.value = list[0].id;
+      refreshPreview();
+
+      function close(result) {
+        modal.hidden = true;
+        document.body.classList.remove('modal-open');
+        select.removeEventListener('change', refreshPreview);
+        confirmBtn.removeEventListener('click', onConfirm);
+        modal.querySelectorAll('[data-prize-close]').forEach((el) => el.removeEventListener('click', onClose));
+        document.removeEventListener('keydown', onEsc);
+        resolve(result);
+      }
+      function onClose() { close(null); }
+      function onEsc(e) { if (e.key === 'Escape') close(null); }
+      async function onConfirm() {
+        const chosen = list.find((x) => x.id === select.value);
+        if (!chosen) return;
+        confirmBtn.disabled = true;
+        const oldTxt = confirmBtn.textContent;
+        confirmBtn.textContent = 'جارٍ الإرسال...';
+        const result = await requestPrize(tier, chosen);
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = oldTxt;
+        if (result.ok) {
+          close(chosen);
+          await App.notify({
+            title: 'تم الإرسال بنجاح',
+            message: `تم إرسال طلبك للجائزة: ${chosen.name}`,
+            type: 'success',
+            confirmText: 'ممتاز',
+          });
+        } else {
+          await App.notify({
+            title: 'تعذر إرسال الطلب',
+            message: result.error,
+            type: 'error',
+            confirmText: 'إغلاق',
+          });
+        }
+      }
+
+      select.addEventListener('change', refreshPreview);
+      confirmBtn.addEventListener('click', onConfirm);
+      modal.querySelectorAll('[data-prize-close]').forEach((el) => el.addEventListener('click', onClose));
+      document.addEventListener('keydown', onEsc);
+
+      modal.hidden = false;
+      document.body.classList.add('modal-open');
     });
-    return true;
   }
 
   function initPrizeActions() {
     document.getElementById('tierGridHome').addEventListener('click', async (e) => {
       const btn = e.target.closest('button[data-tier]');
       if (!btn || btn.disabled) return;
+      const tier = btn.dataset.tier;
       const old = btn.textContent;
       btn.disabled = true;
-      btn.textContent = 'جارٍ الإرسال...';
-      const ok = await requestPrize(btn.dataset.tier);
+      btn.textContent = 'تحضير القائمة...';
+      const picked = await openPrizePicker(tier);
       btn.disabled = false;
       btn.textContent = old;
-      if (!ok) return;
-
+      if (!picked) return;
       await loadAndRenderMainData();
     });
   }

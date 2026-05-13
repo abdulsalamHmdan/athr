@@ -1,0 +1,197 @@
+<%- include('../partials/head') %>
+<%- include('../partials/nav-ambassador') %>
+
+<%- include('../partials/loader') %>
+
+<div data-content style="display:none;">
+  <div class="page-intro">
+    <span class="page-kicker">معرض الجوائز</span>
+    <h3 class="page-title">استعرض جوائز المنصة</h3>
+    <p class="page-subtitle">جوائز تكريمية متدرّجة بثلاث فئات (برونزية، فضية، ذهبية). هذه الصفحة للاستعراض فقط، ولطلب الجائزة يرجى الانتقال لصفحة طلب الجوائز.</p>
+  </div>
+
+  <div class="card">
+    <div class="section-head">
+      <h2>تصفية حسب التصنيف</h2>
+      <a href="/ambassador/home?tab=prizes" class="btn sm">طلب جائزة</a>
+    </div>
+    <div class="filters" id="prizeFilters">
+      <a href="#" class="filter active" data-tier="all">الكل</a>
+      <a href="#" class="filter" data-tier="gold">ذهبية</a>
+      <a href="#" class="filter" data-tier="silver">فضية</a>
+      <a href="#" class="filter" data-tier="bronze">برونزية</a>
+    </div>
+    <div id="prizesGrid" class="prize-gallery-grid"></div>
+    <p class="small center" id="prizesEmpty" style="display:none;">لا توجد جوائز ضمن هذا التصنيف.</p>
+  </div>
+</div>
+
+<style>
+.prize-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+  margin-top: 14px;
+}
+.prize-card {
+  background: var(--surface-1, #fff);
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  position: relative;
+}
+.prize-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
+  border-color: var(--primary-100, #c7d2fe);
+}
+.prize-card.is-out { opacity: 0.65; }
+.prize-card-media {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  background: #f8fafc;
+  overflow: hidden;
+}
+.prize-card-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.prize-tier-badge {
+  position: absolute;
+  top: 10px;
+  inset-inline-end: 10px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+}
+.prize-tier-badge.bronze { background: linear-gradient(135deg, #e09a5b, #b87333); }
+.prize-tier-badge.silver { background: linear-gradient(135deg, #d6dadd, #9aa1a8); color:#3a3f45; }
+.prize-tier-badge.gold   { background: linear-gradient(135deg, #f5d166, #d4a017); color:#5a4400; }
+.prize-card-body {
+  padding: 12px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+.prize-name {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--navy-2, #1f2937);
+  margin: 0;
+}
+.prize-desc {
+  font-size: 13px;
+  color: var(--muted, #6b7280);
+  line-height: 1.55;
+  margin: 0;
+  flex: 1;
+}
+.prize-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border, #e5e7eb);
+}
+.prize-stock {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted, #6b7280);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.prize-stock::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #16a34a;
+}
+.prize-stock.low::before { background: #f59e0b; }
+.prize-stock.out::before { background: #ef4444; }
+.prize-stock-value { font-variant-numeric: tabular-nums; }
+</style>
+
+<script src="/js/app.js"></script>
+<script>
+(async function () {
+  const esc = (v) => String(v == null ? '' : v)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  const nf = App.formatNumber;
+  const tierLabel = { bronze: 'برونزية', silver: 'فضية', gold: 'ذهبية' };
+
+  let prizes = [];
+  let currentTier = 'all';
+
+  function render() {
+    const grid = document.getElementById('prizesGrid');
+    const emptyEl = document.getElementById('prizesEmpty');
+    const list = currentTier === 'all' ? prizes : prizes.filter((p) => p.tier === currentTier);
+
+    if (!list.length) {
+      grid.innerHTML = '';
+      emptyEl.style.display = '';
+      return;
+    }
+    emptyEl.style.display = 'none';
+
+    grid.innerHTML = list.map((p) => {
+      const stock = Number(p.stock || 0);
+      const stockCls = stock <= 0 ? 'out' : stock <= 3 ? 'low' : '';
+      const stockTxt = stock <= 0 ? 'نفد المخزون' : `المخزون ${nf(stock)}`;
+      return `
+        <article class="prize-card ${stock <= 0 ? 'is-out' : ''}">
+          <div class="prize-card-media">
+            <img src="${esc(p.image)}" alt="${esc(p.name)}" loading="lazy" onerror="this.style.display='none'">
+            <span class="prize-tier-badge ${esc(p.tier)}">${esc(tierLabel[p.tier] || p.tier)}</span>
+          </div>
+          <div class="prize-card-body">
+            <h3 class="prize-name">${esc(p.name)}</h3>
+            <p class="prize-desc">${esc(p.description || '')}</p>
+            <div class="prize-card-foot">
+              <span class="prize-stock ${stockCls}"><span class="prize-stock-value">${esc(stockTxt)}</span></span>
+            </div>
+          </div>
+        </article>
+      `;
+    }).join('');
+  }
+
+  document.getElementById('prizeFilters').addEventListener('click', (e) => {
+    const link = e.target.closest('.filter[data-tier]');
+    if (!link) return;
+    e.preventDefault();
+    currentTier = link.dataset.tier;
+    document.querySelectorAll('#prizeFilters .filter').forEach((el) => {
+      el.classList.toggle('active', el === link);
+    });
+    render();
+  });
+
+  try {
+    const res = await fetch('/data/prizes2.json', { cache: 'no-cache' });
+    const data = await res.json();
+    prizes = Array.isArray(data.prizes) ? data.prizes : [];
+  } catch (e) {
+    prizes = [];
+  }
+
+  render();
+  App.showContent();
+})();
+</script>
+
+<%- include('../partials/foot') %>

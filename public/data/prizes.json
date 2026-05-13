@@ -1,0 +1,76 @@
+{
+  "prizes": [
+    {
+      "id": "b1",
+      "name": "بطاقة شكر مطبوعة",
+      "description": "بطاقة شكر فاخرة مطبوعة باسم السفير، تكريماً لعطائه ومساهمته في الوقف.",
+      "image": "/img/prizes/bronze-1.svg",
+      "tier": "bronze",
+      "stock": 25
+    },
+    {
+      "id": "b2",
+      "name": "قلم تذكاري",
+      "description": "قلم خشبي راقي محفور عليه شعار المنصة، يصلح للاستخدام اليومي والإهداء.",
+      "image": "/img/prizes/bronze-2.svg",
+      "tier": "bronze",
+      "stock": 12
+    },
+    {
+      "id": "b3",
+      "name": "حقيبة قماشية",
+      "description": "حقيبة قماشية صديقة للبيئة بشعار المنصة، عملية وأنيقة.",
+      "image": "/img/prizes/bronze-3.svg",
+      "tier": "bronze",
+      "stock": 0
+    },
+    {
+      "id": "s1",
+      "name": "ساعة جدارية",
+      "description": "ساعة حائط فضية أنيقة بتصميم عصري، مناسبة للمنزل والمكتب.",
+      "image": "/img/prizes/silver-1.svg",
+      "tier": "silver",
+      "stock": 8
+    },
+    {
+      "id": "s2",
+      "name": "طقم أدوات مكتبية",
+      "description": "طقم متكامل من الأدوات المكتبية الفاخرة في علبة هدية أنيقة.",
+      "image": "/img/prizes/silver-2.svg",
+      "tier": "silver",
+      "stock": 5
+    },
+    {
+      "id": "s3",
+      "name": "سماعة بلوتوث",
+      "description": "سماعة لاسلكية بجودة صوت عالية وعمر بطارية طويل.",
+      "image": "/img/prizes/silver-3.svg",
+      "tier": "silver",
+      "stock": 0
+    },
+    {
+      "id": "g1",
+      "name": "ساعة يد ذهبية",
+      "description": "ساعة يد فاخرة بتصميم كلاسيكي ولمسة ذهبية مميزة.",
+      "image": "/img/prizes/gold-1.svg",
+      "tier": "gold",
+      "stock": 3
+    },
+    {
+      "id": "g2",
+      "name": "هاتف لوحي",
+      "description": "جهاز لوحي بشاشة عالية الدقة وأداء قوي، يدعم القراءة والعمل والترفيه.",
+      "image": "/img/prizes/gold-2.svg",
+      "tier": "gold",
+      "stock": 2
+    },
+    {
+      "id": "g3",
+      "name": "درع تكريمي ذهبي",
+      "description": "درع تكريمي مذهّب يحمل اسم السفير، إهداءً من إدارة المنصة.",
+      "image": "/img/prizes/gold-3.svg",
+      "tier": "gold",
+      "stock": 4
+    }
+  ]
+}

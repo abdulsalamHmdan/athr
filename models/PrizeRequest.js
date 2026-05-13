@@ -6,6 +6,8 @@ const PrizeRequestSchema = new mongoose.Schema(
     amount: { type: Number, required: true },
     status: { type: String, enum: ['pending', 'approved', 'rejected', 'paid'], default: 'pending' },
     note: { type: String, default: '' },
+    prizeId: { type: String, default: '' },
+    prizeName: { type: String, default: '' },
   },
   { timestamps: true }
 );

@@ -196,23 +196,29 @@ router.post('/requests', requireAmbassador, async (req, res) => {
   if (stats.availableBalance < tier.amount) {
     return res.status(400).json({ error: 'رصيدك غير كافٍ لطلب هذه الجائزة' });
   }
+  const prizeId = String((req.body && req.body.prizeId) || '').slice(0, 60);
+  const prizeName = String((req.body && req.body.prizeName) || '').slice(0, 200);
+
   const reqDoc = await PrizeRequest.create({
     ambassador: amb._id,
     amount: tier.amount,
     status: 'pending',
+    prizeId,
+    prizeName,
   });
 
   await logAmbassadorActivity({
     ambassadorId: amb._id,
     action: 'request_prize',
-    details: { tier: tier.id, amount: tier.amount },
+    details: { tier: tier.id, amount: tier.amount, prizeId, prizeName },
     source: 'server',
     path: '/ambassador/requests',
   });
 
+  const prizeLine = prizeName ? `\nالجائزة المختارة: ${prizeName}` : '';
   await trySendWhatsapp(
     amb.phone,
-    `مرحباً ${amb.name} 👋\nتم استلام طلبك لـ${tier.name} بقيمة ${tier.amount} ريال.\nسيتم مراجعة الطلب قريباً، وعند تغيّر حالة الطلب سيتم التواصل معك بشكل مباشر.`,
+    `مرحباً ${amb.name} 👋\nتم استلام طلبك لـ${tier.name} بقيمة ${tier.amount} ريال.${prizeLine}\nسيتم مراجعة الطلب قريباً، وعند تغيّر حالة الطلب سيتم التواصل معك بشكل مباشر.`,
     'prize-request'
   );
 
