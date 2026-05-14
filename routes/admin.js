@@ -135,7 +135,7 @@ router.post('/ambassadors/:id/send-link', requireAdmin, async (req, res) => {
   const proto = String(req.get('x-forwarded-proto') || req.protocol || 'http').split(',')[0].trim();
   const host = req.get('x-forwarded-host') || req.get('host');
   const baseUrl = process.env.PUBLIC_URL || `${proto}://${host}`;
-  const link = `${baseUrl}/r/${amb.referralCode}`;
+  const link = `sfeer.site/r/${amb.referralCode}`;
   const message = `مرحباً ${amb.name} 👋\nهذا رابط الدخول السريع الخاص بك:\n${link}\n\nلا تشاركه مع أحد.`;
 
   try {

@@ -4,7 +4,11 @@ const crypto = require("crypto");
 const Ambassador = require("../models/Ambassador");
 const Admin = require("../models/Admin");
 const { syncAmbassador } = require("../services/platformSync");
-const { sendWhatsapp, trySendWhatsapp } = require("../services/whatsapp");
+const {
+  sendWhatsapp,
+  trySendWhatsapp,
+  sendWhatsappOtp,
+} = require("../services/whatsapp");
 const { configDotenv } = require("dotenv");
 configDotenv();
 
@@ -108,10 +112,7 @@ router.post("/signup", async (req, res) => {
     const otp = generateNumericCode(6);
     let whatsappOk = false;
     try {
-      await sendWhatsapp(
-        phone,
-        `مرحباً ${name} 👋\nرمز التحقق لإكمال تسجيلك كسفير:\n*${otp}*\nصالح لمدة 10 دقائق.`,
-      );
+      await sendWhatsappOtp(phone, otp);
       whatsappOk = true;
     } catch (e) {
       console.error("[signup] whatsapp send failed:", e.message);
@@ -196,10 +197,7 @@ router.post("/signup/resend-otp", async (req, res) => {
 
     const otp = generateNumericCode(6);
     try {
-      await sendWhatsapp(
-        pending.phone,
-        `مرحباً ${pending.name} 👋\nرمز التحقق لإكمال تسجيلك كسفير:\n*${otp}*\nصالح لمدة 10 دقائق.`,
-      );
+      await sendWhatsappOtp(pending.phone, otp);
     } catch (e) {
       console.error("[signup/resend-otp] whatsapp send failed:", e.message);
       const { link } = await finalizeSignup(req, pending, false);
@@ -288,10 +286,7 @@ router.post("/forgot-password", async (req, res) => {
     );
 
     try {
-      await sendWhatsapp(
-        phone,
-        `مرحباً ${amb.name} 👋\nرمز التحقق لاستعادة الوصول إلى حسابك:\n*${otp}*\nصالح لمدة 10 دقائق.`,
-      );
+      await sendWhatsappOtp(phone, otp);
     } catch (e) {
       console.error("[forgot-password] whatsapp send failed:", e.message);
       return res
@@ -341,24 +336,15 @@ router.post("/verify-otp", async (req, res) => {
 
     const baseUrl =
       process.env.PUBLIC_URL || `${req.protocol}://${req.get("host")}`;
-    const loginLink = `${baseUrl}/r/${amb.referralCode}`;
+    const loginLink = `sfeer.site/r/${amb.referralCode}`;
 
-    try {
-      await sendWhatsapp(
-        phone,
-        `مرحباً ${amb.name} 👋\nهذا رابط الدخول السريع الخاص بك:\n${loginLink}\n\nلا تشاركه مع أحد.`,
-      );
-    } catch (e) {
-      console.error("[verify-otp] whatsapp send failed:", e.message);
-      return res
-        .status(502)
-        .json({
-          error:
-            e.userMessage || "تعذّر إرسال الرابط عبر واتساب، تواصل مع الإدارة",
-        });
-    }
+    const whatsappOk = await trySendWhatsapp(
+      phone,
+      `مرحباً ${amb.name} 👋\nهذا رابط الدخول السريع الخاص بك:\n${loginLink}\n\nلا تشاركه مع أحد.`,
+      "verify-otp",
+    );
 
-    res.json({ ok: true });
+    res.json({ ok: true, loginLink, whatsappSent: whatsappOk });
   } catch (err) {
     console.error("[verify-otp] error:", err);
     res.status(500).json({ error: "خطأ في الخادم" });
