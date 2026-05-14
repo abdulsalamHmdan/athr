@@ -8,40 +8,49 @@ const AllFund = require("../models/AllFund");
     await mongoose.connect(process.env.MONGO_URI);
     console.log("MongoDB connected");
 
-    const res = await fetch(
-      "https://donate.utq.org.sa/api/v1/orders/report/goals?page=4&ts=1777755600-1778678772",
-      {
-        method: "get",
-        headers: { k: process.env.DONATE_API_KEY },
-      }
-    );
-    const json = await res.json();
+    for (let page = 1; page <= 12; page++) {
+      console.log(`--- Page ${page} ---`);
+      const res = await fetch(
+        `http://donate.utq.org.sa/api/v1/goal/list?page=${page}`,
+        {
+          method: "get",
+          headers: { k: process.env.DONATE_API_KEY },
+        }
+      );
+      const json = await res.json();
+      const funds = json.results.map((g) => ({
+        id: g.id,
+        name: g.name,
+        price_goal: g.price_goal,
+        stats: g.stats,
+        client_id: g.client_id,
+        prod_id: g.prod_id,
+        type: g.type.id,
+        total: g.stats.sold_total,
+        done: g.stats.progress >= 100? "a" : g.stats.progress>0? "b" : "c",
+        phone:""
+      }));
 
-    const results = Array.isArray(json.items) ? json.items : [];
-    const now = new Date();
-
-    const ops = results.map((g) => ({
-      updateOne: {
-        filter: { id: Number(g.pk), client_id: Number(g.goal_creator) },
-        update: {
-          $set: {
-            currentTotal: Number(g.total) || 0,
-            orderCount: Number(g.order_count) || 0,
-            updatedAt: now,
-          },
+      const ops = funds.map((f) => ({
+        updateOne: {
+          filter: { id: f.id },
+          update: { $set: f },
+          upsert: true,
         },
-      },
-    }));
+      }));
 
-    if (ops.length) {
-      const result = await AllFund.bulkWrite(ops, { timestamps: false });
-      console.log("Updated funds:", {
-        matched: result.matchedCount,
-        modified: result.modifiedCount,
-        total: results.length,
-      });
-    } else {
-      console.log("No results returned from API");
+      if (ops.length) {
+        const result = await AllFund.bulkWrite(ops);
+        console.log("Saved funds:", {
+          page,
+          matched: result.matchedCount,
+          modified: result.modifiedCount,
+          upserted: result.upsertedCount,
+          total: funds.length,
+        });
+      } else {
+        console.log("No funds returned from API for page", page);
+      }
     }
   } catch (err) {
     console.error(err);

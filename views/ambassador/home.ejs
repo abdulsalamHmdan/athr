@@ -714,7 +714,7 @@
     listEl.innerHTML = activeFunds.map((g) => {
       const amount = Number(g.currentTotal) || 0;
       const pct = campaignTotal > 0 ? (amount / campaignTotal) * 100 : 0;
-      const pctTxt = pct.toFixed(1) + '%';
+      const pctTxt = pct.toFixed(1) + '% من الإجمالي';
       const initial = (g.name || 'ص').trim().charAt(0);
       return `
         <div class="campaign-fund-row">
