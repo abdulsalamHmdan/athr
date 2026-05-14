@@ -133,7 +133,7 @@ function renderAmbassadors(list) {
       <td data-label="الرمز"><span class="table-value is-number">${esc(code)}</span></td>
       <td data-label="إجراءات">
         <div class="row-actions" style="display:flex;gap:6px;flex-wrap:wrap;">
-          <button class="btn sm bordered" type="button" data-action="send-link" data-id="${esc(a._id)}" data-name="${esc(name)}">إرسال الرابط</button>
+          <button class="btn sm bordered" type="button" data-action="send-link" data-id="${esc(code)}" data-name="${esc(name)}"  data-phone="${esc(phone)}">إرسال الرابط</button>
           <button class="btn err sm" type="button" data-action="delete-amb" data-id="${esc(a._id)}" data-name="${esc(name)}">حذف نهائي</button>
         </div>
       </td>`;
@@ -141,41 +141,49 @@ function renderAmbassadors(list) {
   });
 }
 
-async function handleSendLink(id, name) {
-  const ok = await App.confirm({
-    title: 'إرسال الرابط الخاص',
-    message: `سيتم إرسال رابط الدخول الخاص للسفير "${name}" عبر واتساب. هل تريد المتابعة؟`,
-    type: 'info',
-    confirmText: 'إرسال',
-    cancelText: 'إلغاء',
-  });
-  if (!ok) return;
-  try {
-    const r = await fetch(`/admin/ambassadors/${id}/send-link`, { method: 'POST' });
-    const d = await r.json().catch(() => ({}));
-    if (!r.ok) {
-      App.notify({
-        title: 'تعذّر الإرسال',
-        message: d.error || 'حدث خطأ أثناء إرسال الرابط',
-        type: 'error',
-        confirmText: 'حسناً',
-      });
-      return;
-    }
-    App.notify({
-      title: 'تم الإرسال',
-      message: `تم إرسال الرابط الخاص للسفير "${name}" بنجاح.`,
-      type: 'success',
-      confirmText: 'حسناً',
-    });
-  } catch (e) {
-    App.notify({
-      title: 'خطأ في الشبكة',
-      message: 'تعذّر الاتصال بالخادم',
-      type: 'error',
-      confirmText: 'حسناً',
-    });
-  }
+async function handleSendLink(id, name, phone) {
+  const shareText = `مرحباً ${name} 👋
+هذا رابط الدخول السريع الخاص بك:
+https://sfeer.site/r/${id}
+
+لا تشاركه مع أحد.`;
+
+      window.open(`https://wa.me/966${phone}?text=${encodeURIComponent(shareText)}`, '_blank');
+
+  // const ok = await App.confirm({
+  //   title: 'إرسال الرابط الخاص',
+  //   message: `سيتم إرسال رابط الدخول الخاص للسفير "${name}" عبر واتساب. هل تريد المتابعة؟`,
+  //   type: 'info',
+  //   confirmText: 'إرسال',
+  //   cancelText: 'إلغاء',
+  // });
+  // if (!ok) return;
+  // try {
+  //   const r = await fetch(`/admin/ambassadors/${id}/send-link`, { method: 'POST' });
+  //   const d = await r.json().catch(() => ({}));
+  //   if (!r.ok) {
+  //     App.notify({
+  //       title: 'تعذّر الإرسال',
+  //       message: d.error || 'حدث خطأ أثناء إرسال الرابط',
+  //       type: 'error',
+  //       confirmText: 'حسناً',
+  //     });
+  //     return;
+  //   }
+  //   App.notify({
+  //     title: 'تم الإرسال',
+  //     message: `تم إرسال الرابط الخاص للسفير "${name}" بنجاح.`,
+  //     type: 'success',
+  //     confirmText: 'حسناً',
+  //   });
+  // } catch (e) {
+  //   App.notify({
+  //     title: 'خطأ في الشبكة',
+  //     message: 'تعذّر الاتصال بالخادم',
+  //     type: 'error',
+  //     confirmText: 'حسناً',
+  //   });
+  // }
 }
 
 async function handleDeleteAmbassador(id, name) {
@@ -444,10 +452,12 @@ document.getElementById('tbody').addEventListener('click', (e) => {
   const btn = e.target.closest('button[data-action]');
   if (!btn) return;
   const id = btn.dataset.id;
-  const name = btn.dataset.name || 'السفير';
+  const name = btn.dataset.name;
+  const phone = btn.dataset.phone;
+  console.log(`Button clicked: action=${btn.dataset.action}, id=${id}, name=${name}, phone=${phone}`);
   if (!id) return;
-  if (btn.dataset.action === 'send-link') return handleSendLink(id, name);
-  if (btn.dataset.action === 'delete-amb') return handleDeleteAmbassador(id, name);
+  if (btn.dataset.action === 'send-link') return handleSendLink(id, name,phone);
+  if (btn.dataset.action === 'delete-amb') return handleDeleteAmbassador(id, phone);
 });
 
 document.getElementById('adminDashSegments').addEventListener('click', (e) => {
