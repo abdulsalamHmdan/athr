@@ -3,12 +3,18 @@ configDotenv();
 const mongoose = require("mongoose");
 const syncFunds = require("./testing3");
 const syncFundTotals = require("./testing4");
+const SyncMeta = require("../models/SyncMeta");
 
 async function syncAll() {
   console.log("[sync] testing3: syncFunds ...");
   await syncFunds();
   console.log("[sync] testing4: syncFundTotals ...");
   await syncFundTotals();
+  await SyncMeta.updateOne(
+    { key: "funds" },
+    { $set: { lastSyncAt: new Date() } },
+    { upsert: true }
+  );
   console.log("[sync] done");
 }
 

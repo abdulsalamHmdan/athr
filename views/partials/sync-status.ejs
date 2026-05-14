@@ -1,0 +1,59 @@
+<div class="sync-badge" id="syncStatusBadge" style="display:none;">
+  <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+    <path fill="currentColor" d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46A7.93 7.93 0 0020 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74A7.93 7.93 0 004 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/>
+  </svg>
+  <span>آخر تحديث للبيانات: <b id="syncStatusValue">—</b></span>
+</div>
+<style>
+  .sync-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #f3f6f9; color: #3a4a59;
+    border: 1px solid #d7dde5; border-radius: 999px;
+    padding: 5px 12px; font-size: 12px; font-weight: 600;
+    margin-top: 10px;
+  }
+  .sync-badge b { color: #1a2733; font-weight: 800; }
+</style>
+<script>
+  (function loadSyncStatus(){
+    function arUnit(n, one, two, few, many) {
+      if (n === 1) return one;
+      if (n === 2) return two;
+      if (n >= 3 && n <= 10) return n + ' ' + few;
+      return n + ' ' + many;
+    }
+    function relativeAr(date) {
+      var diffMs = Date.now() - date.getTime();
+      var sec = Math.max(0, Math.floor(diffMs / 1000));
+      if (sec < 60) return 'قبل لحظات';
+      var min = Math.floor(sec / 60);
+      if (min < 60) return 'قبل ' + arUnit(min, 'دقيقة', 'دقيقتين', 'دقائق', 'دقيقة');
+      var hr = Math.floor(min / 60);
+      if (hr < 24) return 'قبل ' + arUnit(hr, 'ساعة', 'ساعتين', 'ساعات', 'ساعة');
+      var day = Math.floor(hr / 24);
+      return 'قبل ' + arUnit(day, 'يوم', 'يومين', 'أيام', 'يوم');
+    }
+    var lastDate = null;
+    function update() {
+      var val = document.getElementById('syncStatusValue');
+      if (!val || !lastDate) return;
+      val.textContent = relativeAr(lastDate);
+    }
+    fetch('/api/sync-status')
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        var el = document.getElementById('syncStatusBadge');
+        var val = document.getElementById('syncStatusValue');
+        if (!el || !val) return;
+        if (d && d.lastSyncAt) {
+          lastDate = new Date(d.lastSyncAt);
+          update();
+          setInterval(update, 60 * 1000);
+        } else {
+          val.textContent = 'لم يتم التحديث بعد';
+        }
+        el.style.display = 'inline-flex';
+      })
+      .catch(function(){});
+  })();
+</script>

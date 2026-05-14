@@ -53,7 +53,7 @@ app.use("/api", apiRoutes);
 app.use("/", pushRoutes);
 app.use("/", pagesRoutes);
 
-cron.schedule("0 * * * *", async () => {
+cron.schedule("55 * * * *", async () => {
   console.log("[cron] hourly funds sync tick", new Date().toISOString());
   try {
     await syncAll();

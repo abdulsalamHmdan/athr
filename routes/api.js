@@ -2,6 +2,7 @@ const express = require("express");
 const Fund = require("../models/Fund");
 const AllFund = require("../models/AllFund");
 const Ambassador = require("../models/Ambassador");
+const SyncMeta = require("../models/SyncMeta");
 const { listEntities, entityName } = require("../services/entities");
 const { logAmbassadorActivity } = require("../services/activityLog");
 const router = express.Router();
@@ -29,6 +30,16 @@ let cacheM = (duration) => {
 };
 
 // ===== Public APIs (لا تتطلب تسجيل دخول) =====
+
+// آخر وقت تم فيه تحديث بيانات الصناديق من المنصة
+router.get("/sync-status", async (req, res) => {
+  try {
+    const meta = await SyncMeta.findOne({ key: "funds" }).lean();
+    res.json({ lastSyncAt: meta?.lastSyncAt || null });
+  } catch (e) {
+    res.json({ lastSyncAt: null });
+  }
+});
 
 // قائمة المجمعات مع إحصائيات مختصرة لكل مجمع
 router.get("/public/centers", async (req, res) => {
