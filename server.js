@@ -10,6 +10,7 @@ const bcrypt = require("bcryptjs");
 const Ambassador = require("./models/Ambassador");
 const Admin = require("./models/Admin");
 const { syncStale } = require("./services/platformSync");
+const syncAll = require("./scripts/syncAll");
 
 const authRoutes = require("./routes/auth");
 const ambassadorRoutes = require("./routes/ambassador");
@@ -52,15 +53,14 @@ app.use("/api", apiRoutes);
 app.use("/", pushRoutes);
 app.use("/", pagesRoutes);
 
-// cron.schedule("0 * * * *", async () => {
-//   // console.log("[cron] hourly sync tick", new Date().toISOString());
-//   try {
-//     const result = await syncStale();
-//     console.log("[cron] sync done:", result);
-//   } catch (e) {
-//     console.error("[cron] sync error:", e.message);
-//   }
-// });
+cron.schedule("0 * * * *", async () => {
+  console.log("[cron] hourly funds sync tick", new Date().toISOString());
+  try {
+    await syncAll();
+  } catch (e) {
+    console.error("[cron] funds sync error:", e.message);
+  }
+});
 // (async () => {
 // try {
 //     console.log("[cron] hourly sync tick", new Date().toISOString());
