@@ -52,8 +52,13 @@ app.use("/admin", adminRoutes);
 app.use("/api", apiRoutes);
 app.use("/", pushRoutes);
 app.use("/", pagesRoutes);
-
+const fromServer = process.env.FROME_SERVER == "true";
 cron.schedule("55 * * * *", async () => {
+  console.log("starting cron job");
+  if (!fromServer) {
+    console.log("skipping cron job since not from server");
+    return null;
+  }
   console.log("[cron] hourly funds sync tick", new Date().toISOString());
   try {
     await syncAll();
