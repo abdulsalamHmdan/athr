@@ -3,8 +3,15 @@
 
 <div data-content style="display:none;" class="board-page">
 
-  <!-- HERO: اسم الجهة + إحصائيات -->
+  <!-- HERO: اسم الجهة + إحصائيات + شارة الأداء -->
   <section class="board-hero">
+    <div class="hero-mesh"></div>
+    <div class="hero-orbits" aria-hidden="true">
+      <span class="orb orb-1"></span>
+      <span class="orb orb-2"></span>
+      <span class="orb orb-3"></span>
+    </div>
+
     <div class="board-hero-info">
       <div class="board-hero-row">
         <a href="/centers/<%= entityId %>" class="board-back" title="رجوع">
@@ -13,15 +20,35 @@
           </svg>
           <span>رجوع</span>
         </a>
-        <div class="board-badge">لوحة الشرف</div>
+        <div class="board-badge">
+          <svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true">
+            <path fill="currentColor" d="M5 16l2.5-6.5L4 7l5-.5L12 2l3 4.5 5 .5-3.5 2.5L19 16l-7-3.5L5 16z"/>
+          </svg>
+          <span>لوحة الشرف</span>
+        </div>
         <div class="board-live" id="liveTag" title="يتم التحديث تلقائيًا كل دقيقة">
           <span class="dot"></span>
           <span>تحديث مباشر</span>
         </div>
+        <div class="board-tier" id="heroTier" style="display:none;">
+          <span class="tier-ico" id="heroTierIcon"></span>
+          <span id="heroTierLabel">—</span>
+        </div>
       </div>
 
       <h1 class="board-title" id="centerName"><%= entityNameAr %></h1>
-      <div class="board-sub" id="centerKind">&nbsp;</div>
+
+      <div class="board-sub-row">
+        <span class="board-sub" id="centerKind">&nbsp;</span>
+        <span class="board-greet" id="heroGreet"></span>
+      </div>
+
+      <div class="hero-impact" id="heroImpact" style="display:none;">
+        <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+          <path fill="currentColor" d="M12 21s-7-4.35-7-10a5 5 0 019-3 5 5 0 019 3c0 5.65-7 10-7 10z"/>
+        </svg>
+        <span id="heroImpactText"></span>
+      </div>
     </div>
 
     <div class="board-stats">
@@ -49,6 +76,18 @@
     </div>
   </section>
 
+  <!-- شريط الإنجازات (شارات تلقائية بناء على الإحصاءات) -->
+  <section class="board-achievements" id="achWrap" style="display:none;">
+    <div class="ach-head">
+      <span class="ach-head-ico">
+        <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M12 2l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 15.3 6.8 18l1-5.8L3.6 8.1l5.8-.8L12 2z"/></svg>
+      </span>
+      <span>إنجازات الجهة</span>
+      <span class="ach-thread" aria-hidden="true"></span>
+    </div>
+    <div class="ach-row" id="achRow"></div>
+  </section>
+
   <!-- SECTION 1: ترتيب الجهة + لوحة الشرف العامة -->
   <section class="board-section">
     <div class="board-section-head">
@@ -56,20 +95,46 @@
         <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M5 3h14l-1 6a6 6 0 01-5 5.92V18h3v2H8v-2h3v-3.08A6 6 0 016 9L5 3zm2.2 2l.6 3.7A4 4 0 0012 12a4 4 0 004.2-3.3L16.8 5H7.2z"/></svg>
       </span>
       <h2>الترتيب ولوحة الشرف</h2>
+      <span class="bsh-spark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="12" height="12"><path fill="currentColor" d="M12 2l1.5 5.5L19 9l-5.5 1.5L12 16l-1.5-5.5L5 9l5.5-1.5L12 2z"/></svg>
+      </span>
     </div>
 
     <div class="board-rank-row">
       <!-- بطاقة ترتيب الجهة -->
-      <div class="rank-card">
+      <div class="rank-card" id="rankCard">
+        <span class="rank-crown" id="rankCrown" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M3 19h18v2H3v-2zm0-9l4 3 5-7 5 7 4-3v8H3v-8z"/></svg>
+        </span>
+        <div class="rank-confetti" id="rankConfetti" aria-hidden="true"></div>
+
         <div class="rank-card-l">ترتيب جهتك بين</div>
         <div class="rank-card-kind" id="rankKindLabel">—</div>
+
         <div class="rank-card-figure">
           <span class="rank-num" id="rankPos">—</span>
           <span class="rank-of">من</span>
           <span class="rank-tot" id="rankTot">—</span>
         </div>
-        <div class="rank-card-bar"><span id="rankBar" style="width:0%"></span></div>
+
+        <div class="rank-card-bar">
+          <span id="rankBar" style="width:0%"></span>
+          <span class="rank-bar-marker rank-bar-q1" title="أفضل 25%"></span>
+          <span class="rank-bar-marker rank-bar-q2" title="النصف"></span>
+          <span class="rank-bar-marker rank-bar-q3" title="أفضل 75%"></span>
+        </div>
+
+        <div class="rank-pct-row">
+          <span class="rank-pct" id="rankPct">—</span>
+          <span class="rank-pct-l">تفوّق على باقي الجهات</span>
+        </div>
+
         <div class="rank-card-hint" id="rankHint">&nbsp;</div>
+
+        <div class="rank-milestone" id="rankMilestone" style="display:none;">
+          <svg viewBox="0 0 24 24" width="13" height="13"><path fill="currentColor" d="M4 4h2v16H4V4zm4 0h12l-2 4 2 4H8V4z"/></svg>
+          <span id="rankMilestoneText"></span>
+        </div>
       </div>
 
       <!-- أفضل 3 جهات -->
@@ -104,13 +169,38 @@
       <span class="bsh-icon bsh-green">
         <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-4.4 0-8 2.2-8 5v3h16v-3c0-2.8-3.6-5-8-5z"/></svg>
       </span>
-      <h2>سفراء الجهة</h2>
+      <h2>العشرة الأوائل</h2>
       <span class="bsh-pill" id="ambCountPill">0</span>
+      <span class="bsh-legend" id="ambLegend" style="display:none;">
+        <span class="legend-bar"></span>
+        <span>الحجم النسبي للصناديق</span>
+      </span>
     </div>
 
     <div class="amb-grid" id="ambGrid"></div>
     <div class="amb-more" id="ambMore" style="display:none;"></div>
     <div class="amb-empty" id="ambEmpty" style="display:none;">لا يوجد سفراء مسجّلون في هذه الجهة بعد.</div>
+  </section>
+
+  <!-- FOOTER: اقتباس متحرك + أزرار طباعة/مشاركة + آخر تحديث -->
+  <section class="board-footer">
+    <div class="bf-quote" id="bfQuote">&nbsp;</div>
+    <div class="bf-actions">
+      <button type="button" class="bf-btn" id="btnShare">
+        <svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true">
+          <path fill="currentColor" d="M18 16a3 3 0 00-2.3 1.1L9 14V13l6.7-3.1A3 3 0 1015 8l-6.7 3.1a3 3 0 100 5.8L15 20a3 3 0 103-4z"/>
+        </svg>
+        مشاركة اللوحة
+      </button>
+      <button type="button" class="bf-btn bf-btn-ghost" id="btnPrint">
+        <svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true">
+          <path fill="currentColor" d="M19 8h-1V4H6v4H5a3 3 0 00-3 3v6h4v3h12v-3h4v-6a3 3 0 00-3-3zM8 6h8v2H8V6zm8 13H8v-4h8v4zm4-7a1 1 0 11-1-1 1 1 0 011 1z"/>
+        </svg>
+        طباعة كشهادة
+      </button>
+      <div class="bf-updated" id="bfUpdated">—</div>
+    </div>
+    <div class="bf-toast" id="bfToast"></div>
   </section>
 
 </div>
@@ -133,32 +223,62 @@
     --bb-amber:#dc2626;
     --bb-purple:#6e3eb8;
     --bb-purple-soft:#efe9fb;
+    --bb-blue:#1d4ed8;
+    --bb-blue-soft:#e3edff;
   }
 
-  /* widen container only for this page so 3-column row fits */
   body:has(.board-page) .container{ max-width: 1280px; }
-
   .board-page{ padding-bottom: 18px; }
 
-  /* HERO — compact */
+  /* تأثير ظهور تدريجي للأقسام */
+  .board-page > section{
+    opacity: 0; transform: translateY(8px);
+    animation: secIn .55s ease forwards;
+  }
+  .board-page > section:nth-child(1){ animation-delay: .02s; }
+  .board-page > section:nth-child(2){ animation-delay: .08s; }
+  .board-page > section:nth-child(3){ animation-delay: .14s; }
+  .board-page > section:nth-child(4){ animation-delay: .20s; }
+  .board-page > section:nth-child(5){ animation-delay: .26s; }
+  @keyframes secIn{ to{ opacity: 1; transform: translateY(0); } }
+
+  /* ===================== HERO ===================== */
   .board-hero{
     margin: 2px 0 12px;
     background:#fff;
     border:1px solid var(--bb-border);
     border-radius:18px;
-    padding: 12px 16px;
+    padding: 14px 16px;
     position:relative; overflow:hidden;
     display:grid;
     grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.6fr);
     gap: 14px;
     align-items: center;
   }
-  .board-hero::before{
-    content:""; position:absolute; inset:0;
+  .hero-mesh{
+    position:absolute; inset:0; pointer-events:none;
     background:
-      radial-gradient(700px 160px at 90% -40%, color-mix(in srgb, var(--bb-primary) 12%, transparent), transparent 60%),
-      radial-gradient(600px 160px at -10% 120%, color-mix(in srgb, var(--bb-gold) 12%, transparent), transparent 60%);
-    pointer-events:none;
+      radial-gradient(700px 200px at 92% -30%, color-mix(in srgb, var(--bb-primary) 18%, transparent), transparent 60%),
+      radial-gradient(600px 200px at -10% 130%, color-mix(in srgb, var(--bb-gold) 18%, transparent), transparent 60%),
+      radial-gradient(420px 160px at 50% 110%, color-mix(in srgb, var(--bb-purple) 12%, transparent), transparent 60%);
+    animation: meshShift 16s ease-in-out infinite alternate;
+  }
+  @keyframes meshShift{
+    0%   { transform: translate3d(0,0,0) scale(1); }
+    100% { transform: translate3d(-12px, 6px, 0) scale(1.04); }
+  }
+  .hero-orbits{ position:absolute; inset:0; pointer-events:none; overflow:hidden; }
+  .hero-orbits .orb{
+    position:absolute; border-radius:50%;
+    background: radial-gradient(circle at 30% 30%, #fff, transparent 70%);
+    opacity:.55; mix-blend-mode: screen;
+  }
+  .orb-1{ width:10px; height:10px; top:18%; left:12%; background: radial-gradient(circle, var(--bb-gold), transparent 70%); animation: orbFloat 9s ease-in-out infinite; }
+  .orb-2{ width:7px;  height:7px;  top:62%; left:30%; background: radial-gradient(circle, var(--bb-primary), transparent 70%); animation: orbFloat 11s ease-in-out infinite reverse; }
+  .orb-3{ width:9px;  height:9px;  top:30%; right:18%; background: radial-gradient(circle, var(--bb-purple), transparent 70%); animation: orbFloat 13s ease-in-out infinite; }
+  @keyframes orbFloat{
+    0%,100%{ transform: translateY(0); opacity:.5; }
+    50%{ transform: translateY(-14px); opacity:.85; }
   }
   .board-hero > *{ position:relative; }
 
@@ -172,12 +292,13 @@
     background:#fff; border:1px solid var(--bb-border);
     color:var(--bb-text); text-decoration:none;
     padding:4px 10px; border-radius:999px; font-size:12px; font-weight:700;
+    transition: background .15s ease, transform .15s ease;
   }
-  .board-back:hover{ background:#f5f7fa; }
+  .board-back:hover{ background:#f5f7fa; transform: translateX(2px); }
   .board-badge{
-    display:inline-block;
-    background:var(--bb-primary-soft);
-    border:1px solid color-mix(in srgb, var(--bb-primary) 28%, var(--bb-border));
+    display:inline-flex; align-items:center; gap:4px;
+    background: linear-gradient(135deg, var(--bb-primary-soft), color-mix(in srgb, var(--bb-primary) 14%, #fff));
+    border:1px solid color-mix(in srgb, var(--bb-primary) 32%, var(--bb-border));
     color:var(--bb-primary);
     padding:4px 10px; border-radius:999px; font-size:11.5px; font-weight:800;
   }
@@ -197,6 +318,29 @@
     100% { box-shadow:0 0 0 10px color-mix(in srgb, var(--bb-primary) 0%,  transparent); }
   }
 
+  .board-tier{
+    display:inline-flex; align-items:center; gap:6px;
+    padding:3px 10px 3px 8px; border-radius:999px;
+    font-size:11.5px; font-weight:800; color:#fff;
+    background: linear-gradient(135deg, var(--bb-gold), #b8860b);
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--bb-gold) 35%, transparent);
+    animation: tierGlow 2.4s ease-in-out infinite;
+  }
+  .board-tier .tier-ico{
+    display:inline-flex; width:16px; height:16px; align-items:center; justify-content:center;
+    background: rgba(255,255,255,.25); border-radius:50%;
+  }
+  .board-tier .tier-ico svg{ width:11px; height:11px; }
+  .board-tier.tier-diamond{ background: linear-gradient(135deg, #6e3eb8, #1d4ed8); box-shadow: 0 2px 10px color-mix(in srgb, var(--bb-purple) 40%, transparent); }
+  .board-tier.tier-gold   { background: linear-gradient(135deg, #d4a017, #b8860b); }
+  .board-tier.tier-silver { background: linear-gradient(135deg, #94a3b8, #64748b); }
+  .board-tier.tier-bronze { background: linear-gradient(135deg, #b6612c, #8a4a22); }
+  .board-tier.tier-grow   { background: linear-gradient(135deg, var(--bb-primary), #0f7d36); }
+  @keyframes tierGlow{
+    0%,100%{ filter: brightness(1); }
+    50%   { filter: brightness(1.12); }
+  }
+
   .board-title{
     margin: 0;
     font-size: clamp(20px, 2.6vw, 30px);
@@ -206,37 +350,143 @@
     line-height: 1.15;
     overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
   }
+  .board-sub-row{
+    display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+    margin-top: 4px;
+  }
   .board-sub{
     color: var(--bb-mute); font-size: 12.5px; font-weight: 600;
-    margin-top: 2px;
   }
+  .board-greet{
+    color: var(--bb-primary); font-size: 12px; font-weight: 700;
+    background: var(--bb-primary-soft); padding: 2px 9px; border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--bb-primary) 22%, var(--bb-border));
+  }
+  .hero-impact{
+    margin-top: 8px;
+    display:inline-flex; align-items:center; gap:6px;
+    background: #fff;
+    border: 1px solid var(--bb-border);
+    border-radius: 10px;
+    padding: 6px 10px;
+    color: var(--bb-text);
+    font-size: 12px; font-weight: 700;
+    max-width: 100%;
+  }
+  .hero-impact svg{ color: var(--bb-amber); flex-shrink: 0; }
 
+  /* الإحصائيات */
   .board-stats{
     display:grid; gap:8px;
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
   .bs{
     background:#fff; border:1px solid var(--bb-border);
-    border-radius:12px; padding: 8px 8px 7px;
+    border-radius:12px; padding: 10px 8px 8px;
     text-align:center; position:relative; overflow:hidden;
-    display:flex; flex-direction:column; align-items:center; gap:2px;
+    display:flex; flex-direction:column; align-items:center; gap:3px;
+    transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
   }
+  .bs::before{
+    content:""; position:absolute; inset:auto -20px -25px auto;
+    width:80px; height:80px; border-radius:50%;
+    background: radial-gradient(circle, color-mix(in srgb, var(--bb-primary) 16%, transparent), transparent 70%);
+    transition: transform .35s ease;
+  }
+  .bs:nth-child(2)::before{ background: radial-gradient(circle, color-mix(in srgb, var(--bb-purple) 16%, transparent), transparent 70%); }
+  .bs:nth-child(3)::before{ background: radial-gradient(circle, color-mix(in srgb, var(--bb-gold) 18%, transparent), transparent 70%); }
+  .bs:hover{ transform: translateY(-2px); box-shadow: 0 6px 18px rgba(20,30,50,.06); border-color: color-mix(in srgb, var(--bb-primary) 18%, var(--bb-border)); }
+  .bs:hover::before{ transform: scale(1.18); }
   .bs-i{
-    width:28px; height:28px; border-radius:8px;
+    width:30px; height:30px; border-radius:9px;
     background:var(--bb-primary-soft); color:var(--bb-primary);
     display:inline-flex; align-items:center; justify-content:center;
+    position:relative; z-index:1;
   }
-  .bs-i svg{ width:16px; height:16px; }
+  .bs-i svg{ width:17px; height:17px; }
   .bs:nth-child(2) .bs-i{ background:var(--bb-purple-soft); color:var(--bb-purple); }
   .bs:nth-child(3) .bs-i{ background:var(--bb-gold-soft); color:var(--bb-gold); }
   .bs-v{
-    font-size: clamp(16px, 2vw, 22px);
+    font-size: clamp(17px, 2.1vw, 23px);
     font-weight: 900; line-height: 1.1;
     color: var(--bb-text);
+    position:relative; z-index:1;
+    font-variant-numeric: tabular-nums;
   }
-  .bs-l{ font-size:11px; color:var(--bb-mute); font-weight:600; }
+  .bs-l{ font-size:11px; color:var(--bb-mute); font-weight:600; position:relative; z-index:1; }
 
-  /* SECTION HEAD — tighter */
+  /* ===================== ACHIEVEMENTS ===================== */
+  .board-achievements{
+    margin: 10px 0 4px;
+    background: #fff;
+    border: 1px solid var(--bb-border);
+    border-radius: 14px;
+    padding: 10px 12px 12px;
+    position: relative;
+    overflow: hidden;
+  }
+  .board-achievements::after{
+    content:""; position:absolute; left:0; right:0; top:0; height:2px;
+    background: linear-gradient(90deg, var(--bb-gold), var(--bb-primary), var(--bb-purple), var(--bb-gold));
+    background-size: 200% 100%;
+    animation: rainbowFlow 6s linear infinite;
+  }
+  @keyframes rainbowFlow{
+    0%   { background-position: 0% 0; }
+    100% { background-position: 200% 0; }
+  }
+  .ach-head{
+    display:flex; align-items:center; gap:8px;
+    margin-bottom: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--bb-text);
+  }
+  .ach-head-ico{
+    width:22px; height:22px; border-radius:6px;
+    background: var(--bb-gold-soft); color: var(--bb-gold);
+    display:inline-flex; align-items:center; justify-content:center;
+  }
+  .ach-thread{ flex:1; height:1px; background: linear-gradient(90deg, var(--bb-border), transparent); }
+  .ach-row{
+    display:flex; gap:8px; flex-wrap: wrap;
+  }
+  .ach-chip{
+    display:inline-flex; align-items:center; gap:6px;
+    padding: 5px 10px 5px 6px; border-radius: 999px;
+    font-size: 11.5px; font-weight: 800;
+    background: #fff;
+    border: 1px solid var(--bb-border);
+    color: var(--bb-text);
+    position: relative;
+    animation: chipIn .4s ease backwards;
+  }
+  .ach-chip:nth-child(1){ animation-delay: .05s; }
+  .ach-chip:nth-child(2){ animation-delay: .1s; }
+  .ach-chip:nth-child(3){ animation-delay: .15s; }
+  .ach-chip:nth-child(4){ animation-delay: .2s; }
+  .ach-chip:nth-child(5){ animation-delay: .25s; }
+  .ach-chip:nth-child(6){ animation-delay: .3s; }
+  @keyframes chipIn{
+    from{ opacity:0; transform: translateY(6px) scale(.96); }
+    to  { opacity:1; transform: translateY(0)   scale(1); }
+  }
+  .ach-chip .ach-ico{
+    width:22px; height:22px; border-radius:50%;
+    display:inline-flex; align-items:center; justify-content:center;
+    background: var(--bb-gold-soft); color: var(--bb-gold);
+  }
+  .ach-chip .ach-ico svg{ width:13px; height:13px; }
+  .ach-chip.is-green  .ach-ico{ background: var(--bb-primary-soft); color: var(--bb-primary); }
+  .ach-chip.is-purple .ach-ico{ background: var(--bb-purple-soft);  color: var(--bb-purple); }
+  .ach-chip.is-blue   .ach-ico{ background: var(--bb-blue-soft);    color: var(--bb-blue); }
+  .ach-chip.is-amber  .ach-ico{ background: #fff1f1;                color: var(--bb-amber); }
+  .ach-chip.is-crown{
+    background: linear-gradient(135deg, var(--bb-gold-soft), #fff);
+    border-color: color-mix(in srgb, var(--bb-gold) 38%, var(--bb-border));
+    color: #6b4d00;
+  }
+  .ach-chip.is-crown .ach-ico{ background: var(--bb-gold); color: #fff; }
+
+  /* ===================== SECTION HEAD ===================== */
   .board-section{ margin-top: 12px; }
   .board-section-head{
     display:flex; align-items:center; gap:8px;
@@ -253,69 +503,213 @@
   .bsh-gold{ background:var(--bb-gold-soft); color:var(--bb-gold); }
   .bsh-green{ background:var(--bb-primary-soft); color:var(--bb-primary); }
   .bsh-pill{
-    margin-inline-start:auto;
     background:#fff; border:1px solid var(--bb-border);
     color:var(--bb-mute); border-radius:999px;
     padding:2px 9px; font-size:11.5px; font-weight:700;
   }
+  .bsh-spark{
+    margin-inline-start:auto;
+    color: var(--bb-gold);
+    animation: sparkSpin 4s linear infinite;
+  }
+  @keyframes sparkSpin{
+    0%  { transform: rotate(0deg)   scale(1); opacity:.7; }
+    50% { transform: rotate(180deg) scale(1.15); opacity:1; }
+    100%{ transform: rotate(360deg) scale(1); opacity:.7; }
+  }
+  .bsh-legend{
+    margin-inline-start:auto;
+    display:inline-flex; align-items:center; gap:6px;
+    color: var(--bb-mute); font-size: 11px; font-weight: 700;
+  }
+  .bsh-legend .legend-bar{
+    display:inline-block; width: 26px; height: 5px; border-radius: 99px;
+    background: linear-gradient(90deg, var(--bb-primary), var(--bb-gold));
+  }
 
-  /* RANK + HONOR ROW */
+  /* ===================== RANK + HONOR ROW ===================== */
   .board-rank-row{
     display:grid; gap:10px;
     grid-template-columns: 1fr 1.35fr 1.35fr;
   }
 
   .rank-card{
-    background: linear-gradient(160deg, #fff, #fff 60%, var(--bb-gold-soft));
+    background: linear-gradient(160deg, #fff, #fff 55%, var(--bb-gold-soft));
     border:1px solid var(--bb-border);
-    border-radius:14px; padding: 12px 14px;
+    border-radius:14px; padding: 14px 14px 12px;
     position:relative; overflow:hidden;
   }
   .rank-card::after{
-    content:""; position:absolute; inset:auto -30px -30px auto;
-    width:120px; height:120px; border-radius:50%;
-    background: radial-gradient(circle, color-mix(in srgb, var(--bb-gold) 22%, transparent), transparent 70%);
+    content:""; position:absolute; inset:auto -40px -40px auto;
+    width:160px; height:160px; border-radius:50%;
+    background: radial-gradient(circle, color-mix(in srgb, var(--bb-gold) 28%, transparent), transparent 70%);
+    animation: rankPulse 3.4s ease-in-out infinite;
   }
-  .rank-card-l{ font-size:11.5px; color:var(--bb-mute); font-weight:700; }
+  @keyframes rankPulse{
+    0%,100%{ transform: scale(1); opacity:.85; }
+    50%   { transform: scale(1.08); opacity:1; }
+  }
+  .rank-card.is-champion{
+    background: linear-gradient(160deg, #fff, var(--bb-gold-soft) 70%);
+    border-color: color-mix(in srgb, var(--bb-gold) 50%, var(--bb-border));
+    box-shadow: 0 8px 26px color-mix(in srgb, var(--bb-gold) 22%, transparent);
+  }
+  .rank-card.is-top3{
+    border-color: color-mix(in srgb, var(--bb-gold) 35%, var(--bb-border));
+  }
+  .rank-card-l{ font-size:11.5px; color:var(--bb-mute); font-weight:700; position:relative; z-index:1; }
   .rank-card-kind{
     font-size:13.5px; font-weight:800; color:var(--bb-text);
-    margin-top:1px;
+    margin-top:1px; position:relative; z-index:1;
   }
   .rank-card-figure{
     display:flex; align-items:baseline; gap:8px;
-    margin: 6px 0 8px;
+    margin: 8px 0 10px; position:relative; z-index:1;
   }
   .rank-num{
-    font-size: clamp(34px, 5vw, 52px);
+    font-size: clamp(38px, 5.4vw, 58px);
     font-weight: 900; color: var(--bb-gold);
     line-height: 1;
     text-shadow: 0 2px 0 color-mix(in srgb, var(--bb-gold) 18%, transparent);
+    font-variant-numeric: tabular-nums;
+    background: linear-gradient(180deg, #f0b94d, #b8860b);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    position: relative;
+  }
+  .rank-num.is-fresh::after{
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.85) 50%, transparent 100%);
+    -webkit-background-clip: text; background-clip: text;
+    color: transparent; -webkit-text-fill-color: transparent;
+    animation: numShine 1.6s ease forwards;
+  }
+  @keyframes numShine{
+    0%   { transform: translateX(-100%); opacity: 0; }
+    30%  { opacity: 1; }
+    100% { transform: translateX(100%);  opacity: 0; }
   }
   .rank-of{ color:var(--bb-mute); font-weight:700; font-size:12.5px; }
-  .rank-tot{ font-size: 18px; font-weight:800; color:var(--bb-text); }
+  .rank-tot{ font-size: 18px; font-weight:800; color:var(--bb-text); font-variant-numeric: tabular-nums; }
+
   .rank-card-bar{
-    height: 8px; background: #fff;
+    position: relative; z-index:1;
+    height: 10px; background: #fff;
     border:1px solid var(--bb-border); border-radius:999px; overflow:hidden;
   }
-  .rank-card-bar span{
+  .rank-card-bar span#rankBar{
     display:block; height:100%;
-    background: linear-gradient(90deg, var(--bb-gold), color-mix(in srgb, var(--bb-gold) 60%, var(--bb-primary)));
-    transition: width .8s ease;
+    background: linear-gradient(90deg, var(--bb-gold), color-mix(in srgb, var(--bb-gold) 50%, var(--bb-primary)));
+    transition: width 1s cubic-bezier(.2,.7,.2,1);
+    position: relative;
   }
+  .rank-card-bar span#rankBar::after{
+    content:""; position: absolute; inset:0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.55), transparent);
+    background-size: 200% 100%;
+    animation: barShine 2.4s linear infinite;
+  }
+  @keyframes barShine{
+    0%   { background-position: -100% 0; }
+    100% { background-position: 200% 0;  }
+  }
+  .rank-bar-marker{
+    position: absolute; top:-2px; bottom:-2px; width:2px;
+    background: color-mix(in srgb, var(--bb-text) 18%, transparent);
+    border-radius: 1px;
+  }
+  .rank-bar-q1{ inset-inline-start: 75%; }
+  .rank-bar-q2{ inset-inline-start: 50%; }
+  .rank-bar-q3{ inset-inline-start: 25%; }
+
+  .rank-pct-row{
+    margin-top: 8px;
+    display:flex; align-items:baseline; gap:6px;
+    position:relative; z-index:1;
+  }
+  .rank-pct{
+    font-size: 16px; font-weight: 900;
+    color: var(--bb-primary);
+    font-variant-numeric: tabular-nums;
+  }
+  .rank-pct-l{ font-size:11.5px; color: var(--bb-mute); font-weight: 700; }
+
   .rank-card-hint{
-    margin-top: 6px; font-size: 11.5px; font-weight:600; color:var(--bb-mute);
+    margin-top: 4px; font-size: 11.5px; font-weight:600; color:var(--bb-mute);
     min-height: 16px;
     overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    position:relative; z-index:1;
+  }
+  .rank-milestone{
+    margin-top: 8px;
+    display:inline-flex; align-items:center; gap:5px;
+    background: #fff; border: 1px dashed color-mix(in srgb, var(--bb-primary) 35%, var(--bb-border));
+    color: var(--bb-primary);
+    padding: 4px 9px; border-radius: 8px;
+    font-size: 11px; font-weight: 800;
+    position: relative; z-index: 1;
   }
 
-  /* HONOR BLOCK — compact */
+  .rank-crown{
+    position:absolute; top:-12px; inset-inline-end:14px;
+    width:36px; height:36px; border-radius:50%;
+    background: linear-gradient(135deg, var(--bb-gold), #b8860b);
+    color: #fff;
+    display: none;
+    align-items:center; justify-content:center;
+    box-shadow: 0 6px 16px color-mix(in srgb, var(--bb-gold) 45%, transparent);
+    animation: crownBob 2.6s ease-in-out infinite;
+  }
+  .rank-crown::before,
+  .rank-crown::after{
+    content:""; position:absolute; width:5px; height:5px; border-radius:50%;
+    background: #fff; opacity:.85;
+    animation: sparkPing 1.8s ease-in-out infinite;
+  }
+  .rank-crown::before{ top: -2px; left: -4px; animation-delay: .2s; }
+  .rank-crown::after { bottom: -2px; right: -4px; animation-delay: .9s; }
+  .rank-card.is-champion .rank-crown{ display: inline-flex; }
+  @keyframes crownBob{
+    0%,100%{ transform: translateY(0) rotate(-3deg); }
+    50%   { transform: translateY(-4px) rotate(3deg); }
+  }
+  @keyframes sparkPing{
+    0%,100%{ transform: scale(.6); opacity: .2; }
+    50%   { transform: scale(1.4); opacity: 1; }
+  }
+
+  .rank-confetti{
+    position: absolute; inset: 0; pointer-events: none;
+    overflow: hidden; display: none;
+  }
+  .rank-card.is-champion .rank-confetti,
+  .rank-card.is-top3 .rank-confetti{ display: block; }
+  .rank-confetti i{
+    position: absolute; top:-12px; width:6px; height:10px; border-radius: 2px;
+    opacity: 0;
+    animation: confFall 4.2s linear infinite;
+  }
+  @keyframes confFall{
+    0%   { transform: translateY(-20px) rotate(0deg); opacity: 0; }
+    10%  { opacity: 1; }
+    100% { transform: translateY(280px) rotate(540deg); opacity: 0; }
+  }
+
+  /* ===================== HONOR BLOCK ===================== */
   .honor-block{
     background:#fff; border:1px solid var(--bb-border);
-    border-radius:14px; padding: 10px 10px 12px;
+    border-radius:14px; padding: 10px 10px 14px;
     min-width: 0;
+    transition: box-shadow .25s ease, border-color .25s ease;
+  }
+  .honor-block:hover{
+    border-color: color-mix(in srgb, var(--bb-primary) 18%, var(--bb-border));
+    box-shadow: 0 6px 18px rgba(20,30,50,.06);
   }
   .honor-head{
-    display:flex; align-items:center; gap:6px; margin: 0 2px 14px;
+    display:flex; align-items:center; gap:6px; margin: 0 2px 18px;
   }
   .honor-head h3{
     margin:0; font-size:13px; font-weight:800; color:var(--bb-text);
@@ -335,7 +729,7 @@
   }
 
   .podium{
-    display:grid; gap:6px;
+    display:grid; gap:8px;
     grid-template-columns: 1fr 1fr 1fr;
     align-items: end;
   }
@@ -348,106 +742,197 @@
   .podium-item{
     position: relative;
     background:#fff; border:1px solid var(--bb-border);
-    border-radius:12px; padding: 8px 6px 10px;
+    border-radius:12px; padding: 12px 6px 12px;
     text-align:center;
     min-width: 0;
-    transition: transform .2s ease, box-shadow .2s ease;
+    transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+    animation: podiumIn .55s ease both;
   }
+  .podium-item.rank-1{ animation-delay: .15s; }
+  .podium-item.rank-2{ animation-delay: .05s; }
+  .podium-item.rank-3{ animation-delay: .25s; }
+  @keyframes podiumIn{
+    from{ opacity:0; transform: translateY(10px); }
+    to  { opacity:1; transform: translateY(0); }
+  }
+  .podium-item:hover{ transform: translateY(-2px); box-shadow: 0 6px 18px rgba(20,30,50,.06); }
   .podium-item.is-current{
-    border-color: color-mix(in srgb, var(--bb-primary) 50%, var(--bb-border));
+    border-color: color-mix(in srgb, var(--bb-primary) 55%, var(--bb-border));
     background: linear-gradient(180deg, #fff, var(--bb-primary-soft));
+    box-shadow: 0 4px 14px color-mix(in srgb, var(--bb-primary) 14%, transparent);
   }
   .podium-item .medal{
-    width:28px; height:28px; border-radius:50%;
+    width:30px; height:30px; border-radius:50%;
     display:inline-flex; align-items:center; justify-content:center;
     font-weight:900; font-size:12px;
     background: var(--bb-gold-soft); color: var(--bb-gold);
     border: 2px solid #fff;
-    box-shadow: 0 1px 0 var(--bb-border);
-    margin-top: -18px;
+    box-shadow: 0 1px 0 var(--bb-border), 0 4px 10px rgba(0,0,0,.06);
+    margin-top: -22px;
+    position: relative;
   }
-  .podium-item.rank-1 .medal{ background: var(--bb-gold-soft); color: var(--bb-gold); }
-  .podium-item.rank-2 .medal{ background: var(--bb-silver-soft); color: var(--bb-silver); }
-  .podium-item.rank-3 .medal{ background: var(--bb-bronze-soft); color: var(--bb-bronze); }
+  .podium-item.rank-1 .medal{ background: linear-gradient(135deg, var(--bb-gold), #b8860b); color: #fff; }
+  .podium-item.rank-2 .medal{ background: linear-gradient(135deg, #cbd5e1, var(--bb-silver)); color: #fff; }
+  .podium-item.rank-3 .medal{ background: linear-gradient(135deg, #d97a45, var(--bb-bronze)); color: #fff; }
   .podium-item.rank-1{
     order: 2;
-    transform: translateY(-4px);
-    border-color: color-mix(in srgb, var(--bb-gold) 35%, var(--bb-border));
+    transform: translateY(-6px);
+    border-color: color-mix(in srgb, var(--bb-gold) 45%, var(--bb-border));
     background: linear-gradient(180deg, #fff, var(--bb-gold-soft));
   }
   .podium-item.rank-2{ order: 1; }
   .podium-item.rank-3{ order: 3; }
 
+  /* تاج فوق المركز الأول */
+  .podium-item.rank-1::before{
+    content: "";
+    position: absolute;
+    top: -28px; left: 50%; transform: translateX(-50%);
+    width: 26px; height: 18px;
+    background: linear-gradient(135deg, var(--bb-gold), #b8860b);
+    clip-path: polygon(0 100%, 0 40%, 25% 70%, 50% 0, 75% 70%, 100% 40%, 100% 100%);
+    filter: drop-shadow(0 2px 4px color-mix(in srgb, var(--bb-gold) 50%, transparent));
+    animation: crownBob 2.6s ease-in-out infinite;
+  }
+
   .podium-name{
-    font-size: 11.5px; font-weight: 800; color: var(--bb-text);
+    font-size: 12px; font-weight: 800; color: var(--bb-text);
     margin-top: 4px; line-height: 1.25;
     overflow:hidden; text-overflow:ellipsis;
     display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
-    min-height: 28px;
-    padding: 0 2px;
+    min-height: 30px;
+    padding: 0 4px;
   }
   .podium-sub{
     font-size: 10px; color: var(--bb-mute); margin-top: 2px;
     overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-    padding: 0 2px;
+    padding: 0 4px;
   }
   .podium-pills{
-    margin-top: 6px; display:flex; gap:3px; justify-content:center; flex-wrap:wrap;
+    margin-top: 8px; display:flex; gap:4px; justify-content:center; flex-wrap:wrap;
   }
   .podium-pill{
     background:#fff; border:1px solid var(--bb-border);
-    border-radius:999px; padding:1px 6px; font-size:10px; font-weight:700;
+    border-radius:999px; padding:2px 7px; font-size:10px; font-weight:700;
     color: var(--bb-text);
   }
-  .podium-pill b{ color: var(--bb-primary); }
+  .podium-pill b{ color: var(--bb-primary); font-variant-numeric: tabular-nums; }
   .is-you-tag{
     position:absolute; top:-9px; inset-inline-end:-4px;
     background: var(--bb-primary); color:#fff;
     font-size: 9.5px; font-weight: 800;
-    padding: 1px 7px; border-radius: 999px;
+    padding: 2px 8px; border-radius: 999px;
     box-shadow: 0 2px 6px rgba(22,163,74,.35);
+    animation: tagPop .5s ease;
+  }
+  @keyframes tagPop{
+    from{ transform: scale(.5); opacity:0; }
+    to{ transform: scale(1); opacity:1; }
   }
 
-  /* AMBASSADORS GRID — 5 columns × 2 rows = top 10 */
+  /* ===================== AMBASSADORS ===================== */
   .amb-grid{
     display:grid; gap:8px;
     grid-template-columns: repeat(5, minmax(0, 1fr));
   }
   .amb-card{
     background:#fff; border:1px solid var(--bb-border);
-    border-radius:12px; padding: 8px 8px 7px;
-    display:flex; align-items:center; gap:8px;
+    border-radius:12px; padding: 10px 10px 9px;
+    display:flex; flex-direction: column; gap:6px;
     position:relative; overflow:hidden;
     min-width: 0;
-    transition: transform .15s ease, border-color .15s ease;
+    transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+    animation: cardIn .45s ease both;
   }
-  .amb-card:hover{ transform: translateY(-1px); }
-  .amb-card.top-1{ border-color: color-mix(in srgb, var(--bb-gold) 45%, var(--bb-border));
-    background: linear-gradient(160deg, #fff, var(--bb-gold-soft)); }
-  .amb-card.top-2{ border-color: color-mix(in srgb, var(--bb-silver) 45%, var(--bb-border));
+  .amb-card:nth-child(1){ animation-delay: .02s; }
+  .amb-card:nth-child(2){ animation-delay: .05s; }
+  .amb-card:nth-child(3){ animation-delay: .08s; }
+  .amb-card:nth-child(4){ animation-delay: .11s; }
+  .amb-card:nth-child(5){ animation-delay: .14s; }
+  .amb-card:nth-child(6){ animation-delay: .17s; }
+  .amb-card:nth-child(7){ animation-delay: .20s; }
+  .amb-card:nth-child(8){ animation-delay: .23s; }
+  .amb-card:nth-child(9){ animation-delay: .26s; }
+  .amb-card:nth-child(10){ animation-delay: .29s; }
+  @keyframes cardIn{
+    from{ opacity: 0; transform: translateY(8px); }
+    to  { opacity: 1; transform: translateY(0); }
+  }
+  .amb-card:hover{
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--bb-primary) 22%, var(--bb-border));
+    box-shadow: 0 6px 18px rgba(20,30,50,.06);
+  }
+  .amb-card.top-1{ border-color: color-mix(in srgb, var(--bb-gold) 50%, var(--bb-border));
+    background: linear-gradient(160deg, #fff, var(--bb-gold-soft));
+    box-shadow: 0 6px 18px color-mix(in srgb, var(--bb-gold) 12%, transparent); }
+  .amb-card.top-2{ border-color: color-mix(in srgb, var(--bb-silver) 50%, var(--bb-border));
     background: linear-gradient(160deg, #fff, var(--bb-silver-soft)); }
-  .amb-card.top-3{ border-color: color-mix(in srgb, var(--bb-bronze) 45%, var(--bb-border));
+  .amb-card.top-3{ border-color: color-mix(in srgb, var(--bb-bronze) 50%, var(--bb-border));
     background: linear-gradient(160deg, #fff, var(--bb-bronze-soft)); }
+
+  .amb-card.top-1::before{
+    content:""; position: absolute; top:-30px; right:-30px;
+    width: 80px; height: 80px; border-radius: 50%;
+    background: radial-gradient(circle, color-mix(in srgb, var(--bb-gold) 35%, transparent), transparent 70%);
+    animation: rankPulse 3s ease-in-out infinite;
+  }
+
+  .amb-card-head{
+    display:flex; align-items:center; gap:8px;
+  }
   .amb-rank{
-    width:28px; height:28px; border-radius:8px;
+    width:30px; height:30px; border-radius:9px;
     background:#f3f6f9; color:var(--bb-text);
     display:flex; align-items:center; justify-content:center;
-    font-weight:900; font-size:12.5px; flex-shrink:0;
+    font-weight:900; font-size:13px; flex-shrink:0;
+    font-variant-numeric: tabular-nums;
+    position: relative;
+    z-index: 1;
   }
-  .amb-card.top-1 .amb-rank{ background: var(--bb-gold); color:#fff; }
-  .amb-card.top-2 .amb-rank{ background: var(--bb-silver); color:#fff; }
-  .amb-card.top-3 .amb-rank{ background: var(--bb-bronze); color:#fff; }
+  .amb-card.top-1 .amb-rank{ background: linear-gradient(135deg, var(--bb-gold), #b8860b); color:#fff; }
+  .amb-card.top-2 .amb-rank{ background: linear-gradient(135deg, #cbd5e1, var(--bb-silver)); color:#fff; }
+  .amb-card.top-3 .amb-rank{ background: linear-gradient(135deg, #d97a45, var(--bb-bronze)); color:#fff; }
   .amb-info{ min-width:0; flex:1; }
   .amb-name{
-    font-size:12px; font-weight:800; color: var(--bb-text);
+    font-size:12.5px; font-weight:800; color: var(--bb-text);
     line-height: 1.3;
     overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
   }
   .amb-meta{
-    font-size:10.5px; color: var(--bb-mute); margin-top: 1px;
+    font-size:10.5px; color: var(--bb-mute); margin-top: 2px;
     display:flex; gap:5px; align-items:center; flex-wrap:wrap;
   }
   .amb-meta .dot{ width:3px; height:3px; border-radius:50%; background: var(--bb-mute); display:inline-block; }
+  .amb-meta b{ color: var(--bb-text); font-variant-numeric: tabular-nums; }
+  .amb-star{
+    margin-inline-start: auto;
+    color: var(--bb-gold);
+    display: inline-flex;
+    align-items: center;
+  }
+  .amb-card:not(.top-1):not(.top-2):not(.top-3) .amb-star{ display:none; }
+  .amb-card.top-2 .amb-star{ color: var(--bb-silver); }
+  .amb-card.top-3 .amb-star{ color: var(--bb-bronze); }
+  .amb-bar-wrap{
+    margin-top: 2px;
+    height: 6px;
+    background: #f1f4f7;
+    border-radius: 99px;
+    overflow: hidden;
+    position: relative;
+  }
+  .amb-bar{
+    display:block; height: 100%;
+    background: linear-gradient(90deg, var(--bb-primary), color-mix(in srgb, var(--bb-primary) 60%, var(--bb-gold)));
+    border-radius: 99px;
+    width: 0%;
+    transition: width .9s cubic-bezier(.2,.7,.2,1);
+  }
+  .amb-card.top-1 .amb-bar{ background: linear-gradient(90deg, #f0b94d, var(--bb-gold)); }
+  .amb-card.top-2 .amb-bar{ background: linear-gradient(90deg, #cbd5e1, var(--bb-silver)); }
+  .amb-card.top-3 .amb-bar{ background: linear-gradient(90deg, #d97a45, var(--bb-bronze)); }
+
   .amb-empty{
     text-align:center; color:var(--bb-mute); padding:24px 16px;
     background:#fff; border:1px dashed var(--bb-border); border-radius:12px;
@@ -457,7 +942,78 @@
     font-size: 12px; font-weight: 700; color: var(--bb-mute);
   }
 
-  /* Responsive */
+  /* ===================== FOOTER ===================== */
+  .board-footer{
+    margin-top: 14px;
+    background: linear-gradient(135deg, #fff, var(--bb-primary-soft));
+    border: 1px solid color-mix(in srgb, var(--bb-primary) 18%, var(--bb-border));
+    border-radius: 14px;
+    padding: 12px 14px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .board-footer::before{
+    content:""; position:absolute; inset: 0;
+    background: radial-gradient(400px 90px at 90% -10%, color-mix(in srgb, var(--bb-gold) 18%, transparent), transparent 60%);
+    pointer-events: none;
+  }
+  .bf-quote{
+    font-size: 13px; font-weight: 700; color: var(--bb-text);
+    line-height: 1.5;
+    position: relative; z-index: 1;
+    min-height: 20px;
+    transition: opacity .35s ease;
+  }
+  .bf-quote::before{
+    content: "❝";
+    color: var(--bb-primary);
+    font-weight: 900;
+    margin-inline-end: 4px;
+    font-size: 16px;
+  }
+  .bf-actions{
+    display:flex; align-items:center; gap:8px; flex-wrap: wrap;
+    position: relative; z-index: 1;
+  }
+  .bf-btn{
+    display:inline-flex; align-items:center; gap:5px;
+    background: var(--bb-primary); color: #fff;
+    border: 1px solid color-mix(in srgb, var(--bb-primary) 80%, #000);
+    padding: 6px 12px; border-radius: 999px;
+    font-size: 12px; font-weight: 800;
+    cursor: pointer;
+    transition: transform .12s ease, box-shadow .15s ease, background .15s ease;
+  }
+  .bf-btn:hover{ transform: translateY(-1px); box-shadow: 0 4px 12px color-mix(in srgb, var(--bb-primary) 30%, transparent); }
+  .bf-btn:active{ transform: translateY(0); }
+  .bf-btn-ghost{
+    background: #fff; color: var(--bb-text);
+    border-color: var(--bb-border);
+  }
+  .bf-btn-ghost:hover{ box-shadow: 0 4px 10px rgba(0,0,0,.06); }
+  .bf-updated{
+    font-size: 11px; color: var(--bb-mute); font-weight: 600;
+    margin-inline-start: 4px;
+  }
+  .bf-toast{
+    position: fixed; bottom: 24px; left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--bb-text); color: #fff;
+    padding: 8px 14px; border-radius: 999px;
+    font-size: 12px; font-weight: 700;
+    opacity: 0; pointer-events: none;
+    transition: opacity .25s ease, transform .25s ease;
+    z-index: 9999;
+  }
+  .bf-toast.is-show{
+    opacity: 1; transform: translateX(-50%) translateY(0);
+  }
+
+  /* ===================== RESPONSIVE ===================== */
   @media (max-width: 1100px){
     .board-rank-row{ grid-template-columns: 1fr 1fr; }
     .rank-card{ grid-column: 1 / -1; }
@@ -466,6 +1022,7 @@
   @media (max-width: 900px){
     .board-hero{ grid-template-columns: 1fr; }
     .amb-grid{ grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .board-footer{ grid-template-columns: 1fr; }
   }
   @media (max-width: 720px){
     .board-rank-row{ grid-template-columns: 1fr; }
@@ -475,6 +1032,20 @@
   @media (max-width: 520px){
     .amb-grid{ grid-template-columns: 1fr 1fr; }
     .podium-name{ font-size: 11px; min-height: 26px; }
+  }
+
+  /* ===================== PRINT (شهادة) ===================== */
+  @media print{
+    @page { size: A4 landscape; margin: 14mm; }
+    body{ background: #fff !important; }
+    .board-page{ padding: 0; }
+    .board-back, .board-live, .bf-actions, .bsh-spark, .hero-orbits, .rank-confetti{ display: none !important; }
+    .board-page > section{ animation: none !important; opacity: 1 !important; transform: none !important; page-break-inside: avoid; }
+    .amb-card, .honor-block, .rank-card, .bs, .board-footer, .board-achievements, .board-hero{
+      box-shadow: none !important;
+    }
+    .board-footer{ background: #fff; border: 1px solid var(--bb-border); }
+    .bf-quote{ font-style: italic; }
   }
 </style>
 
@@ -493,17 +1064,119 @@ const esc = (v) => String(v == null ? '' : v)
 function fmt(n){ return App.formatNumber(n || 0); }
 function fmtAmount(n){
   const v = Number(n) || 0;
-  if (v >= 1_000_000) return (v / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'م';
-  if (v >= 1_000) return (v / 1_000).toFixed(1).replace(/\.0$/, '') + 'ك';
+  // if (v >= 1_000_000) return (v / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'م';
+  // if (v >= 1_000) return (v / 1_000).toFixed(1).replace(/\.0$/, '') + 'ك';
   return fmt(v);
 }
 
+/* ---------- Animated counters ---------- */
+function animateCount(el, target, opts){
+  if (!el) return;
+  const o = opts || {};
+  const duration = o.duration || 900;
+  const isAmount = !!o.amount;
+  const decimals = o.decimals || 0;
+  const t0 = performance.now();
+  const start = 0;
+  const tick = (now) => {
+    const t = Math.min(1, (now - t0) / duration);
+    const eased = 1 - Math.pow(1 - t, 3);
+    const v = start + (target - start) * eased;
+    el.textContent = isAmount ? fmtAmount(v) : fmt(Math.round(v));
+    if (t < 1) requestAnimationFrame(tick);
+    else el.textContent = isAmount ? fmtAmount(target) : fmt(target);
+  };
+  requestAnimationFrame(tick);
+}
+
+/* ---------- Greeting based on time of day ---------- */
+function greetingText(){
+  const h = new Date().getHours();
+  if (h >= 5 && h < 12) return 'صباح العطاء ☀️';
+  if (h >= 12 && h < 17) return 'نهار مثمر 🌿';
+  if (h >= 17 && h < 21) return 'مساء النور ✨';
+  return 'ليلة مباركة 🌙';
+}
+
+/* ---------- Performance tier ---------- */
+function tierFor(position, total){
+  if (!position || !total) return null;
+  if (position === 1) return { cls: 'tier-diamond', label: 'قائد الفئة', icon: 'crown' };
+  if (position <= 3) return { cls: 'tier-gold',    label: 'منصة التتويج', icon: 'trophy' };
+  const pct = ((total - position + 1) / total) * 100;
+  if (position <= 10 || pct >= 90) return { cls: 'tier-gold',   label: 'ضمن المتقدمين', icon: 'star' };
+  if (pct >= 75) return { cls: 'tier-silver', label: 'النخبة الفضية', icon: 'star' };
+  if (pct >= 50) return { cls: 'tier-bronze', label: 'في النصف الأعلى', icon: 'up' };
+  return { cls: 'tier-grow', label: 'في طريق النمو', icon: 'spark' };
+}
+function tierIconSvg(name){
+  const map = {
+    crown:  '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M3 19h18v2H3v-2zm0-9l4 3 5-7 5 7 4-3v8H3v-8z"/></svg>',
+    trophy: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M5 3h14l-1 6a6 6 0 01-5 5.92V18h3v2H8v-2h3v-3.08A6 6 0 016 9L5 3z"/></svg>',
+    star:   '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2l3 6.3 6.9 1L17 14l1.2 7L12 17.8 5.8 21 7 14l-4.9-4.7 6.9-1z"/></svg>',
+    up:     '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M3 17l6-6 4 4 7-7v6h2V4h-8v2h4l-5 5-4-4-8 8z"/></svg>',
+    spark:  '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2l1.5 5.5L19 9l-5.5 1.5L12 16l-1.5-5.5L5 9l5.5-1.5L12 2z"/></svg>'
+  };
+  return map[name] || map.star;
+}
+
+/* ---------- Achievements based on stats + rank ---------- */
+function buildAchievements(c, rk){
+  const list = [];
+  const amb = Number(c.ambassadorsCount) || 0;
+  const fnd = Number(c.fundsCount) || 0;
+  const ttl = Number(c.totalDonations) || 0;
+
+  if (amb >= 1){
+    let label = amb >= 50 ? '٥٠+ سفير' : amb >= 25 ? '٢٥+ سفير' : amb >= 10 ? '١٠+ سفراء' : amb >= 5 ? '٥+ سفراء' : 'سفراؤنا الأوائل';
+    list.push({ cls: 'is-green', icon: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M16 11a4 4 0 10-4-4 4 4 0 004 4zm-8 0a4 4 0 10-4-4 4 4 0 004 4zm0 2c-2.7 0-8 1.3-8 4v3h10v-3c0-1 .3-1.9.8-2.7C9.6 13.4 8.6 13 8 13zm8 0c-.3 0-.7 0-1.2.1A5.7 5.7 0 0116 17v3h8v-3c0-2.7-5.3-4-8-4z"/></svg>', label });
+  }
+  if (fnd >= 1){
+    let label = fnd >= 200 ? '٢٠٠+ صندوق' : fnd >= 100 ? '١٠٠+ صندوق' : fnd >= 50 ? '٥٠+ صندوق' : fnd >= 20 ? '٢٠+ صندوق' : 'انطلاق الصناديق';
+    list.push({ cls: 'is-purple', icon: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M20 8h-3V6a2 2 0 00-2-2H9a2 2 0 00-2 2v2H4a1 1 0 00-1 1v9a3 3 0 003 3h12a3 3 0 003-3V9a1 1 0 00-1-1zM9 6h6v2H9V6z"/></svg>', label });
+  }
+  if (ttl >= 1){
+    list.push({ cls: '', icon: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg>', label: 'إجمالي ' + fmtAmount(ttl) });
+  }
+
+  const pos = Number(rk.position) || 0;
+  const tot = Number(rk.total) || 0;
+  if (pos === 1){
+    list.push({ cls: 'is-crown', icon: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M3 19h18v2H3v-2zm0-9l4 3 5-7 5 7 4-3v8H3v-8z"/></svg>', label: 'الأولى على الفئة' });
+  } else if (pos > 0 && pos <= 3){
+    list.push({ cls: 'is-amber', icon: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M5 3h14l-1 6a6 6 0 01-5 5.92V18h3v2H8v-2h3v-3.08A6 6 0 016 9L5 3z"/></svg>', label: 'ضمن أفضل 3' });
+  } else if (pos > 0 && pos <= 10){
+    list.push({ cls: 'is-blue', icon: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2l3 6.3 6.9 1L17 14l1.2 7L12 17.8 5.8 21 7 14l-4.9-4.7 6.9-1z"/></svg>', label: 'ضمن أفضل 10' });
+  }
+  if (tot > 0 && pos > 0){
+    const pct = Math.round(((tot - pos + 1) / tot) * 100);
+    if (pct >= 90 && pos !== 1 && pos > 3) list.push({ cls: '', icon: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M3 17l6-6 4 4 7-7v6h2V4h-8v2h4l-5 5-4-4-8 8z"/></svg>', label: 'تفوّق ' + pct + '%' });
+  }
+  return list;
+}
+
+function renderAchievements(c, rk){
+  const wrap = document.getElementById('achWrap');
+  const row = document.getElementById('achRow');
+  const items = buildAchievements(c, rk);
+  if (!items.length){ wrap.style.display = 'none'; return; }
+  wrap.style.display = '';
+  row.innerHTML = items.map(it => `
+    <span class="ach-chip ${it.cls}">
+      <span class="ach-ico">${it.icon}</span>
+      <span>${esc(it.label)}</span>
+    </span>
+  `).join('');
+}
+
+/* ---------- Podium item ---------- */
 function podiumItem(entry, kind){
   const cls = `podium-item rank-${entry.rank}`;
-  const youTag = entry.isCurrent || entry.isCurrentEntity ? `<span class="is-you-tag">جهتنا</span>` : '';
+  const isMe = entry.isCurrent || entry.isCurrentEntity;
+  const youTag = isMe ? `<span class="is-you-tag">جهتنا</span>` : '';
   if (kind === 'center'){
     return `
-      <div class="${cls}${entry.isCurrent ? ' is-current' : ''}">
+      <div class="${cls}${isMe ? ' is-current' : ''}">
         ${youTag}
         <div class="medal">${entry.rank}</div>
         <div class="podium-name">${esc(entry.name)}</div>
@@ -514,7 +1187,7 @@ function podiumItem(entry, kind){
       </div>`;
   }
   return `
-    <div class="${cls}${entry.isCurrentEntity ? ' is-current' : ''}">
+    <div class="${cls}${isMe ? ' is-current' : ''}">
       ${youTag}
       <div class="medal">${entry.rank}</div>
       <div class="podium-name">${esc(entry.name || 'سفير')}</div>
@@ -534,45 +1207,101 @@ function renderPodium(elId, list, kind){
   el.innerHTML = list.map(item => podiumItem(item, kind)).join('');
 }
 
+/* ---------- Rank hints + milestone ---------- */
 function rankHintText(pos, total){
   if (!pos || !total) return '';
-  if (pos === 1) return 'الجهة الأولى — استمروا في القمة!';
-  if (pos <= 3) return 'ضمن أفضل 3 جهات — خطوة للقمة!';
+  if (pos === 1) return '🏆 الجهة الأولى — استمروا في القمة!';
+  if (pos <= 3) return '✨ ضمن أفضل 3 جهات — خطوة واحدة للقمة!';
+  if (pos <= 10) return '⭐ ضمن أفضل 10 جهات — أداء متميز.';
   const half = Math.ceil(total / 2);
-  if (pos <= half) return 'ضمن النصف الأعلى — يمكن الصعود أكثر.';
-  return 'هناك مساحة كبيرة للنمو — لنرتقِ معًا!';
+  if (pos <= half) return '📈 ضمن النصف الأعلى — يمكن الصعود أكثر.';
+  return '🌱 هناك مساحة كبيرة للنمو — لنرتقِ معًا!';
+}
+function nextMilestoneText(pos, total){
+  if (!pos || !total) return '';
+  if (pos === 1) return 'في الصدارة — حافظوا على الإنجاز';
+  if (pos <= 3)  return 'خطوة واحدة فقط للوصول للمركز الأول';
+  if (pos <= 10) return `${pos - 3} ${pos - 3 === 1 ? 'مرتبة' : 'مراتب'} للوصول لمنصة التتويج`;
+  const half = Math.ceil(total / 2);
+  if (pos <= half) return `${pos - 10} ${pos - 10 === 1 ? 'مرتبة' : 'مرتبة'} للوصول لأفضل 10`;
+  return `${pos - half} ${pos - half === 1 ? 'مرتبة' : 'مرتبة'} لتجاوز النصف`;
 }
 
+/* ---------- Confetti ---------- */
+function renderConfetti(host){
+  if (!host) return;
+  const colors = ['#d4a017', '#16a34a', '#6e3eb8', '#1d4ed8', '#dc2626', '#f59e0b'];
+  const n = 14;
+  let html = '';
+  for (let i = 0; i < n; i++){
+    const left = Math.round(Math.random() * 100);
+    const delay = (Math.random() * 4).toFixed(2);
+    const dur = (3.6 + Math.random() * 1.4).toFixed(2);
+    const color = colors[i % colors.length];
+    html += `<i style="left:${left}%; animation-delay:${delay}s; animation-duration:${dur}s; background:${color};"></i>`;
+  }
+  host.innerHTML = html;
+}
+
+/* ---------- Impact text ---------- */
+function impactText(c, rk){
+  const fnd = Number(c.fundsCount) || 0;
+  const ttl = Number(c.totalDonations) || 0;
+  const amb = Number(c.ambassadorsCount) || 0;
+  if (ttl >= 1) return `بفضل الله ثم بجهودكم تم تيسير ${fmtAmount(ttl)} ريال عبر ${fmt(fnd)} ${fnd === 1 ? 'صندوق' : 'صندوقاً'}`;
+  if (fnd >= 1) return `${fmt(fnd)} ${fnd === 1 ? 'صندوق' : 'صندوقاً'} ينتظر دعمكم لإحداث الأثر`;
+  if (amb >= 1) return `${fmt(amb)} ${amb === 1 ? 'سفير' : 'سفراء'} على أهبة الاستعداد للعطاء`;
+  return 'كل خطوة جديدة هي بداية أثر... لنبدأ معًا';
+}
+
+/* ---------- Ambassadors ---------- */
 const AMB_LIMIT = 10;
 function renderAmbassadors(list){
   const grid = document.getElementById('ambGrid');
   const empty = document.getElementById('ambEmpty');
   const more = document.getElementById('ambMore');
+  const legend = document.getElementById('ambLegend');
   const total = (list || []).length;
   document.getElementById('ambCountPill').textContent = fmt(total);
   if (!total){
     grid.innerHTML = '';
     more.style.display = 'none';
+    legend.style.display = 'none';
     empty.style.display = '';
     return;
   }
   empty.style.display = 'none';
+  legend.style.display = '';
   const shown = list.slice(0, AMB_LIMIT);
+  const maxFunds = Math.max(...shown.map(a => Number(a.fundsCount) || 0), 1);
   grid.innerHTML = shown.map((a, i) => {
     const topCls = i === 0 ? 'top-1' : i === 1 ? 'top-2' : i === 2 ? 'top-3' : '';
+    const pct = Math.max(4, Math.round(((Number(a.fundsCount) || 0) / maxFunds) * 100));
     return `
       <div class="amb-card ${topCls}">
-        <div class="amb-rank">${i + 1}</div>
-        <div class="amb-info">
-          <div class="amb-name">${esc(a.name || '-')}</div>
-          <div class="amb-meta">
-            <span>صناديق <b>${fmt(a.fundsCount)}</b></span>
-            <span class="dot"></span>
-            <span>التبرعات ***</span>
+        <div class="amb-card-head">
+          <div class="amb-rank">${i + 1}</div>
+          <div class="amb-info">
+            <div class="amb-name">${esc(a.name || '-')}</div>
+            <div class="amb-meta">
+              <span>صناديق <b>${fmt(a.fundsCount)}</b></span>
+              <span class="dot"></span>
+              <span>التبرعات ***</span>
+            </div>
           </div>
+          <span class="amb-star" title="من المتميزين">
+            <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M12 2l3 6.3 6.9 1L17 14l1.2 7L12 17.8 5.8 21 7 14l-4.9-4.7 6.9-1z"/></svg>
+          </span>
         </div>
+        <div class="amb-bar-wrap"><span class="amb-bar" data-pct="${pct}"></span></div>
       </div>`;
   }).join('');
+  // ترقيات لاحقة لأعراض البار
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.amb-bar').forEach(b => {
+      b.style.width = (b.dataset.pct || '0') + '%';
+    });
+  });
   if (total > AMB_LIMIT){
     more.textContent = `+ ${fmt(total - AMB_LIMIT)} سفير آخرين`;
     more.style.display = '';
@@ -581,6 +1310,90 @@ function renderAmbassadors(list){
   }
 }
 
+/* ---------- Tier + hero state ---------- */
+function applyTier(tier){
+  const el = document.getElementById('heroTier');
+  if (!el || !tier){
+    if (el) el.style.display = 'none';
+    return;
+  }
+  el.style.display = '';
+  el.className = 'board-tier ' + tier.cls;
+  document.getElementById('heroTierIcon').innerHTML = tierIconSvg(tier.icon);
+  document.getElementById('heroTierLabel').textContent = tier.label;
+}
+
+/* ---------- Footer quotes (rotating) ---------- */
+const QUOTES = [
+  '"إن الله يحب إذا عمل أحدكم عملاً أن يُتقنه" — كل صندوق تعملونه أثر يُكتب لكم.',
+  'سفراؤكم هم نبض هذه الجهة... شكرًا لكل جهد لا يُرى لكن أثره يُرى.',
+  'كل تبرعٍ يصل بفضل الله ثم بسعيكم.',
+  'الجهة المتميزة لا تُقاس بحجمها بل بعمق أثرها في حياة الناس.',
+  'المركز الأول هدف، لكن الأثر الحقيقي هو ما يبقى بعد أن تُطوى الأرقام.'
+];
+function rotateQuote(){
+  const el = document.getElementById('bfQuote');
+  if (!el) return;
+  let i = Math.floor(Math.random() * QUOTES.length);
+  el.style.opacity = '0';
+  setTimeout(() => {
+    el.textContent = QUOTES[i];
+    el.style.opacity = '1';
+  }, 250);
+  setInterval(() => {
+    i = (i + 1) % QUOTES.length;
+    el.style.opacity = '0';
+    setTimeout(() => {
+      el.textContent = QUOTES[i];
+      el.style.opacity = '1';
+    }, 280);
+  }, 8000);
+}
+
+/* ---------- Toast ---------- */
+let toastTimer;
+function toast(msg){
+  const t = document.getElementById('bfToast');
+  if (!t) return;
+  t.textContent = msg;
+  t.classList.add('is-show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('is-show'), 2200);
+}
+
+/* ---------- Share / Print ---------- */
+function shareBoard(){
+  const url = window.location.href;
+  const title = document.getElementById('centerName').textContent || 'لوحة الشرف';
+  const text = `لوحة شرف ${title}`;
+  if (navigator.share){
+    navigator.share({ title, text, url }).catch(() => {});
+  } else if (navigator.clipboard){
+    navigator.clipboard.writeText(url).then(
+      () => toast('تم نسخ رابط اللوحة'),
+      () => toast('تعذّر النسخ — انسخ الرابط يدويًا')
+    );
+  } else {
+    toast('انسخ الرابط من شريط العنوان');
+  }
+}
+
+function fmtRelativeTime(d){
+  const diff = Math.max(0, (Date.now() - d.getTime()) / 1000);
+  if (diff < 10) return 'قبل لحظات';
+  if (diff < 60) return `قبل ${Math.round(diff)} ثانية`;
+  if (diff < 3600) return `قبل ${Math.round(diff / 60)} دقيقة`;
+  return `قبل ${Math.round(diff / 3600)} ساعة`;
+}
+
+let lastUpdatedAt = null;
+function updateLastUpdatedLabel(){
+  const el = document.getElementById('bfUpdated');
+  if (!el || !lastUpdatedAt) return;
+  el.textContent = 'آخر تحديث: ' + fmtRelativeTime(lastUpdatedAt);
+}
+
+/* ---------- Main loader ---------- */
 async function loadBoard(isFirst){
   try{
     const r = await fetch('/api/public/centers/' + encodeURIComponent(ENTITY_ID) + '/board', { cache: 'no-store' });
@@ -590,18 +1403,70 @@ async function loadBoard(isFirst){
     const c = d.center || {};
     document.getElementById('centerName').textContent = c.name || '';
     document.getElementById('centerKind').textContent = c.kindLabel || '';
-    document.getElementById('sAmb').textContent = fmt(c.ambassadorsCount);
-    document.getElementById('sFunds').textContent = fmt(c.fundsCount);
-    document.getElementById('sTotal').textContent = fmtAmount(c.totalDonations);
+    document.getElementById('heroGreet').textContent = greetingText();
 
+    // إحصاءات (مع تحريك أول مرة)
+    const sAmb = document.getElementById('sAmb');
+    const sFunds = document.getElementById('sFunds');
+    const sTotal = document.getElementById('sTotal');
+    if (isFirst){
+      animateCount(sAmb,   Number(c.ambassadorsCount) || 0);
+      animateCount(sFunds, Number(c.fundsCount) || 0);
+      animateCount(sTotal, Number(c.totalDonations) || 0, { amount: true, duration: 1100 });
+    } else {
+      sAmb.textContent   = fmt(c.ambassadorsCount);
+      sFunds.textContent = fmt(c.fundsCount);
+      sTotal.textContent = fmtAmount(c.totalDonations);
+    }
+
+    // الترتيب
     const rk = d.rank || {};
     document.getElementById('rankKindLabel').textContent = rk.kindLabel || '—';
-    document.getElementById('rankPos').textContent = rk.position ? fmt(rk.position) : '—';
+    const rankPos = document.getElementById('rankPos');
+    rankPos.textContent = rk.position ? fmt(rk.position) : '—';
     document.getElementById('rankTot').textContent = rk.total ? fmt(rk.total) : '—';
     const pct = rk.total ? Math.max(4, Math.round(((rk.total - rk.position + 1) / rk.total) * 100)) : 0;
     document.getElementById('rankBar').style.width = pct + '%';
+    document.getElementById('rankPct').textContent = (rk.total ? Math.round(((rk.total - rk.position) / rk.total) * 100) : 0) + '%';
     document.getElementById('rankHint').textContent = rankHintText(rk.position, rk.total);
 
+    const mileEl  = document.getElementById('rankMilestone');
+    const mileTxt = document.getElementById('rankMilestoneText');
+    if (rk.position && rk.total){
+      mileTxt.textContent = nextMilestoneText(rk.position, rk.total);
+      mileEl.style.display = '';
+    } else {
+      mileEl.style.display = 'none';
+    }
+
+    // حالة بطل/أفضل 3
+    const rankCard = document.getElementById('rankCard');
+    rankCard.classList.remove('is-champion', 'is-top3');
+    if (rk.position === 1) rankCard.classList.add('is-champion');
+    else if (rk.position && rk.position <= 3) rankCard.classList.add('is-top3');
+
+    if (isFirst){
+      rankPos.classList.add('is-fresh');
+      setTimeout(() => rankPos.classList.remove('is-fresh'), 1800);
+    }
+    if (rk.position && rk.position <= 3) renderConfetti(document.getElementById('rankConfetti'));
+
+    // شارة الأداء + الأثر
+    applyTier(tierFor(rk.position, rk.total));
+    const impactEl = document.getElementById('heroImpact');
+    const impactTextEl = document.getElementById('heroImpactText');
+    const itext = impactText(c, rk);
+    if (itext){
+      impactTextEl.textContent = itext;
+      impactEl.style.display = '';
+    } else {
+      impactEl.style.display = 'none';
+    }
+
+    // الإنجازات
+    renderAchievements(c, rk);
+
+    // عنوان منصات أفضل 3
     document.getElementById('topCentersKind').textContent = rk.kindLabel || '';
     document.getElementById('topAmbsKind').textContent = 'ضمن ' + (rk.kindLabel || '');
 
@@ -609,14 +1474,22 @@ async function loadBoard(isFirst){
     renderPodium('podiumAmbs', d.topAmbassadors || [], 'amb');
     renderAmbassadors(d.ambassadors || []);
 
+    lastUpdatedAt = new Date();
+    updateLastUpdatedLabel();
+
     if (isFirst) App.showContent();
   } catch (e){
     if (isFirst) App.showContent();
   }
 }
 
+document.getElementById('btnShare').addEventListener('click', shareBoard);
+document.getElementById('btnPrint').addEventListener('click', () => window.print());
+
 loadBoard(true);
+rotateQuote();
 setInterval(() => loadBoard(false), REFRESH_MS);
+setInterval(updateLastUpdatedLabel, 300 * 1000);
 </script>
 
-<%- include('../partials/foot') %>
+<!-- <%- include('../partials/foot') %> -->
