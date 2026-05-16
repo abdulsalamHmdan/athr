@@ -26,6 +26,15 @@ router.get('/centers/:id', (req, res) => {
   });
 });
 
+router.get('/centers/:id/board', (req, res) => {
+  const id = String(req.params.id);
+  res.render('public/center-board', {
+    title: entityName(id) + ' — لوحة الشرف',
+    entityId: id,
+    entityNameAr: entityName(id),
+  });
+});
+
 router.get('/', (req, res) => res.render('index', { title: 'الرئيسية' }));
 router.get('/signup', (req, res) => res.render('signup', { title: 'تسجيل سفير جديد' }));
 router.get('/login', (req, res) => res.render('login', { title: 'تسجيل الدخول' }));

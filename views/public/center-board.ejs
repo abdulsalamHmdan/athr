@@ -1,0 +1,622 @@
+<%- include('../partials/head') %>
+<%- include('../partials/loader', { loaderType: 'centers' }) %>
+
+<div data-content style="display:none;" class="board-page">
+
+  <!-- HERO: اسم الجهة + إحصائيات -->
+  <section class="board-hero">
+    <div class="board-hero-info">
+      <div class="board-hero-row">
+        <a href="/centers/<%= entityId %>" class="board-back" title="رجوع">
+          <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+            <path fill="currentColor" d="M14 6l-6 6 6 6 1.41-1.41L10.83 12l4.58-4.59z"/>
+          </svg>
+          <span>رجوع</span>
+        </a>
+        <div class="board-badge">لوحة الشرف</div>
+        <div class="board-live" id="liveTag" title="يتم التحديث تلقائيًا كل دقيقة">
+          <span class="dot"></span>
+          <span>تحديث مباشر</span>
+        </div>
+      </div>
+
+      <h1 class="board-title" id="centerName"><%= entityNameAr %></h1>
+      <div class="board-sub" id="centerKind">&nbsp;</div>
+    </div>
+
+    <div class="board-stats">
+      <div class="bs">
+        <div class="bs-i">
+          <svg viewBox="0 0 24 24"><path fill="currentColor" d="M16 11a4 4 0 10-4-4 4 4 0 004 4zm-8 0a4 4 0 10-4-4 4 4 0 004 4zm0 2c-2.7 0-8 1.3-8 4v3h10v-3c0-1 .3-1.9.8-2.7C9.6 13.4 8.6 13 8 13zm8 0c-.3 0-.7 0-1.2.1A5.7 5.7 0 0116 17v3h8v-3c0-2.7-5.3-4-8-4z"/></svg>
+        </div>
+        <div class="bs-v" id="sAmb">0</div>
+        <div class="bs-l">عدد السفراء</div>
+      </div>
+      <div class="bs">
+        <div class="bs-i">
+          <svg viewBox="0 0 24 24"><path fill="currentColor" d="M20 8h-3V6a2 2 0 00-2-2H9a2 2 0 00-2 2v2H4a1 1 0 00-1 1v9a3 3 0 003 3h12a3 3 0 003-3V9a1 1 0 00-1-1zM9 6h6v2H9V6z"/></svg>
+        </div>
+        <div class="bs-v" id="sFunds">0</div>
+        <div class="bs-l">عدد الصناديق</div>
+      </div>
+      <div class="bs">
+        <div class="bs-i">
+          <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg>
+        </div>
+        <div class="bs-v" id="sTotal">0</div>
+        <div class="bs-l">إجمالي التبرعات</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 1: ترتيب الجهة + لوحة الشرف العامة -->
+  <section class="board-section">
+    <div class="board-section-head">
+      <span class="bsh-icon bsh-gold">
+        <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M5 3h14l-1 6a6 6 0 01-5 5.92V18h3v2H8v-2h3v-3.08A6 6 0 016 9L5 3zm2.2 2l.6 3.7A4 4 0 0012 12a4 4 0 004.2-3.3L16.8 5H7.2z"/></svg>
+      </span>
+      <h2>الترتيب ولوحة الشرف</h2>
+    </div>
+
+    <div class="board-rank-row">
+      <!-- بطاقة ترتيب الجهة -->
+      <div class="rank-card">
+        <div class="rank-card-l">ترتيب جهتك بين</div>
+        <div class="rank-card-kind" id="rankKindLabel">—</div>
+        <div class="rank-card-figure">
+          <span class="rank-num" id="rankPos">—</span>
+          <span class="rank-of">من</span>
+          <span class="rank-tot" id="rankTot">—</span>
+        </div>
+        <div class="rank-card-bar"><span id="rankBar" style="width:0%"></span></div>
+        <div class="rank-card-hint" id="rankHint">&nbsp;</div>
+      </div>
+
+      <!-- أفضل 3 جهات -->
+      <div class="honor-block">
+        <div class="honor-head">
+          <span class="honor-icon">
+            <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M12 2l9 5v2H3V7l9-5zm-7 9h2v8H5v-8zm4 0h2v8H9v-8zm4 0h2v8h-2v-8zm4 0h2v8h-2v-8zM3 20h18v2H3v-2z"/></svg>
+          </span>
+          <h3>أفضل 3 جهات</h3>
+          <span class="honor-sub" id="topCentersKind">—</span>
+        </div>
+        <div class="podium" id="podiumCenters"></div>
+      </div>
+
+      <!-- أفضل 3 سفراء -->
+      <div class="honor-block">
+        <div class="honor-head">
+          <span class="honor-icon honor-icon-amb">
+            <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-4.4 0-8 2.2-8 5v3h16v-3c0-2.8-3.6-5-8-5z"/></svg>
+          </span>
+          <h3>أفضل 3 سفراء</h3>
+          <span class="honor-sub" id="topAmbsKind">—</span>
+        </div>
+        <div class="podium" id="podiumAmbs"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 2: سفراء الجهة -->
+  <section class="board-section">
+    <div class="board-section-head">
+      <span class="bsh-icon bsh-green">
+        <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-4.4 0-8 2.2-8 5v3h16v-3c0-2.8-3.6-5-8-5z"/></svg>
+      </span>
+      <h2>سفراء الجهة</h2>
+      <span class="bsh-pill" id="ambCountPill">0</span>
+    </div>
+
+    <div class="amb-grid" id="ambGrid"></div>
+    <div class="amb-more" id="ambMore" style="display:none;"></div>
+    <div class="amb-empty" id="ambEmpty" style="display:none;">لا يوجد سفراء مسجّلون في هذه الجهة بعد.</div>
+  </section>
+
+</div>
+
+<style>
+  :root {
+    --bb-bg:#f3f4f6;
+    --bb-card:#ffffff;
+    --bb-border:#d7dde5;
+    --bb-text:#1a2733;
+    --bb-mute:#6b7785;
+    --bb-primary:#16a34a;
+    --bb-primary-soft:#e8f7ee;
+    --bb-gold:#d4a017;
+    --bb-gold-soft:#fdf3d7;
+    --bb-silver:#7d8a98;
+    --bb-silver-soft:#eef1f4;
+    --bb-bronze:#b6612c;
+    --bb-bronze-soft:#f7e6d8;
+    --bb-amber:#dc2626;
+    --bb-purple:#6e3eb8;
+    --bb-purple-soft:#efe9fb;
+  }
+
+  /* widen container only for this page so 3-column row fits */
+  body:has(.board-page) .container{ max-width: 1280px; }
+
+  .board-page{ padding-bottom: 18px; }
+
+  /* HERO — compact */
+  .board-hero{
+    margin: 2px 0 12px;
+    background:#fff;
+    border:1px solid var(--bb-border);
+    border-radius:18px;
+    padding: 12px 16px;
+    position:relative; overflow:hidden;
+    display:grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.6fr);
+    gap: 14px;
+    align-items: center;
+  }
+  .board-hero::before{
+    content:""; position:absolute; inset:0;
+    background:
+      radial-gradient(700px 160px at 90% -40%, color-mix(in srgb, var(--bb-primary) 12%, transparent), transparent 60%),
+      radial-gradient(600px 160px at -10% 120%, color-mix(in srgb, var(--bb-gold) 12%, transparent), transparent 60%);
+    pointer-events:none;
+  }
+  .board-hero > *{ position:relative; }
+
+  .board-hero-info{ min-width: 0; }
+  .board-hero-row{
+    display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+    margin-bottom: 6px;
+  }
+  .board-back{
+    display:inline-flex; align-items:center; gap:4px;
+    background:#fff; border:1px solid var(--bb-border);
+    color:var(--bb-text); text-decoration:none;
+    padding:4px 10px; border-radius:999px; font-size:12px; font-weight:700;
+  }
+  .board-back:hover{ background:#f5f7fa; }
+  .board-badge{
+    display:inline-block;
+    background:var(--bb-primary-soft);
+    border:1px solid color-mix(in srgb, var(--bb-primary) 28%, var(--bb-border));
+    color:var(--bb-primary);
+    padding:4px 10px; border-radius:999px; font-size:11.5px; font-weight:800;
+  }
+  .board-live{
+    display:inline-flex; align-items:center; gap:6px;
+    background:#fff; border:1px solid var(--bb-border);
+    color:var(--bb-mute); border-radius:999px;
+    padding:3px 10px; font-size:11.5px; font-weight:700;
+  }
+  .board-live .dot{
+    width:7px; height:7px; border-radius:50%; background:var(--bb-primary);
+    box-shadow:0 0 0 0 color-mix(in srgb, var(--bb-primary) 60%, transparent);
+    animation: livePulse 1.6s ease-out infinite;
+  }
+  @keyframes livePulse{
+    0%   { box-shadow:0 0 0 0    color-mix(in srgb, var(--bb-primary) 60%, transparent); }
+    100% { box-shadow:0 0 0 10px color-mix(in srgb, var(--bb-primary) 0%,  transparent); }
+  }
+
+  .board-title{
+    margin: 0;
+    font-size: clamp(20px, 2.6vw, 30px);
+    font-weight: 900;
+    color: var(--bb-text);
+    letter-spacing: .2px;
+    line-height: 1.15;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .board-sub{
+    color: var(--bb-mute); font-size: 12.5px; font-weight: 600;
+    margin-top: 2px;
+  }
+
+  .board-stats{
+    display:grid; gap:8px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .bs{
+    background:#fff; border:1px solid var(--bb-border);
+    border-radius:12px; padding: 8px 8px 7px;
+    text-align:center; position:relative; overflow:hidden;
+    display:flex; flex-direction:column; align-items:center; gap:2px;
+  }
+  .bs-i{
+    width:28px; height:28px; border-radius:8px;
+    background:var(--bb-primary-soft); color:var(--bb-primary);
+    display:inline-flex; align-items:center; justify-content:center;
+  }
+  .bs-i svg{ width:16px; height:16px; }
+  .bs:nth-child(2) .bs-i{ background:var(--bb-purple-soft); color:var(--bb-purple); }
+  .bs:nth-child(3) .bs-i{ background:var(--bb-gold-soft); color:var(--bb-gold); }
+  .bs-v{
+    font-size: clamp(16px, 2vw, 22px);
+    font-weight: 900; line-height: 1.1;
+    color: var(--bb-text);
+  }
+  .bs-l{ font-size:11px; color:var(--bb-mute); font-weight:600; }
+
+  /* SECTION HEAD — tighter */
+  .board-section{ margin-top: 12px; }
+  .board-section-head{
+    display:flex; align-items:center; gap:8px;
+    margin: 0 2px 8px;
+  }
+  .board-section-head h2{
+    margin:0; font-size:15px; font-weight:800; color:var(--bb-text);
+  }
+  .bsh-icon{
+    width:28px; height:28px; border-radius:8px;
+    display:inline-flex; align-items:center; justify-content:center;
+  }
+  .bsh-icon svg{ width:15px; height:15px; }
+  .bsh-gold{ background:var(--bb-gold-soft); color:var(--bb-gold); }
+  .bsh-green{ background:var(--bb-primary-soft); color:var(--bb-primary); }
+  .bsh-pill{
+    margin-inline-start:auto;
+    background:#fff; border:1px solid var(--bb-border);
+    color:var(--bb-mute); border-radius:999px;
+    padding:2px 9px; font-size:11.5px; font-weight:700;
+  }
+
+  /* RANK + HONOR ROW */
+  .board-rank-row{
+    display:grid; gap:10px;
+    grid-template-columns: 1fr 1.35fr 1.35fr;
+  }
+
+  .rank-card{
+    background: linear-gradient(160deg, #fff, #fff 60%, var(--bb-gold-soft));
+    border:1px solid var(--bb-border);
+    border-radius:14px; padding: 12px 14px;
+    position:relative; overflow:hidden;
+  }
+  .rank-card::after{
+    content:""; position:absolute; inset:auto -30px -30px auto;
+    width:120px; height:120px; border-radius:50%;
+    background: radial-gradient(circle, color-mix(in srgb, var(--bb-gold) 22%, transparent), transparent 70%);
+  }
+  .rank-card-l{ font-size:11.5px; color:var(--bb-mute); font-weight:700; }
+  .rank-card-kind{
+    font-size:13.5px; font-weight:800; color:var(--bb-text);
+    margin-top:1px;
+  }
+  .rank-card-figure{
+    display:flex; align-items:baseline; gap:8px;
+    margin: 6px 0 8px;
+  }
+  .rank-num{
+    font-size: clamp(34px, 5vw, 52px);
+    font-weight: 900; color: var(--bb-gold);
+    line-height: 1;
+    text-shadow: 0 2px 0 color-mix(in srgb, var(--bb-gold) 18%, transparent);
+  }
+  .rank-of{ color:var(--bb-mute); font-weight:700; font-size:12.5px; }
+  .rank-tot{ font-size: 18px; font-weight:800; color:var(--bb-text); }
+  .rank-card-bar{
+    height: 8px; background: #fff;
+    border:1px solid var(--bb-border); border-radius:999px; overflow:hidden;
+  }
+  .rank-card-bar span{
+    display:block; height:100%;
+    background: linear-gradient(90deg, var(--bb-gold), color-mix(in srgb, var(--bb-gold) 60%, var(--bb-primary)));
+    transition: width .8s ease;
+  }
+  .rank-card-hint{
+    margin-top: 6px; font-size: 11.5px; font-weight:600; color:var(--bb-mute);
+    min-height: 16px;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+
+  /* HONOR BLOCK — compact */
+  .honor-block{
+    background:#fff; border:1px solid var(--bb-border);
+    border-radius:14px; padding: 10px 10px 12px;
+    min-width: 0;
+  }
+  .honor-head{
+    display:flex; align-items:center; gap:6px; margin: 0 2px 14px;
+  }
+  .honor-head h3{
+    margin:0; font-size:13px; font-weight:800; color:var(--bb-text);
+  }
+  .honor-icon{
+    width:24px; height:24px; border-radius:7px;
+    background:var(--bb-gold-soft); color:var(--bb-gold);
+    display:inline-flex; align-items:center; justify-content:center;
+  }
+  .honor-icon svg{ width:13px; height:13px; }
+  .honor-icon-amb{ background:var(--bb-primary-soft); color:var(--bb-primary); }
+  .honor-sub{
+    margin-inline-start:auto;
+    font-size:11px; color:var(--bb-mute); font-weight:600;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    max-width: 50%;
+  }
+
+  .podium{
+    display:grid; gap:6px;
+    grid-template-columns: 1fr 1fr 1fr;
+    align-items: end;
+  }
+  .podium-empty{
+    grid-column: 1 / -1;
+    text-align:center; color:var(--bb-mute);
+    background:#f7f9fb; border:1px dashed var(--bb-border);
+    border-radius:10px; padding:14px; font-size:12px;
+  }
+  .podium-item{
+    position: relative;
+    background:#fff; border:1px solid var(--bb-border);
+    border-radius:12px; padding: 8px 6px 10px;
+    text-align:center;
+    min-width: 0;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .podium-item.is-current{
+    border-color: color-mix(in srgb, var(--bb-primary) 50%, var(--bb-border));
+    background: linear-gradient(180deg, #fff, var(--bb-primary-soft));
+  }
+  .podium-item .medal{
+    width:28px; height:28px; border-radius:50%;
+    display:inline-flex; align-items:center; justify-content:center;
+    font-weight:900; font-size:12px;
+    background: var(--bb-gold-soft); color: var(--bb-gold);
+    border: 2px solid #fff;
+    box-shadow: 0 1px 0 var(--bb-border);
+    margin-top: -18px;
+  }
+  .podium-item.rank-1 .medal{ background: var(--bb-gold-soft); color: var(--bb-gold); }
+  .podium-item.rank-2 .medal{ background: var(--bb-silver-soft); color: var(--bb-silver); }
+  .podium-item.rank-3 .medal{ background: var(--bb-bronze-soft); color: var(--bb-bronze); }
+  .podium-item.rank-1{
+    order: 2;
+    transform: translateY(-4px);
+    border-color: color-mix(in srgb, var(--bb-gold) 35%, var(--bb-border));
+    background: linear-gradient(180deg, #fff, var(--bb-gold-soft));
+  }
+  .podium-item.rank-2{ order: 1; }
+  .podium-item.rank-3{ order: 3; }
+
+  .podium-name{
+    font-size: 11.5px; font-weight: 800; color: var(--bb-text);
+    margin-top: 4px; line-height: 1.25;
+    overflow:hidden; text-overflow:ellipsis;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+    min-height: 28px;
+    padding: 0 2px;
+  }
+  .podium-sub{
+    font-size: 10px; color: var(--bb-mute); margin-top: 2px;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    padding: 0 2px;
+  }
+  .podium-pills{
+    margin-top: 6px; display:flex; gap:3px; justify-content:center; flex-wrap:wrap;
+  }
+  .podium-pill{
+    background:#fff; border:1px solid var(--bb-border);
+    border-radius:999px; padding:1px 6px; font-size:10px; font-weight:700;
+    color: var(--bb-text);
+  }
+  .podium-pill b{ color: var(--bb-primary); }
+  .is-you-tag{
+    position:absolute; top:-9px; inset-inline-end:-4px;
+    background: var(--bb-primary); color:#fff;
+    font-size: 9.5px; font-weight: 800;
+    padding: 1px 7px; border-radius: 999px;
+    box-shadow: 0 2px 6px rgba(22,163,74,.35);
+  }
+
+  /* AMBASSADORS GRID — 5 columns × 2 rows = top 10 */
+  .amb-grid{
+    display:grid; gap:8px;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+  .amb-card{
+    background:#fff; border:1px solid var(--bb-border);
+    border-radius:12px; padding: 8px 8px 7px;
+    display:flex; align-items:center; gap:8px;
+    position:relative; overflow:hidden;
+    min-width: 0;
+    transition: transform .15s ease, border-color .15s ease;
+  }
+  .amb-card:hover{ transform: translateY(-1px); }
+  .amb-card.top-1{ border-color: color-mix(in srgb, var(--bb-gold) 45%, var(--bb-border));
+    background: linear-gradient(160deg, #fff, var(--bb-gold-soft)); }
+  .amb-card.top-2{ border-color: color-mix(in srgb, var(--bb-silver) 45%, var(--bb-border));
+    background: linear-gradient(160deg, #fff, var(--bb-silver-soft)); }
+  .amb-card.top-3{ border-color: color-mix(in srgb, var(--bb-bronze) 45%, var(--bb-border));
+    background: linear-gradient(160deg, #fff, var(--bb-bronze-soft)); }
+  .amb-rank{
+    width:28px; height:28px; border-radius:8px;
+    background:#f3f6f9; color:var(--bb-text);
+    display:flex; align-items:center; justify-content:center;
+    font-weight:900; font-size:12.5px; flex-shrink:0;
+  }
+  .amb-card.top-1 .amb-rank{ background: var(--bb-gold); color:#fff; }
+  .amb-card.top-2 .amb-rank{ background: var(--bb-silver); color:#fff; }
+  .amb-card.top-3 .amb-rank{ background: var(--bb-bronze); color:#fff; }
+  .amb-info{ min-width:0; flex:1; }
+  .amb-name{
+    font-size:12px; font-weight:800; color: var(--bb-text);
+    line-height: 1.3;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .amb-meta{
+    font-size:10.5px; color: var(--bb-mute); margin-top: 1px;
+    display:flex; gap:5px; align-items:center; flex-wrap:wrap;
+  }
+  .amb-meta .dot{ width:3px; height:3px; border-radius:50%; background: var(--bb-mute); display:inline-block; }
+  .amb-empty{
+    text-align:center; color:var(--bb-mute); padding:24px 16px;
+    background:#fff; border:1px dashed var(--bb-border); border-radius:12px;
+  }
+  .amb-more{
+    margin-top: 8px; text-align:center;
+    font-size: 12px; font-weight: 700; color: var(--bb-mute);
+  }
+
+  /* Responsive */
+  @media (max-width: 1100px){
+    .board-rank-row{ grid-template-columns: 1fr 1fr; }
+    .rank-card{ grid-column: 1 / -1; }
+    .amb-grid{ grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  }
+  @media (max-width: 900px){
+    .board-hero{ grid-template-columns: 1fr; }
+    .amb-grid{ grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+  @media (max-width: 720px){
+    .board-rank-row{ grid-template-columns: 1fr; }
+    .board-stats{ grid-template-columns: 1fr 1fr 1fr; }
+    .amb-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 520px){
+    .amb-grid{ grid-template-columns: 1fr 1fr; }
+    .podium-name{ font-size: 11px; min-height: 26px; }
+  }
+</style>
+
+<script src="/js/app.js"></script>
+<script>
+const ENTITY_ID = <%- JSON.stringify(entityId) %>;
+const REFRESH_MS = 60 * 1000;
+
+const esc = (v) => String(v == null ? '' : v)
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');
+
+function fmt(n){ return App.formatNumber(n || 0); }
+function fmtAmount(n){
+  const v = Number(n) || 0;
+  if (v >= 1_000_000) return (v / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'م';
+  if (v >= 1_000) return (v / 1_000).toFixed(1).replace(/\.0$/, '') + 'ك';
+  return fmt(v);
+}
+
+function podiumItem(entry, kind){
+  const cls = `podium-item rank-${entry.rank}`;
+  const youTag = entry.isCurrent || entry.isCurrentEntity ? `<span class="is-you-tag">جهتنا</span>` : '';
+  if (kind === 'center'){
+    return `
+      <div class="${cls}${entry.isCurrent ? ' is-current' : ''}">
+        ${youTag}
+        <div class="medal">${entry.rank}</div>
+        <div class="podium-name">${esc(entry.name)}</div>
+        <div class="podium-pills">
+          <span class="podium-pill">سفراء <b>${fmt(entry.ambassadorsCount)}</b></span>
+          <span class="podium-pill">صناديق <b>${fmt(entry.fundsCount)}</b></span>
+        </div>
+      </div>`;
+  }
+  return `
+    <div class="${cls}${entry.isCurrentEntity ? ' is-current' : ''}">
+      ${youTag}
+      <div class="medal">${entry.rank}</div>
+      <div class="podium-name">${esc(entry.name || 'سفير')}</div>
+      <div class="podium-sub">${esc(entry.entityName || '')}</div>
+      <div class="podium-pills">
+        <span class="podium-pill">صناديق <b>${fmt(entry.fundsCount)}</b></span>
+      </div>
+    </div>`;
+}
+
+function renderPodium(elId, list, kind){
+  const el = document.getElementById(elId);
+  if (!list || !list.length){
+    el.innerHTML = `<div class="podium-empty">لا توجد بيانات كافية للعرض بعد.</div>`;
+    return;
+  }
+  el.innerHTML = list.map(item => podiumItem(item, kind)).join('');
+}
+
+function rankHintText(pos, total){
+  if (!pos || !total) return '';
+  if (pos === 1) return 'الجهة الأولى — استمروا في القمة!';
+  if (pos <= 3) return 'ضمن أفضل 3 جهات — خطوة للقمة!';
+  const half = Math.ceil(total / 2);
+  if (pos <= half) return 'ضمن النصف الأعلى — يمكن الصعود أكثر.';
+  return 'هناك مساحة كبيرة للنمو — لنرتقِ معًا!';
+}
+
+const AMB_LIMIT = 10;
+function renderAmbassadors(list){
+  const grid = document.getElementById('ambGrid');
+  const empty = document.getElementById('ambEmpty');
+  const more = document.getElementById('ambMore');
+  const total = (list || []).length;
+  document.getElementById('ambCountPill').textContent = fmt(total);
+  if (!total){
+    grid.innerHTML = '';
+    more.style.display = 'none';
+    empty.style.display = '';
+    return;
+  }
+  empty.style.display = 'none';
+  const shown = list.slice(0, AMB_LIMIT);
+  grid.innerHTML = shown.map((a, i) => {
+    const topCls = i === 0 ? 'top-1' : i === 1 ? 'top-2' : i === 2 ? 'top-3' : '';
+    return `
+      <div class="amb-card ${topCls}">
+        <div class="amb-rank">${i + 1}</div>
+        <div class="amb-info">
+          <div class="amb-name">${esc(a.name || '-')}</div>
+          <div class="amb-meta">
+            <span>صناديق <b>${fmt(a.fundsCount)}</b></span>
+            <span class="dot"></span>
+            <span>التبرعات ***</span>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+  if (total > AMB_LIMIT){
+    more.textContent = `+ ${fmt(total - AMB_LIMIT)} سفير آخرين`;
+    more.style.display = '';
+  } else {
+    more.style.display = 'none';
+  }
+}
+
+async function loadBoard(isFirst){
+  try{
+    const r = await fetch('/api/public/centers/' + encodeURIComponent(ENTITY_ID) + '/board', { cache: 'no-store' });
+    if (!r.ok) throw new Error('failed');
+    const d = await r.json();
+
+    const c = d.center || {};
+    document.getElementById('centerName').textContent = c.name || '';
+    document.getElementById('centerKind').textContent = c.kindLabel || '';
+    document.getElementById('sAmb').textContent = fmt(c.ambassadorsCount);
+    document.getElementById('sFunds').textContent = fmt(c.fundsCount);
+    document.getElementById('sTotal').textContent = fmtAmount(c.totalDonations);
+
+    const rk = d.rank || {};
+    document.getElementById('rankKindLabel').textContent = rk.kindLabel || '—';
+    document.getElementById('rankPos').textContent = rk.position ? fmt(rk.position) : '—';
+    document.getElementById('rankTot').textContent = rk.total ? fmt(rk.total) : '—';
+    const pct = rk.total ? Math.max(4, Math.round(((rk.total - rk.position + 1) / rk.total) * 100)) : 0;
+    document.getElementById('rankBar').style.width = pct + '%';
+    document.getElementById('rankHint').textContent = rankHintText(rk.position, rk.total);
+
+    document.getElementById('topCentersKind').textContent = rk.kindLabel || '';
+    document.getElementById('topAmbsKind').textContent = 'ضمن ' + (rk.kindLabel || '');
+
+    renderPodium('podiumCenters', d.topCenters || [], 'center');
+    renderPodium('podiumAmbs', d.topAmbassadors || [], 'amb');
+    renderAmbassadors(d.ambassadors || []);
+
+    if (isFirst) App.showContent();
+  } catch (e){
+    if (isFirst) App.showContent();
+  }
+}
+
+loadBoard(true);
+setInterval(() => loadBoard(false), REFRESH_MS);
+</script>
+
+<%- include('../partials/foot') %>

@@ -19,7 +19,8 @@
       "Bash(curl -s -o /dev/null -w \"push.js=%{http_code}\\\\n\" http://localhost:3099/js/push.js)",
       "Bash(curl -s -o /dev/null -w \"admin/notifications=%{http_code}\\\\n\" -L http://localhost:3099/admin/notifications)",
       "Bash(node --check public/js/push.js)",
-      "Bash(node --check public/sw.js)"
+      "Bash(node --check public/sw.js)",
+      "Bash(node -e \"require\\('./routes/api.js'\\); require\\('./routes/pages.js'\\); console.log\\('ok'\\);\")"
     ]
   }
 }

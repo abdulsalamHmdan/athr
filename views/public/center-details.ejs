@@ -4,14 +4,35 @@
 <div data-content style="display:none;">
   <div class="card">
     <a href="/centers" class="small" style="text-decoration:none;">← كل المجمعات</a>
-    <h2 style="margin-top:6px;"><%= entityNameAr %></h2>
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-top:6px;">
+      <h2 style="margin:0;"><%= entityNameAr %></h2>
+      <a href="/centers/<%= entityId %>/board" class="board-cta" title="عرض الصفحة التحفيزية على شاشة الجهة">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+          <path fill="currentColor" d="M3 4h18a1 1 0 011 1v11a1 1 0 01-1 1h-7l1 3h2v2H7v-2h2l1-3H3a1 1 0 01-1-1V5a1 1 0 011-1zm1 2v9h16V6H4z"/>
+        </svg>
+        <span>عرض على الشاشة</span>
+      </a>
+    </div>
     <%- include('../partials/sync-status') %>
     <div class="stat-grid" style="margin-top:10px;">
       <div class="stat"><div class="v" id="s_amb">0</div><div class="l">عدد السفراء</div></div>
       <div class="stat"><div class="v" id="s_total">0</div><div class="l">مجموع المبالغ (ريال)</div></div>
       <div class="stat"><div class="v" id="s_funds">0</div><div class="l">عدد الصناديق</div></div>
+      <div class="stat"><div class="v" id="s_completed">0</div><div class="l">الصناديق المكتملة</div></div>
     </div>
   </div>
+
+  <style>
+    .board-cta{
+      display:inline-flex; align-items:center; gap:6px;
+      background:#16a34a; color:#fff; text-decoration:none;
+      padding:8px 14px; border-radius:10px;
+      font-size:13px; font-weight:700;
+      transition: filter .15s ease, transform .15s ease;
+    }
+    .board-cta:hover{ filter: brightness(.95); }
+    .board-cta:active{ transform: translateY(1px); }
+  </style>
 
   <div class="card">
     <h2>قائمة السفراء</h2>
@@ -79,6 +100,7 @@ document.getElementById('q').addEventListener('input', (e) => {
   document.getElementById('s_amb').textContent = fmt(c.ambassadorsCount);
   document.getElementById('s_total').textContent = fmt(c.totalDonations);
   document.getElementById('s_funds').textContent = fmt(c.fundsCount);
+  document.getElementById('s_completed').textContent = fmt(c.completedFunds);
   ambassadors = d.ambassadors || [];
   render(ambassadors);
   App.showContent();

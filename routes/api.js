@@ -55,17 +55,21 @@ router.get("/public/centers", async (req, res) => {
       .filter((n) => Number.isFinite(n));
     const fundsList = await AllFund.find(
       { client_id: { $in: clientIds } },
-      "client_id currentTotal",
+      "client_id currentTotal done",
     ).lean();
 
     const totalsByClient = new Map();
     const countByClient = new Map();
+    const completedByClient = new Map();
     for (const f of fundsList) {
       const cid = Number(f.client_id);
       const amount = Number(f.currentTotal) || 0;
       totalsByClient.set(cid, (totalsByClient.get(cid) || 0) + amount);
       if (amount > 0) {
         countByClient.set(cid, (countByClient.get(cid) || 0) + 1);
+        if (f.done == "a") {
+          completedByClient.set(cid, (completedByClient.get(cid) || 0) + 1);
+        }
       }
     }
 
@@ -75,11 +79,13 @@ router.get("/public/centers", async (req, res) => {
       );
       let totalDonations = 0;
       let fundsCount = 0;
+      let completedCount = 0;
       for (const a of ambs) {
         const cid = Number(a.platformProfileId);
         if (!Number.isFinite(cid)) continue;
         totalDonations += totalsByClient.get(cid) || 0;
         fundsCount += countByClient.get(cid) || 0;
+        completedCount += completedByClient.get(cid) || 0;
       }
       return {
         id: e.id,
@@ -87,6 +93,7 @@ router.get("/public/centers", async (req, res) => {
         ambassadorsCount: ambs.length,
         totalDonations,
         fundsCount,
+        completedCount,
       };
     });
 
@@ -96,13 +103,31 @@ router.get("/public/centers", async (req, res) => {
   }
 });
 
-// تفاصيل مجمع محدد + قائمة السفراء مرتبة من الأعلى للأقل
-router.get("/public/centers/:id", async (req, res) => {
+function classifyEntity(e) {
+  const id = String((e && e.id) || "");
+  if (id === "330") return "ادارة";
+  if (id === "550") return "خارج";
+  const s = String((e && e.name) || "").trim();
+  if (s.startsWith("مجمع")) return "مجمع";
+  return "دار";
+}
+
+function kindLabelPlural(kind) {
+  if (kind === "مجمع") return "المجمعات";
+  if (kind === "دار") return "الدور النسائية";
+  if (kind === "ادارة") return "الإدارة";
+  if (kind === "خارج") return "من خارج الجمعية";
+  return "";
+}
+
+// بيانات لوحة الشرف لجهة محددة — للعرض على شاشات الجهات
+router.get("/public/centers/:id/board", async (req, res) => {
   try {
     const id = String(req.params.id);
+    const entities = listEntities();
     const ambassadors = await Ambassador.find(
-      { entity: id },
-      "name phone platformProfileId donationsUpdatedAt",
+      {},
+      "name entity platformProfileId",
     ).lean();
 
     const clientIds = ambassadors
@@ -124,16 +149,163 @@ router.get("/public/centers/:id", async (req, res) => {
       }
     }
 
+    const centersStats = entities.map((e) => {
+      const ambs = ambassadors.filter(
+        (a) => String(a.entity || "") === String(e.id),
+      );
+      let totalDonations = 0;
+      let fundsCount = 0;
+      for (const a of ambs) {
+        const cid = Number(a.platformProfileId);
+        if (!Number.isFinite(cid)) continue;
+        totalDonations += totalsByClient.get(cid) || 0;
+        fundsCount += countByClient.get(cid) || 0;
+      }
+      return {
+        id: e.id,
+        name: e.name,
+        kind: classifyEntity(e),
+        ambassadorsCount: ambs.length,
+        totalDonations,
+        fundsCount,
+      };
+    });
+
+    const current = centersStats.find((c) => String(c.id) === id);
+    if (!current) return res.status(404).json({ error: "not_found" });
+
+    const sameKind = centersStats
+      .filter((c) => c.kind === current.kind)
+      .sort((a, b) => b.totalDonations - a.totalDonations);
+
+    const rankPosition =
+      sameKind.findIndex((c) => String(c.id) === id) + 1;
+
+    const topCenters = sameKind.slice(0, 3).map((c, i) => ({
+      rank: i + 1,
+      id: c.id,
+      name: c.name,
+      totalDonations: c.totalDonations,
+      ambassadorsCount: c.ambassadorsCount,
+      fundsCount: c.fundsCount,
+      isCurrent: String(c.id) === id,
+    }));
+
+    const sameKindEntityIds = new Set(sameKind.map((c) => String(c.id)));
+    const ambassadorsByEntity = new Map();
+    for (const e of centersStats) ambassadorsByEntity.set(String(e.id), e.name);
+
+    const ambassadorStats = ambassadors
+      .filter((a) => sameKindEntityIds.has(String(a.entity || "")))
+      .map((a) => {
+        const cid = Number(a.platformProfileId);
+        const total = Number.isFinite(cid) ? totalsByClient.get(cid) || 0 : 0;
+        const count = Number.isFinite(cid) ? countByClient.get(cid) || 0 : 0;
+        return {
+          id: String(a._id),
+          name: a.name,
+          entityId: a.entity,
+          entityName: ambassadorsByEntity.get(String(a.entity || "")) || "",
+          totalDonations: total,
+          fundsCount: count,
+        };
+      });
+    ambassadorStats.sort((a, b) => b.totalDonations - a.totalDonations);
+
+    const topAmbassadors = ambassadorStats.slice(0, 3).map((a, i) => ({
+      rank: i + 1,
+      id: a.id,
+      name: a.name,
+      entityId: a.entityId,
+      entityName: a.entityName,
+      fundsCount: a.fundsCount,
+      isCurrentEntity: String(a.entityId || "") === id,
+    }));
+
+    const myAmbassadors = ambassadors
+      .filter((a) => String(a.entity || "") === id)
+      .map((a) => {
+        const cid = Number(a.platformProfileId);
+        const total = Number.isFinite(cid) ? totalsByClient.get(cid) || 0 : 0;
+        const count = Number.isFinite(cid) ? countByClient.get(cid) || 0 : 0;
+        return {
+          id: String(a._id),
+          name: a.name,
+          totalDonations: total,
+          fundsCount: count,
+        };
+      });
+    myAmbassadors.sort((a, b) => b.totalDonations - a.totalDonations);
+
+    res.json({
+      center: {
+        id: current.id,
+        name: current.name,
+        kind: current.kind,
+        kindLabel: kindLabelPlural(current.kind),
+        ambassadorsCount: current.ambassadorsCount,
+        fundsCount: current.fundsCount,
+        totalDonations: current.totalDonations,
+      },
+      rank: {
+        position: rankPosition,
+        total: sameKind.length,
+        kindLabel: kindLabelPlural(current.kind),
+      },
+      topCenters,
+      topAmbassadors,
+      ambassadors: myAmbassadors,
+    });
+  } catch (e) {
+    console.error("board api error:", e);
+    res.status(500).json({ error: "failed" });
+  }
+});
+
+// تفاصيل مجمع محدد + قائمة السفراء مرتبة من الأعلى للأقل
+router.get("/public/centers/:id", async (req, res) => {
+  try {
+    const id = String(req.params.id);
+    const ambassadors = await Ambassador.find(
+      { entity: id },
+      "name phone platformProfileId donationsUpdatedAt",
+    ).lean();
+
+    const clientIds = ambassadors
+      .map((a) => Number(a.platformProfileId))
+      .filter((n) => Number.isFinite(n));
+    const fundsList = await AllFund.find(
+      { client_id: { $in: clientIds } },
+      "client_id currentTotal done",
+    ).lean();
+
+    const totalsByClient = new Map();
+    const countByClient = new Map();
+    const completedByClient = new Map();
+    for (const f of fundsList) {
+      const cid = Number(f.client_id);
+      const amount = Number(f.currentTotal) || 0;
+      totalsByClient.set(cid, (totalsByClient.get(cid) || 0) + amount);
+      if (amount > 0) {
+        countByClient.set(cid, (countByClient.get(cid) || 0) + 1);
+        if (f.done == "a") {
+          completedByClient.set(cid, (completedByClient.get(cid) || 0) + 1);
+        }
+      }
+    }
+
     const list = ambassadors.map((a) => {
       const cid = Number(a.platformProfileId);
       const total = Number.isFinite(cid) ? totalsByClient.get(cid) || 0 : 0;
       const count = Number.isFinite(cid) ? countByClient.get(cid) || 0 : 0;
+      const completed = Number.isFinite(cid) ? completedByClient.get(cid) || 0 : 0;
       return {
         id: String(a._id),
         name: a.name,
         phone: a.phone,
         totalDonations: total,
         fundsCount: count,
+        completedFunds: completed,
         donationsUpdatedAt: a.donationsUpdatedAt,
       };
     });
@@ -141,6 +313,7 @@ router.get("/public/centers/:id", async (req, res) => {
 
     const totalDonations = list.reduce((s, a) => s + a.totalDonations, 0);
     const fundsCount = list.reduce((s, a) => s + a.fundsCount, 0);
+    const completedFunds = list.reduce((s, a) => s + a.completedFunds, 0);
 
     res.json({
       center: {
@@ -149,6 +322,7 @@ router.get("/public/centers/:id", async (req, res) => {
         ambassadorsCount: list.length,
         fundsCount,
         totalDonations,
+        completedFunds,
       },
       ambassadors: list,
     });
