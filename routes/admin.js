@@ -7,6 +7,7 @@ const Notification = require('../models/Notification');
 const PushSubscription = require('../models/PushSubscription');
 const { requireAdmin } = require('../middleware/auth');
 const { trySendWhatsapp, sendWhatsapp } = require('../services/whatsapp');
+const boardControl = require('../services/boardControl');
 
 const router = express.Router();
 
@@ -145,6 +146,21 @@ router.post('/ambassadors/:id/send-link', requireAdmin, async (req, res) => {
     console.error('[admin send-link] whatsapp send failed:', e.message);
     res.status(502).json({ error: e.userMessage || 'تعذّر إرسال الرابط عبر واتساب' });
   }
+});
+
+// التحكم بصفحة لوحة الشرف (إيقاف التحديث / إجبار الصفحات المفتوحة على التحديث)
+router.get('/board-control', requireAdmin, (req, res) => {
+  res.json(boardControl.getState());
+});
+
+router.post('/board-control/toggle', requireAdmin, (req, res) => {
+  const next = boardControl.togglePaused();
+  res.json(next);
+});
+
+router.post('/board-control/force-reload', requireAdmin, (req, res) => {
+  const next = boardControl.bumpVersion();
+  res.json(next);
 });
 
 router.delete('/ambassadors/:id', requireAdmin, async (req, res) => {

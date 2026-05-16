@@ -5,6 +5,7 @@ const Ambassador = require("../models/Ambassador");
 const SyncMeta = require("../models/SyncMeta");
 const { listEntities, entityName } = require("../services/entities");
 const { logAmbassadorActivity } = require("../services/activityLog");
+const boardControl = require("../services/boardControl");
 const router = express.Router();
 const cache = require("memory-cache");
 dotenv = require("dotenv");
@@ -255,11 +256,18 @@ router.get("/public/centers/:id/board", async (req, res) => {
       topCenters,
       topAmbassadors,
       ambassadors: myAmbassadors,
+      control: boardControl.getState(),
     });
   } catch (e) {
     console.error("board api error:", e);
     res.status(500).json({ error: "failed" });
   }
+});
+
+// نقطة خفيفة جداً — تستخدمها صفحة لوحة الشرف للتحقق من حالة التحكم بشكل دوري دون استدعاء الـ board الكامل
+router.get("/public/board-control", (req, res) => {
+  res.set("Cache-Control", "no-store");
+  res.json(boardControl.getState());
 });
 
 // تفاصيل مجمع محدد + قائمة السفراء مرتبة من الأعلى للأقل

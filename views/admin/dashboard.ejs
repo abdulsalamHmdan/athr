@@ -38,7 +38,50 @@
       </div>
       <div id="activityFeedBody" class="small">اضغط "عرض آخر 10 حركات" لعرض آخر نشاط السفراء.</div>
     </div>
+
+    <div class="card" id="boardCtrlCard">
+      <div class="section-head">
+        <h2>التحكم بلوحة الشرف</h2>
+        <span class="bc-status" id="bcStatus">جارٍ القراءة…</span>
+      </div>
+      <p class="small bc-hint">يؤثر هذا القسم على صفحات لوحة الشرف العامة (<code>/centers/:id/board</code>) المفتوحة لدى الجهات.</p>
+      <div class="bc-actions">
+        <button class="btn bc-btn-pause" type="button" id="bcTogglePause">
+          <span id="bcToggleLabel">إيقاف التحديث التلقائي</span>
+        </button>
+        <button class="btn bordered bc-btn-reload" type="button" id="bcForceReload">
+          فرض إعادة تحميل جميع الصفحات المفتوحة
+        </button>
+      </div>
+      <div class="small bc-meta" id="bcMeta">—</div>
+    </div>
   </div>
+
+  <style>
+    #boardCtrlCard .bc-hint{ color:#64748b; margin: 2px 0 10px; }
+    #boardCtrlCard .bc-actions{ display:flex; gap:8px; flex-wrap:wrap; margin-top: 4px; }
+    #boardCtrlCard .bc-status{
+      display:inline-flex; align-items:center; gap:6px;
+      padding: 4px 12px; border-radius: 999px;
+      font-size: 12px; font-weight: 800;
+      background: #f1f5f9; color: #475569;
+    }
+    #boardCtrlCard .bc-status.is-live{ background: #dcfce7; color: #166534; }
+    #boardCtrlCard .bc-status.is-live::before{
+      content:""; width:8px; height:8px; border-radius:50%;
+      background:#16a34a; box-shadow:0 0 0 4px rgba(22,163,74,.18);
+    }
+    #boardCtrlCard .bc-status.is-paused{ background: #fee2e2; color: #991b1b; }
+    #boardCtrlCard .bc-status.is-paused::before{
+      content:""; width:8px; height:8px; border-radius:50%;
+      background:#dc2626; box-shadow:0 0 0 4px rgba(220,38,38,.18);
+    }
+    #boardCtrlCard .bc-meta{ margin-top:10px; color:#64748b; font-size:11.5px; }
+    #boardCtrlCard .bc-btn-pause.is-paused{ background:#16a34a; color:#fff; border-color: transparent; }
+    #boardCtrlCard .bc-btn-pause:not(.is-paused){ background:#dc2626; color:#fff; border-color: transparent; }
+    #boardCtrlCard code{ background:#f1f5f9; padding:1px 6px; border-radius:4px; font-size:11.5px; }
+    #boardCtrlCard .btn[disabled]{ opacity:.6; cursor: progress; }
+  </style>
 
   <div class="tab-pane" data-pane="charts">
     <div class="card">
@@ -100,6 +143,97 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script src="/js/app.js"></script>
 <script>
+// ===== التحكم بلوحة الشرف =====
+(function setupBoardCtrl(){
+  const statusEl = document.getElementById('bcStatus');
+  const toggleBtn = document.getElementById('bcTogglePause');
+  const toggleLbl = document.getElementById('bcToggleLabel');
+  const reloadBtn = document.getElementById('bcForceReload');
+  const metaEl = document.getElementById('bcMeta');
+  if (!statusEl || !toggleBtn || !reloadBtn) return;
+
+  function fmtDate(iso){
+    if (!iso) return '—';
+    try {
+      const d = new Date(iso);
+      return d.toLocaleString('ar', { hour12: false });
+    } catch(e){ return iso; }
+  }
+
+  function applyState(s){
+    if (!s || typeof s !== 'object') return;
+    if (s.paused){
+      statusEl.textContent = 'متوقف';
+      statusEl.classList.add('is-paused');
+      statusEl.classList.remove('is-live');
+      toggleBtn.classList.add('is-paused');
+      toggleLbl.textContent = 'استئناف التحديث التلقائي';
+    } else {
+      statusEl.textContent = 'يعمل';
+      statusEl.classList.add('is-live');
+      statusEl.classList.remove('is-paused');
+      toggleBtn.classList.remove('is-paused');
+      toggleLbl.textContent = 'إيقاف التحديث التلقائي';
+    }
+    const parts = [];
+    parts.push('النسخة #' + (s.version != null ? s.version : '—'));
+    if (s.versionAt)  parts.push('آخر دفع تحديث: ' + fmtDate(s.versionAt));
+    if (s.paused && s.pausedAt) parts.push('تم الإيقاف في: ' + fmtDate(s.pausedAt));
+    metaEl.textContent = parts.join(' • ');
+  }
+
+  function setBusy(on){
+    toggleBtn.disabled = on;
+    reloadBtn.disabled = on;
+  }
+
+  async function fetchState(){
+    try {
+      const r = await fetch('/admin/board-control', { cache: 'no-store' });
+      if (!r.ok) throw new Error('failed');
+      const s = await r.json();
+      applyState(s);
+    } catch(e){
+      statusEl.textContent = 'تعذّر القراءة';
+      statusEl.classList.remove('is-live', 'is-paused');
+    }
+  }
+
+  async function doToggle(){
+    setBusy(true);
+    try {
+      const r = await fetch('/admin/board-control/toggle', { method: 'POST' });
+      const s = await r.json();
+      applyState(s);
+    } catch(e){
+      alert('تعذّر تنفيذ الطلب');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function doForceReload(){
+    if (!confirm('فرض إعادة تحميل جميع صفحات لوحة الشرف المفتوحة الآن؟')) return;
+    setBusy(true);
+    try {
+      const r = await fetch('/admin/board-control/force-reload', { method: 'POST' });
+      const s = await r.json();
+      applyState(s);
+      // مؤشر بصري بسيط
+      reloadBtn.textContent = '✓ تم — سيتم تحديث الصفحات خلال دقيقة';
+      setTimeout(() => { reloadBtn.textContent = 'فرض إعادة تحميل جميع الصفحات المفتوحة'; }, 3000);
+    } catch(e){
+      alert('تعذّر تنفيذ الطلب');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  toggleBtn.addEventListener('click', doToggle);
+  reloadBtn.addEventListener('click', doForceReload);
+  fetchState();
+})();
+
 let ambassadors = [];
 const charts = [];
 let chartsReady = false;
