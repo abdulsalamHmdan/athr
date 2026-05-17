@@ -582,7 +582,7 @@ router.get("/out/ambassadors", requireOutApiKey, async (req, res) => {
       phone: a.phone,
       client_id: a.platformProfileId,
     }));
-    res.json({ count: data.length, ambassadors: data });
+    res.json({ count: data.length, users: data });
   } catch (e) {
     console.error("out ambassadors error:", e);
     res.status(500).json({ error: "failed" });
