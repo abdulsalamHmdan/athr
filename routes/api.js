@@ -557,4 +557,36 @@ router.get("/platform/donations-total", (req, res) => {
   res.json({ total: (seed % 50) * 100, currency: "SAR" });
 });
 
+// ===== Out API — للربط مع الجهات الخارجية =====
+// يتطلب مفتاح ربط في الهيدر: x-api-key
+function requireOutApiKey(req, res, next) {
+  const provided = req.headers["x-api-key"];
+  const expected = process.env.OUT_API_KEY;
+  if (!expected) {
+    return res.status(500).json({ error: "out_api_key_not_configured" });
+  }
+  if (!provided || provided !== expected) {
+    return res.status(401).json({ error: "unauthorized" });
+  }
+  next();
+}
+
+router.get("/out/ambassadors", requireOutApiKey, async (req, res) => {
+  try {
+    const ambassadors = await Ambassador.find(
+      {},
+      "name phone platformProfileId",
+    ).lean();
+    const data = ambassadors.map((a) => ({
+      name: a.name,
+      phone: a.phone,
+      platformId: a.platformProfileId,
+    }));
+    res.json({ count: data.length, ambassadors: data });
+  } catch (e) {
+    console.error("out ambassadors error:", e);
+    res.status(500).json({ error: "failed" });
+  }
+});
+
 module.exports = router;

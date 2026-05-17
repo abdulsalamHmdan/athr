@@ -2,6 +2,7 @@ const { configDotenv } = require("dotenv");
 configDotenv();
 const mongoose = require("mongoose");
 const AllFund = require("../models/AllFund");
+const page = 12;
 
 (async () => {
   try {
@@ -9,7 +10,7 @@ const AllFund = require("../models/AllFund");
     console.log("MongoDB connected");
 
     const res = await fetch(
-      "https://donate.utq.org.sa/api/v1/orders/report/goals?page=4&ts=1777755600-1778678772",
+      `https://donate.utq.org.sa/api/v1/orders/report/goals?page=${page}&ts=1777150800-${Math.ceil(Date.now() / 1000)}`,
       {
         method: "get",
         headers: { k: process.env.DONATE_API_KEY },

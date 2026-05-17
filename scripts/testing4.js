@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 const AllFund = require("../models/AllFund");
 
 async function syncFundTotals() {
-  for (let page = 0; page <= 10; page++) {
+  for (let page = 0; page <= 12; page++) {
     console.log(`--- Page ${page} ---`);
     const res = await fetch(
       `https://donate.utq.org.sa/api/v1/orders/report/goals?page=${page}&ts=1777150800-${Math.ceil(Date.now() / 1000)}`,
