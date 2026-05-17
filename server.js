@@ -53,7 +53,7 @@ app.use("/api", apiRoutes);
 app.use("/", pushRoutes);
 app.use("/", pagesRoutes);
 const fromServer = process.env.FROME_SERVER == "true";
-cron.schedule("55 * * * *", async () => {
+cron.schedule("*/30 * * * *", async () => {
   console.log("starting cron job");
   if (!fromServer) {
     console.log("skipping cron job since not from server");
