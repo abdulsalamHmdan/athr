@@ -580,7 +580,7 @@ router.get("/out/ambassadors", requireOutApiKey, async (req, res) => {
     const data = ambassadors.map((a) => ({
       name: a.name,
       phone: a.phone,
-      platformId: a.platformProfileId,
+      client_id: a.platformProfileId,
     }));
     res.json({ count: data.length, ambassadors: data });
   } catch (e) {
