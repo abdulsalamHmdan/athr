@@ -1,268 +1,1263 @@
 <%- include('partials/head') %>
 
 <%
-// ========== بيانات ستاتيك (تجريبية) — تُربط لاحقاً بقاعدة البيانات ==========
+// ========== بيانات تجريبية (تُربط لاحقاً بقاعدة البيانات) ==========
 const stats = {
+  ambassadorsTotal: 124,
+  ambassadorsMembers: 45,
+  ambassadorsExternal: 79,
+  ambassadorsDelta7d: 8,
+
   totalDonations: 284750,
   donationsGoal: 500000,
-  totalBoxes: 312,
-  boxesGoal: 500,
-  ambassadors: 54,
-  ambassadorsGoal: 80,
-  ambassadorBoxes: 198,
-  ambassadorBoxesGoal: 400,
-  avgPerformance: 64,
-  paidOutPrizes: 42300,
+  donationsToday: 14820,
+
+  fundsTotal: 312,
+  fundsActive: 198,
+  fundsCompleted: 128,
+  fundsGoal: 500,
+
+  entities: 18,
+  liveAmbassadors: 6,
 };
 
-const notifications = [
-  { text: 'انضمام 3 سفراء جدد من مجمع النور', time: 'قبل ساعة' },
-  { text: 'تم صرف جائزة للسفير/ عبدالله الحربي', time: 'قبل 3 ساعات' },
-  { text: 'صندوق جديد: دعم طلاب حلقات التحفيظ', time: 'اليوم 10:22 ص' },
-  { text: 'تجاوز مجمع الأندلس هدف التبرعات الشهري', time: 'أمس' },
+// المراكز الأولى — قسم البنين
+const topBoys = {
+  ambassador: { name: 'عبدالله الحربي',  entity: 'مجمع الأندلس',   amount: 42800, funds: 18, pct: 86 },
+  entity:     { name: 'مجمع الأندلس',    amount: 98400, ambassadors: 14, funds: 94, pct: 92 },
+};
+
+// المراكز الأولى — قسم البنات
+const topGirls = {
+  ambassador: { name: 'سارة القحطاني',  entity: 'دار النور',       amount: 38450, funds: 16, pct: 78 },
+  entity:     { name: 'دار النور',       amount: 81200, ambassadors: 11, funds: 78, pct: 84 },
+};
+
+// أحدث الأنشطة — يظهر كشريط متحرك
+const liveFeed = [
+  '+ ٢٥٠ ر.س من متبرع · صندوق "إفطار صائم" — قبل ٤ ث',
+  '🎉 صندوق جديد فُعّل · مجمع الفرقان — قبل ١٢ ث',
+  '🏆 السفير محمد العتيبي تجاوز ٣٠ ألف ر.س — قبل ٢٣ ث',
+  '✅ اكتمل صندوق "كسوة العيد" — قبل ٣٤ ث',
+  '+ ١,٢٠٠ ر.س دفعة واحدة · صندوق "أضحية" — قبل ٤٧ ث',
+  '👤 سفير جديد التحق · دار البديعة — قبل ١:١٠',
 ];
 
-const topAmbassadors = [
-  { name: 'عبدالله الحربي', entity: 'مجمع الأندلس', amount: 42800 },
-  { name: 'سارة القحطاني', entity: 'مجمع النور', amount: 38450 },
-  { name: 'محمد العتيبي', entity: 'مجمع الفرقان', amount: 33110 },
-  { name: 'نورة الزهراني', entity: 'مجمع الأندلس', amount: 28900 },
-  { name: 'خالد السبيعي', entity: 'مجمع الصديق', amount: 24600 },
-  { name: 'هدى الدوسري', entity: 'مجمع النور', amount: 21400 },
-  { name: 'تركي الرشيد', entity: 'مجمع الفرقان', amount: 19250 },
-  { name: 'منى العنزي', entity: 'مجمع الصديق', amount: 16980 },
-  { name: 'فيصل الشمري', entity: 'مجمع الأندلس', amount: 15110 },
-  { name: 'ريم المطيري', entity: 'مجمع النور', amount: 13750 },
-];
-
-const topCompounds = [
-  { name: 'مجمع الأندلس', boxes: 94, amount: 98400 },
-  { name: 'مجمع النور', boxes: 78, amount: 81200 },
-  { name: 'مجمع الفرقان', boxes: 62, amount: 54800 },
-  { name: 'مجمع الصديق', boxes: 48, amount: 34600 },
-  { name: 'مجمع السلام', boxes: 30, amount: 15750 },
-];
-
-const genderSplit = { men: 58, women: 42 };
-
-function pct(a, b) { return Math.min(100, Math.round((a / b) * 100)); }
 function fmt(n) { return Number(n).toLocaleString('en-US'); }
+function pct(a, b) { return Math.min(100, Math.round((a / b) * 100)); }
 
 const donationsPct = pct(stats.totalDonations, stats.donationsGoal);
-const boxesPct = pct(stats.totalBoxes, stats.boxesGoal);
-const ambBoxesPct = pct(stats.ambassadorBoxes, stats.ambassadorBoxesGoal);
-const ambBoxShare = pct(stats.ambassadorBoxes, stats.totalBoxes);
+const completedPct = pct(stats.fundsCompleted, stats.fundsTotal);
+const activePct = pct(stats.fundsActive, stats.fundsTotal);
+const fundsPct = pct(stats.fundsTotal, stats.fundsGoal);
 %>
 
-<div class="dash-root">
+<div class="ops-root">
 
-  <!-- ====== الملخص العام ====== -->
-  <div class="dash-card">
-    <div class="dash-card-head">
-      <button class="dash-pill-btn" type="button" onclick="location.reload()">تحديث</button>
-      <div class="dash-card-title">الملخص العام</div>
+  <!-- ============ TOP STATUS BAR ============ -->
+  <header class="ops-topbar">
+    <div class="ops-tb-left">
+      <span class="ops-live">
+        <span class="ops-live-dot"></span>
+        <span class="ops-live-text">مباشر</span>
+      </span>
+      <span class="ops-divider"></span>
+      <span class="ops-sync">
+        <svg viewBox="0 0 24 24" width="13" height="13"><path fill="currentColor" d="M12 4V1L8 5l4 4V6c3.3 0 6 2.7 6 6 0 1-.3 2-.7 2.8l1.5 1.5C19.5 15 20 13.6 20 12c0-4.4-3.6-8-8-8zm0 14c-3.3 0-6-2.7-6-6 0-1 .3-2 .7-2.8L5.2 7.7C4.5 9 4 10.4 4 12c0 4.4 3.6 8 8 8v3l4-4-4-4v3z"/></svg>
+        مزامنة:
+        <b id="opsSyncAgo">قبل ٨ ث</b>
+      </span>
     </div>
 
-    <div class="dash-summary-grid">
-      <div class="dash-tile">
-        <div class="dash-tile-label">إجمالي التبرعات (ريال)</div>
-        <div class="dash-tile-value"><span class="dash-num" data-target="<%= stats.totalDonations %>">0</span></div>
-        <div class="dash-tile-foot"><span>المؤشر</span><b><%= donationsPct %>%</b></div>
-        <div class="dash-bar"><span style="--w: <%= donationsPct %>%"></span></div>
-      </div>
-
-      <div class="dash-tile">
-        <div class="dash-tile-label">إجمالي الصناديق</div>
-        <div class="dash-tile-value"><span class="dash-num" data-target="<%= stats.totalBoxes %>">0</span></div>
-        <div class="dash-tile-foot"><span>المؤشر</span><b><%= boxesPct %>%</b></div>
-        <div class="dash-bar"><span style="--w: <%= boxesPct %>%"></span></div>
-      </div>
-
-      <div class="dash-tile">
-        <div class="dash-tile-label">صناديق السفراء</div>
-        <div class="dash-tile-value"><span class="dash-num" data-target="<%= stats.ambassadorBoxes %>">0</span></div>
-        <div class="dash-tile-foot"><span>المؤشر</span><b><%= ambBoxesPct %>%</b></div>
-        <div class="dash-bar"><span style="--w: <%= ambBoxesPct %>%"></span></div>
-      </div>
-
-      <div class="dash-tile">
-        <div class="dash-tile-label">متوسط الأداء</div>
-        <div class="dash-tile-value"><span class="dash-num" data-target="<%= stats.avgPerformance %>" data-suffix="%">0</span></div>
-        <div class="dash-tile-foot"><span>المؤشر</span><b><%= stats.avgPerformance %>%</b></div>
-        <div class="dash-bar"><span style="--w: <%= stats.avgPerformance %>%"></span></div>
+    <div class="ops-tb-center">
+      <div class="ops-brand">
+        <span class="ops-brand-mark">◉</span>
+        <span class="ops-brand-name">نظام نقاط الأثر</span>
+        <span class="ops-brand-tag">غرفة المتابعة</span>
       </div>
     </div>
-  </div>
 
-  <!-- ====== الإشعارات / آخر التحديثات ====== -->
-  <div class="dash-card">
-    <div class="dash-card-head">
-      <div class="dash-card-sub">آخر التحديثات العامة</div>
-      <div class="dash-card-title">الإشعارات البسيطة</div>
+    <div class="ops-tb-right">
+      <span class="ops-greg" id="opsGreg">— / — / ——</span>
+      <span class="ops-divider"></span>
+      <span class="ops-clock">
+        <svg viewBox="0 0 24 24" width="13" height="13"><path fill="currentColor" d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 18a8 8 0 110-16 8 8 0 010 16zm.5-13H11v6l5 3 .8-1.3-4.3-2.5V7z"/></svg>
+        <b id="opsClock">--:--:--</b>
+      </span>
     </div>
-    <div class="dash-notif-list">
-      <% notifications.forEach((n, i) => { %>
-        <div class="dash-notif-item" style="--i: <%= i %>">
-          <div class="dash-notif-dot"></div>
-          <div class="dash-notif-text"><%= n.text %></div>
-          <div class="dash-notif-time"><%= n.time %></div>
+  </header>
+
+  <!-- ============ MAIN BENTO GRID ============ -->
+  <main class="ops-bento">
+
+    <!-- ────── LEFT BENTO COLUMN ────── -->
+    <section class="ops-tile ops-amb" aria-label="السفراء">
+      <div class="ops-tile-corner">A·01</div>
+      <div class="ops-tile-head">
+        <span class="ops-tile-icon">
+          <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-4.4 0-8 2.2-8 5v3h16v-3c0-2.8-3.6-5-8-5z"/></svg>
+        </span>
+        <span class="ops-tile-label">السفراء</span>
+        <span class="ops-tile-trend up">▲ <%= stats.ambassadorsDelta7d %></span>
+      </div>
+      <div class="ops-tile-value" data-num="<%= stats.ambassadorsTotal %>">0</div>
+      <div class="ops-mini-bars">
+        <div class="ops-mini-bar">
+          <span class="lbl">منسوبون</span>
+          <span class="bar"><i style="--w:<%= pct(stats.ambassadorsMembers, stats.ambassadorsTotal) %>%"></i></span>
+          <span class="val"><%= stats.ambassadorsMembers %></span>
         </div>
-      <% }) %>
-    </div>
-  </div>
-
-  <!-- ====== الصف الثلاثي: السفراء / الصناديق / مقارنة ====== -->
-  <div class="dash-row-3">
-
-    <!-- السفراء -->
-    <div class="dash-card">
-      <div class="dash-card-head"><div class="dash-card-title">السفراء</div></div>
-      <div class="dash-total-box">
-        <div class="dash-total-label">الإجمالي</div>
-        <div class="dash-total-value"><span class="dash-num" data-target="<%= stats.ambassadors %>">0</span></div>
-      </div>
-      <div class="dash-metric">
-        <div class="dash-metric-head"><span>منسوبو الجمعية</span><span class="pct">36%</span></div>
-        <div class="dash-bar primary"><span style="--w:36%"></span></div>
-      </div>
-      <div class="dash-metric">
-        <div class="dash-metric-head"><span>من خارج الجمعية</span><span class="pct">64%</span></div>
-        <div class="dash-bar primary"><span style="--w:64%"></span></div>
-      </div>
-      <div class="dash-metric">
-        <div class="dash-metric-head"><span>ناشطون هذا الشهر</span><span class="pct">72%</span></div>
-        <div class="dash-bar primary"><span style="--w:72%"></span></div>
-      </div>
-      <div class="dash-metric">
-        <div class="dash-metric-head"><span>حققوا الهدف</span><span class="pct">23%</span></div>
-        <div class="dash-bar primary"><span style="--w:23%"></span></div>
-      </div>
-    </div>
-
-    <!-- الصناديق -->
-    <div class="dash-card">
-      <div class="dash-card-head"><div class="dash-card-title">الصناديق</div></div>
-      <div class="dash-total-box">
-        <div class="dash-total-label">الإجمالي</div>
-        <div class="dash-total-value"><span class="dash-num" data-target="<%= stats.totalBoxes %>">0</span></div>
-      </div>
-      <div class="dash-metric">
-        <div class="dash-metric-head"><span>مكتملة</span><span class="pct">41%</span></div>
-        <div class="dash-bar"><span style="--w:41%"></span></div>
-      </div>
-      <div class="dash-metric">
-        <div class="dash-metric-head"><span>قيد التبرع</span><span class="pct">34%</span></div>
-        <div class="dash-bar"><span style="--w:34%"></span></div>
-      </div>
-      <div class="dash-metric">
-        <div class="dash-metric-head"><span>جديدة هذا الشهر</span><span class="pct">18%</span></div>
-        <div class="dash-bar"><span style="--w:18%"></span></div>
-      </div>
-      <div class="dash-metric">
-        <div class="dash-metric-head"><span>نسبة صناديق السفراء</span><span class="pct"><%= ambBoxShare %>%</span></div>
-        <div class="dash-bar"><span style="--w:<%= ambBoxShare %>%"></span></div>
-      </div>
-    </div>
-
-    <!-- مقارنة سريعة -->
-    <div class="dash-card">
-      <div class="dash-card-head"><div class="dash-card-title">مقارنة سريعة</div></div>
-      <div class="dash-diff">
-        <div class="dash-diff-label">فرق متوسط التبرعات بين الفئات</div>
-        <div class="dash-diff-value"><span class="dash-num" data-target="16" data-suffix="%">0</span></div>
-      </div>
-      <div class="dash-donut-wrap">
-        <div class="dash-donut" style="--pct-final: <%= genderSplit.men %>; --ring: var(--primary-600);">
-          <span><%= genderSplit.men %>%</span>
+        <div class="ops-mini-bar">
+          <span class="lbl">خارج الجمعية</span>
+          <span class="bar"><i style="--w:<%= pct(stats.ambassadorsExternal, stats.ambassadorsTotal) %>%"></i></span>
+          <span class="val"><%= stats.ambassadorsExternal %></span>
         </div>
-        <div class="dash-donut-label">الرجال</div>
       </div>
-      <div class="dash-donut-wrap">
-        <div class="dash-donut" style="--pct-final: <%= genderSplit.women %>; --ring: var(--accent-600);">
-          <span><%= genderSplit.women %>%</span>
+      <svg class="ops-sparkline" viewBox="0 0 120 30" preserveAspectRatio="none" aria-hidden="true">
+        <polyline points="0,22 12,18 24,20 36,14 48,15 60,10 72,12 84,8 96,9 108,5 120,6"
+                  fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </section>
+
+    <section class="ops-tile ops-funds" aria-label="الصناديق">
+      <div class="ops-tile-corner">F·02</div>
+      <div class="ops-tile-head">
+        <span class="ops-tile-icon">
+          <svg viewBox="0 0 24 24"><path fill="currentColor" d="M20 8h-3V6a2 2 0 00-2-2H9a2 2 0 00-2 2v2H4a1 1 0 00-1 1v9a3 3 0 003 3h12a3 3 0 003-3V9a1 1 0 00-1-1zM9 6h6v2H9V6z"/></svg>
+        </span>
+        <span class="ops-tile-label">الصناديق</span>
+        <span class="ops-tile-trend up">▲ ٥ جديد</span>
+      </div>
+      <div class="ops-tile-value" data-num="<%= stats.fundsTotal %>">0</div>
+      <div class="ops-tile-row">
+        <div class="ops-pill ops-pill-live">
+          <span class="ops-pill-dot"></span>
+          نشطة <b><%= stats.fundsActive %></b>
         </div>
-        <div class="dash-donut-label">النساء</div>
+        <div class="ops-pill">
+          ✓ مكتملة <b><%= stats.fundsCompleted %></b>
+        </div>
       </div>
-    </div>
-
-  </div>
-
-  <!-- ====== العشر الأوائل / ترتيب المجمعات ====== -->
-  <div class="dash-lb-row">
-
-    <div class="dash-card">
-      <div class="dash-card-head">
-        <div class="dash-card-sub">الأعلى تبرعاً هذا الشهر</div>
-        <div class="dash-card-title">العشر الأوائل من السفراء</div>
+      <div class="ops-stack-bar" title="<%= activePct %>% نشطة · <%= completedPct %>% مكتملة">
+        <span class="seg seg-a" style="--w:<%= activePct %>%"></span>
+        <span class="seg seg-b" style="--w:<%= completedPct %>%"></span>
       </div>
-      <% topAmbassadors.forEach((a, i) => {
-        const cls = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
-      %>
-        <div class="dash-rank-item <%= cls %>" style="--i: <%= i %>">
-          <div class="dash-rank-num"><%= i + 1 %></div>
-          <div>
-            <div class="dash-rank-name"><%= a.name %></div>
-            <div class="dash-rank-sub"><%= a.entity %></div>
+      <div class="ops-tile-foot">
+        <span>الهدف <%= stats.fundsGoal %></span>
+        <b><%= fundsPct %>%</b>
+      </div>
+    </section>
+
+    <!-- ROTATING PANEL — BOYS section -->
+    <section class="ops-tile ops-rotate" data-rotor="boys" aria-label="المراكز الأولى — قسم البنين">
+      <div class="ops-tile-corner">T·03</div>
+      <div class="ops-tile-head ops-rotate-head">
+        <span class="ops-tile-icon gold">
+          <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg>
+        </span>
+        <div class="ops-rotate-titles">
+          <span class="ops-tile-label">المركز الأول · بنين</span>
+          <span class="ops-rotate-sub" data-rotate-sub>سفير</span>
+        </div>
+        <div class="ops-rotate-dots" data-rotate-dots>
+          <span class="dot active"></span>
+          <span class="dot"></span>
+        </div>
+      </div>
+
+      <div class="ops-rotate-stage">
+        <!-- slide 1: Top Ambassador (boys) -->
+        <div class="ops-rotate-slide active" data-rotate-key="amb">
+          <div class="ops-medal">
+            <svg viewBox="0 0 64 64"><defs><linearGradient id="goldGradBoys" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#fbd76b"/><stop offset="1" stop-color="#b07a18"/></linearGradient></defs><circle cx="32" cy="34" r="22" fill="url(#goldGradBoys)" opacity=".95"/><path d="M22 8h20l-4 18H26z" fill="#9d7b64"/><path d="M32 22l3 7 7 .6-5.3 4.6 1.7 7.1L32 37.8l-6.4 3.5 1.7-7.1L22 29.6l7-.6z" fill="#fff" opacity=".85"/></svg>
           </div>
-          <div class="dash-rank-val"><%= fmt(a.amount) %> ر.س</div>
-        </div>
-      <% }) %>
-    </div>
-
-    <div class="dash-card">
-      <div class="dash-card-head">
-        <div class="dash-card-sub">حسب إجمالي التبرعات</div>
-        <div class="dash-card-title">ترتيب المجمعات</div>
-      </div>
-      <% topCompounds.forEach((c, i) => {
-        const cls = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
-      %>
-        <div class="dash-rank-item <%= cls %>" style="--i: <%= i %>">
-          <div class="dash-rank-num"><%= i + 1 %></div>
-          <div>
-            <div class="dash-rank-name"><%= c.name %></div>
-            <div class="dash-rank-sub"><%= c.boxes %> صندوق</div>
+          <div class="ops-rotate-name">عبدالله الحربي</div>
+          <div class="ops-rotate-entity"><%= topBoys.ambassador.entity %></div>
+          <div class="ops-rotate-amount"><%= fmt(topBoys.ambassador.amount) %> <small>ر.س</small></div>
+          <div class="ops-rotate-meta">
+            <span>● <%= topBoys.ambassador.funds %> صندوقاً</span>
+            <span>● <%= topBoys.ambassador.pct %>% من الهدف</span>
           </div>
-          <div class="dash-rank-val"><%= fmt(c.amount) %> ر.س</div>
         </div>
-      <% }) %>
-    </div>
+        <!-- slide 2: Top Entity (boys) -->
+        <div class="ops-rotate-slide" data-rotate-key="entity">
+          <div class="ops-medal">
+            <svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="24" fill="#9d7b64" opacity=".22"/><path d="M16 44h32v6H16zM18 24l4-10h20l4 10v18H18z" fill="#9d7b64"/><path d="M22 28h20v10H22z" fill="#fbd76b"/></svg>
+          </div>
+          <div class="ops-rotate-name"><%= topBoys.entity.name %></div>
+          <div class="ops-rotate-entity"><%= topBoys.entity.ambassadors %> سفيراً · <%= topBoys.entity.funds %> صندوقاً</div>
+          <div class="ops-rotate-amount"><%= fmt(topBoys.entity.amount) %> <small>ر.س</small></div>
+          <div class="ops-rotate-meta">
+            <span>● جهة #١</span>
+            <span>● <%= topBoys.entity.pct %>% أداء</span>
+          </div>
+        </div>
+      </div>
+    </section>
 
-  </div>
+    <!-- ────── CENTRAL HUB ────── -->
+    <section class="ops-hub" aria-label="حملة ذو الحجة">
+      <div class="ops-hub-corner">C·00</div>
+      <div class="ops-hub-grid-bg" aria-hidden="true"></div>
+      <div class="ops-hub-rings" aria-hidden="true">
+        <span class="ring r1"></span>
+        <span class="ring r2"></span>
+        <span class="ring r3"></span>
+      </div>
 
+      <div class="ops-hub-orbit" aria-hidden="true">
+        <svg viewBox="0 0 320 320">
+          <defs>
+            <linearGradient id="ringHubGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#fbd76b"/>
+              <stop offset=".55" stop-color="#b29079"/>
+              <stop offset="1" stop-color="#6f4f3a"/>
+            </linearGradient>
+            <linearGradient id="trackGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="rgba(245,240,232,.08)"/>
+              <stop offset="1" stop-color="rgba(245,240,232,.02)"/>
+            </linearGradient>
+          </defs>
+          <circle cx="160" cy="160" r="148" fill="none" stroke="url(#trackGrad)" stroke-width="1.4" stroke-dasharray="2 4"/>
+          <circle cx="160" cy="160" r="126" fill="none" stroke="rgba(245,240,232,.08)" stroke-width="1"/>
+          <circle class="ops-progress-ring" cx="160" cy="160" r="126" fill="none"
+                  stroke="url(#ringHubGrad)" stroke-width="3.6" stroke-linecap="round"
+                  stroke-dasharray="791.68" stroke-dashoffset="<%= 791.68 - (791.68 * donationsPct / 100) %>"
+                  transform="rotate(-90 160 160)"/>
+        </svg>
+      </div>
+
+      <div class="ops-hub-content">
+        <div class="ops-hub-kicker">
+          <span class="ops-hub-kicker-dot"></span>
+          الحملة الحالية
+        </div>
+
+        <h1 class="ops-hub-title">
+          <span class="ops-hub-crescent" aria-hidden="true">
+            <svg viewBox="0 0 32 32"><path fill="currentColor" d="M22 4a12 12 0 100 24 10 10 0 010-24z"/></svg>
+          </span>
+          حملة ذو الحجة
+        </h1>
+
+        <div class="ops-hub-hijri" id="opsHijri">
+          <span class="hd" id="opsHijriDay">١٠</span>
+          <span class="hm" id="opsHijriMonth">ذو الحجة</span>
+          <span class="hy" id="opsHijriYear">١٤٤٧ هـ</span>
+        </div>
+
+        <div class="ops-hub-progress-text">
+          <span><%= fmt(stats.totalDonations) %> <small>من</small> <%= fmt(stats.donationsGoal) %> <small>ر.س</small></span>
+          <b><%= donationsPct %>%</b>
+        </div>
+
+        <div class="ops-hub-update">
+          <span class="ops-hub-update-dot"></span>
+          <span class="ops-hub-update-label">آخر تحديث للبيانات</span>
+          <b id="opsLastSyncBig">قبل ٨ ثوانٍ</b>
+        </div>
+      </div>
+
+      <div class="ops-hub-ticker" aria-label="آخر الأنشطة">
+        <div class="ops-hub-ticker-tag">● بث مباشر</div>
+        <div class="ops-hub-ticker-track">
+          <div class="ops-hub-ticker-loop">
+            <% liveFeed.forEach((t) => { %><span class="tk-item"><%= t %></span><span class="tk-sep">◆</span><% }) %>
+            <% liveFeed.forEach((t) => { %><span class="tk-item"><%= t %></span><span class="tk-sep">◆</span><% }) %>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ────── RIGHT BENTO COLUMN ────── -->
+    <section class="ops-tile ops-total" aria-label="إجمالي التبرعات">
+      <div class="ops-tile-corner">D·04</div>
+      <div class="ops-tile-head">
+        <span class="ops-tile-icon">
+          <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg>
+        </span>
+        <span class="ops-tile-label">إجمالي التبرعات</span>
+        <span class="ops-tile-trend up">▲ ٥٫٢٪</span>
+      </div>
+      <div class="ops-tile-value big">
+        <span data-num="<%= stats.totalDonations %>">0</span>
+        <small>ر.س</small>
+      </div>
+      <div class="ops-tile-foot">
+        <span>الهدف <%= fmt(stats.donationsGoal) %></span>
+        <b><%= donationsPct %>%</b>
+      </div>
+      <div class="ops-bar"><span style="--w:<%= donationsPct %>%"></span></div>
+      <div class="ops-tile-row tight">
+        <div class="ops-pill ops-pill-soft">
+          + <b><%= fmt(stats.donationsToday) %></b> اليوم
+        </div>
+        <div class="ops-pill ops-pill-soft">
+          <span class="ops-pill-dot ok"></span>
+          فعّال
+        </div>
+      </div>
+    </section>
+
+    <section class="ops-tile ops-complete" aria-label="الأنشطة الحية">
+      <div class="ops-tile-corner">L·05</div>
+      <div class="ops-tile-head">
+        <span class="ops-tile-icon ok">
+          <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 100 20 10 10 0 000-20zm-1 14.41L6.59 12 8 10.59l3 3 5-5L17.41 10 11 16.41z"/></svg>
+        </span>
+        <span class="ops-tile-label">الأنشطة الحية</span>
+        <span class="ops-tile-trend"><span class="ops-blink"></span> الآن</span>
+      </div>
+      <div class="ops-live-grid">
+        <div class="ops-live-cell">
+          <div class="lv">١٨</div>
+          <div class="lb">جهة مشاركة</div>
+        </div>
+        <div class="ops-live-cell">
+          <div class="lv">٦</div>
+          <div class="lb">سفير على الخط</div>
+        </div>
+        <div class="ops-live-cell">
+          <div class="lv">٤٢</div>
+          <div class="lb">تبرع اليوم</div>
+        </div>
+        <div class="ops-live-cell">
+          <div class="lv">٣</div>
+          <div class="lb">صندوق اكتمل</div>
+        </div>
+      </div>
+      <div class="ops-tile-foot">
+        <span>متوسط الأداء</span>
+        <b id="opsAvgPerf">٧٢٪</b>
+      </div>
+    </section>
+
+    <!-- ROTATING PANEL — GIRLS section -->
+    <section class="ops-tile ops-rotate" data-rotor="girls" aria-label="المراكز الأولى — قسم البنات">
+      <div class="ops-tile-corner">T·06</div>
+      <div class="ops-tile-head ops-rotate-head">
+        <span class="ops-tile-icon rose">
+          <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg>
+        </span>
+        <div class="ops-rotate-titles">
+          <span class="ops-tile-label">المركز الأول · بنات</span>
+          <span class="ops-rotate-sub" data-rotate-sub>سفير</span>
+        </div>
+        <div class="ops-rotate-dots" data-rotate-dots>
+          <span class="dot active"></span>
+          <span class="dot"></span>
+        </div>
+      </div>
+
+      <div class="ops-rotate-stage">
+        <div class="ops-rotate-slide active" data-rotate-key="amb">
+          <div class="ops-medal">
+            <svg viewBox="0 0 64 64"><defs><linearGradient id="goldGradGirls" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#f6c4d3"/><stop offset="1" stop-color="#a87082"/></linearGradient></defs><circle cx="32" cy="34" r="22" fill="url(#goldGradGirls)" opacity=".95"/><path d="M22 8h20l-4 18H26z" fill="#7b5a4a"/><path d="M32 22l3 7 7 .6-5.3 4.6 1.7 7.1L32 37.8l-6.4 3.5 1.7-7.1L22 29.6l7-.6z" fill="#fff" opacity=".85"/></svg>
+          </div>
+          <div class="ops-rotate-name"><%= topGirls.ambassador.name %></div>
+          <div class="ops-rotate-entity"><%= topGirls.ambassador.entity %></div>
+          <div class="ops-rotate-amount"><%= fmt(topGirls.ambassador.amount) %> <small>ر.س</small></div>
+          <div class="ops-rotate-meta">
+            <span>● <%= topGirls.ambassador.funds %> صندوقاً</span>
+            <span>● <%= topGirls.ambassador.pct %>% من الهدف</span>
+          </div>
+        </div>
+        <div class="ops-rotate-slide" data-rotate-key="entity">
+          <div class="ops-medal">
+            <svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="24" fill="#a87082" opacity=".22"/><path d="M16 44h32v6H16zM18 24l4-10h20l4 10v18H18z" fill="#a87082"/><path d="M22 28h20v10H22z" fill="#f6c4d3"/></svg>
+          </div>
+          <div class="ops-rotate-name"><%= topGirls.entity.name %></div>
+          <div class="ops-rotate-entity"><%= topGirls.entity.ambassadors %> سفيرة · <%= topGirls.entity.funds %> صندوقاً</div>
+          <div class="ops-rotate-amount"><%= fmt(topGirls.entity.amount) %> <small>ر.س</small></div>
+          <div class="ops-rotate-meta">
+            <span>● جهة #١</span>
+            <span>● <%= topGirls.entity.pct %>% أداء</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
 </div>
 
+<!-- ============ STYLES ============ -->
+<style>
+  /* اجعل هذه الصفحة تأخذ الشاشة كاملة */
+  body:has(.ops-root) {
+    background:
+      radial-gradient(1200px 700px at 20% -10%, rgba(178, 144, 121, .12), transparent 60%),
+      radial-gradient(1000px 600px at 110% 110%, rgba(212, 160, 23, .08), transparent 60%),
+      linear-gradient(180deg, #15100c 0%, #1a1410 100%);
+    overflow: hidden;
+  }
+  body:has(.ops-root) .container {
+    max-width: 1440px;
+    padding-inline: 14px;
+    padding-block: 10px;
+  }
+  body:has(.ops-root) .site-footer,
+  body:has(.ops-root) .wa-fab { display: none !important; }
+  body:has(.ops-root).has-bottom-nav,
+  body:has(.ops-root):has(.bottom-nav) { padding-bottom: 0; }
+
+  /* المتغيرات الخاصة بشاشة العمليات */
+  .ops-root {
+    --o-bg: #15100c;
+    --o-panel: linear-gradient(180deg, rgba(38, 28, 22, .92), rgba(28, 21, 16, .94));
+    --o-panel-2: linear-gradient(180deg, rgba(46, 34, 26, .85), rgba(34, 25, 19, .9));
+    --o-border: rgba(245, 240, 232, .08);
+    --o-border-2: rgba(245, 240, 232, .14);
+    --o-text: #f5f0e8;
+    --o-text-2: rgba(245, 240, 232, .68);
+    --o-mute: rgba(245, 240, 232, .42);
+    --o-primary: #c89d7e;
+    --o-primary-2: #b29079;
+    --o-gold: #fbd76b;
+    --o-gold-2: #d4a017;
+    --o-rose: #e3a1b4;
+    --o-ok: #4ade80;
+    --o-ok-2: #16a34a;
+    --o-danger: #f87171;
+    --o-glow-primary: 0 0 22px rgba(200, 157, 126, .35);
+    --o-glow-gold: 0 0 22px rgba(251, 215, 107, .35);
+    --o-glow-ok: 0 0 18px rgba(74, 222, 128, .35);
+
+    color: var(--o-text);
+    font-family: "IBM Plex Sans Arabic", "Segoe UI", "Cairo", sans-serif;
+    font-variant-numeric: tabular-nums;
+    height: calc(100dvh - 20px);
+    min-height: 640px;
+    display: grid;
+    grid-template-rows: 44px 1fr;
+    gap: 10px;
+  }
+
+  /* ===================== TOP BAR ===================== */
+  .ops-topbar {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    padding: 0 16px;
+    border: 1px solid var(--o-border);
+    background: var(--o-panel);
+    border-radius: 14px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    font-size: 12.5px;
+    color: var(--o-text-2);
+    position: relative;
+    overflow: hidden;
+  }
+  .ops-topbar::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(251, 215, 107, .45), transparent);
+  }
+  .ops-tb-left, .ops-tb-right {
+    display: flex; align-items: center; gap: 14px;
+  }
+  .ops-tb-right { justify-content: flex-end; }
+  .ops-tb-center { display: flex; justify-content: center; }
+
+  .ops-live { display: inline-flex; align-items: center; gap: 8px; font-weight: 800; color: var(--o-ok); }
+  .ops-live-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--o-ok);
+    box-shadow: 0 0 0 0 rgba(74, 222, 128, .6);
+    animation: opsPulse 1.6s ease-out infinite;
+  }
+  @keyframes opsPulse {
+    0%   { box-shadow: 0 0 0 0 rgba(74, 222, 128, .6); }
+    70%  { box-shadow: 0 0 0 12px rgba(74, 222, 128, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); }
+  }
+  .ops-divider {
+    width: 1px; height: 16px;
+    background: var(--o-border-2);
+    display: inline-block;
+  }
+  .ops-sync { display: inline-flex; align-items: center; gap: 6px; }
+  .ops-sync b { color: var(--o-gold); font-weight: 800; }
+  .ops-clock { display: inline-flex; align-items: center; gap: 6px; color: var(--o-text); }
+  .ops-clock b { color: var(--o-text); font-weight: 800; letter-spacing: .5px; font-size: 14px; }
+  .ops-greg { color: var(--o-text-2); font-weight: 600; }
+  .ops-brand { display: inline-flex; align-items: center; gap: 10px; }
+  .ops-brand-mark { color: var(--o-gold); animation: opsBlink 2s ease-in-out infinite; }
+  .ops-brand-name { font-weight: 800; color: var(--o-text); letter-spacing: .2px; }
+  .ops-brand-tag {
+    font-size: 10.5px; padding: 2px 10px; border-radius: 999px;
+    background: rgba(251, 215, 107, .12); color: var(--o-gold);
+    border: 1px solid rgba(251, 215, 107, .24);
+    font-weight: 700;
+  }
+  @keyframes opsBlink {
+    0%, 100% { opacity: 1; } 50% { opacity: .5; }
+  }
+
+  /* ===================== BENTO GRID ===================== */
+  .ops-bento {
+    display: grid;
+    grid-template-columns: 1.05fr 1.55fr 1.05fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    gap: 10px;
+    min-height: 0;
+  }
+  .ops-bento > .ops-hub {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+  }
+  /* عمود اليمين (في RTL يساوي الشمال البصري) */
+  .ops-bento > .ops-amb       { grid-column: 1; grid-row: 1; }
+  .ops-bento > .ops-funds     { grid-column: 1; grid-row: 2; }
+  .ops-bento > [data-rotor="boys"]  { grid-column: 1; grid-row: 3; }
+  /* عمود اليسار */
+  .ops-bento > .ops-total     { grid-column: 3; grid-row: 1; }
+  .ops-bento > .ops-complete  { grid-column: 3; grid-row: 2; }
+  .ops-bento > [data-rotor="girls"] { grid-column: 3; grid-row: 3; }
+
+  /* ===================== TILE BASE ===================== */
+  .ops-tile {
+    position: relative;
+    background: var(--o-panel);
+    border: 1px solid var(--o-border);
+    border-radius: 18px;
+    padding: 14px 16px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 0;
+    isolation: isolate;
+    transition: transform .35s var(--ease-out, cubic-bezier(.22,1,.36,1)),
+                border-color .35s, box-shadow .35s;
+  }
+  .ops-tile::before {
+    content: "";
+    position: absolute; inset: 0 0 auto 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(200, 157, 126, .55), transparent);
+    pointer-events: none;
+  }
+  .ops-tile::after {
+    content: "";
+    position: absolute;
+    width: 240px; height: 240px;
+    right: -90px; top: -90px;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(200, 157, 126, .10), transparent 70%);
+    pointer-events: none;
+    z-index: -1;
+  }
+  .ops-tile:hover {
+    transform: translateY(-2px);
+    border-color: var(--o-border-2);
+    box-shadow: 0 18px 40px -22px rgba(0, 0, 0, .8), var(--o-glow-primary);
+  }
+  .ops-tile-corner {
+    position: absolute;
+    top: 8px; left: 12px;
+    font-size: 9.5px; letter-spacing: 1.4px;
+    color: var(--o-mute);
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .ops-tile-head {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .ops-tile-icon {
+    width: 28px; height: 28px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 9px;
+    background: rgba(200, 157, 126, .14);
+    color: var(--o-primary);
+    border: 1px solid rgba(200, 157, 126, .25);
+  }
+  .ops-tile-icon svg { width: 16px; height: 16px; }
+  .ops-tile-icon.gold { background: rgba(251, 215, 107, .14); color: var(--o-gold); border-color: rgba(251, 215, 107, .25); }
+  .ops-tile-icon.rose { background: rgba(227, 161, 180, .14); color: var(--o-rose); border-color: rgba(227, 161, 180, .25); }
+  .ops-tile-icon.ok   { background: rgba(74, 222, 128, .14); color: var(--o-ok);   border-color: rgba(74, 222, 128, .25); }
+  .ops-tile-label {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--o-text-2);
+    flex: 1;
+    letter-spacing: .2px;
+  }
+  .ops-tile-trend {
+    font-size: 11px; font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: rgba(245, 240, 232, .06);
+    color: var(--o-text-2);
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .ops-tile-trend.up   { background: rgba(74, 222, 128, .12); color: var(--o-ok); }
+  .ops-tile-trend.down { background: rgba(248, 113, 113, .12); color: var(--o-danger); }
+  .ops-blink {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--o-ok); display: inline-block;
+    animation: opsPulse 1.4s ease-out infinite;
+  }
+  .ops-tile-value {
+    font-size: clamp(28px, 3.2vw, 40px);
+    font-weight: 800;
+    color: var(--o-text);
+    letter-spacing: -.5px;
+    line-height: 1.05;
+    text-align: left;
+    direction: ltr;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 0 20px rgba(200, 157, 126, .25);
+  }
+  .ops-tile-value.big { font-size: clamp(26px, 2.8vw, 34px); }
+  .ops-tile-value small { font-size: .42em; color: var(--o-text-2); margin-inline-start: 6px; font-weight: 700; }
+  .ops-tile-foot {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 11.5px; color: var(--o-mute);
+    font-weight: 600;
+    margin-top: auto;
+  }
+  .ops-tile-foot b { color: var(--o-text); font-weight: 800; font-size: 13px; }
+
+  /* ===================== MINI BARS ===================== */
+  .ops-mini-bars { display: flex; flex-direction: column; gap: 6px; }
+  .ops-mini-bar {
+    display: grid;
+    grid-template-columns: 92px 1fr 32px;
+    align-items: center;
+    gap: 8px;
+    font-size: 11.5px;
+  }
+  .ops-mini-bar .lbl { color: var(--o-text-2); font-weight: 600; }
+  .ops-mini-bar .val { color: var(--o-text); font-weight: 800; text-align: left; direction: ltr; }
+  .ops-mini-bar .bar {
+    height: 4px; border-radius: 999px;
+    background: rgba(245, 240, 232, .06); overflow: hidden;
+    position: relative;
+  }
+  .ops-mini-bar .bar i {
+    display: block; height: 100%;
+    width: var(--w, 0%);
+    background: linear-gradient(90deg, var(--o-primary), var(--o-gold));
+    border-radius: 999px;
+    box-shadow: 0 0 8px rgba(200, 157, 126, .5);
+    animation: opsBarGrow 1.2s cubic-bezier(.22,1,.36,1) both;
+  }
+  @keyframes opsBarGrow { from { width: 0%; } }
+
+  /* ===================== PILLS ===================== */
+  .ops-tile-row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .ops-tile-row.tight { gap: 6px; margin-top: 2px; }
+  .ops-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(245, 240, 232, .06);
+    border: 1px solid rgba(245, 240, 232, .08);
+    color: var(--o-text-2);
+    font-size: 11.5px; font-weight: 600;
+  }
+  .ops-pill b { color: var(--o-text); font-weight: 800; }
+  .ops-pill-live { background: rgba(74, 222, 128, .08); border-color: rgba(74, 222, 128, .22); color: var(--o-ok); }
+  .ops-pill-soft { background: rgba(200, 157, 126, .08); border-color: rgba(200, 157, 126, .2); color: var(--o-primary); }
+  .ops-pill-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--o-ok); animation: opsPulse 1.6s ease-out infinite;
+  }
+  .ops-pill-dot.ok { background: var(--o-ok); }
+
+  /* ===================== STACK BAR ===================== */
+  .ops-stack-bar {
+    display: flex; gap: 2px;
+    height: 6px;
+    border-radius: 999px;
+    background: rgba(245, 240, 232, .06);
+    overflow: hidden;
+  }
+  .ops-stack-bar .seg {
+    height: 100%;
+    border-radius: 999px;
+    transform: scaleX(0); transform-origin: right;
+    animation: opsSegGrow 1.1s cubic-bezier(.22,1,.36,1) forwards;
+  }
+  .ops-stack-bar .seg-a { background: linear-gradient(90deg, var(--o-ok), #4ade80); width: var(--w, 0%); }
+  .ops-stack-bar .seg-b { background: linear-gradient(90deg, var(--o-gold-2), var(--o-gold)); width: var(--w, 0%); animation-delay: .15s; }
+  @keyframes opsSegGrow { to { transform: scaleX(1); } }
+
+  /* ===================== PROGRESS BAR ===================== */
+  .ops-bar {
+    height: 6px;
+    border-radius: 999px;
+    background: rgba(245, 240, 232, .06);
+    overflow: hidden;
+    position: relative;
+  }
+  .ops-bar span {
+    display: block; height: 100%;
+    width: var(--w, 0%);
+    background: linear-gradient(90deg, var(--o-primary), var(--o-gold));
+    border-radius: 999px;
+    box-shadow: 0 0 12px rgba(200, 157, 126, .5);
+    position: relative;
+  }
+  .ops-bar span::after {
+    content: "";
+    position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.35), transparent);
+    transform: translateX(-100%);
+    animation: opsShine 2.4s ease-in-out infinite;
+  }
+  @keyframes opsShine {
+    0%   { transform: translateX(-100%); }
+    60%  { transform: translateX(100%); }
+    100% { transform: translateX(100%); }
+  }
+
+  /* ===================== SPARKLINE ===================== */
+  .ops-sparkline {
+    height: 28px; width: 100%;
+    color: var(--o-primary);
+    margin-top: auto;
+    opacity: .8;
+    filter: drop-shadow(0 0 6px rgba(200, 157, 126, .35));
+  }
+  .ops-sparkline polyline {
+    stroke-dasharray: 600;
+    stroke-dashoffset: 600;
+    animation: opsSparkDraw 1.4s ease-out forwards .35s;
+  }
+  @keyframes opsSparkDraw { to { stroke-dashoffset: 0; } }
+
+  /* ===================== LIVE GRID (الأنشطة الحية) ===================== */
+  .ops-live-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .ops-live-cell {
+    padding: 8px 10px;
+    background: rgba(245, 240, 232, .04);
+    border: 1px solid var(--o-border);
+    border-radius: 12px;
+    text-align: center;
+  }
+  .ops-live-cell .lv {
+    font-size: 22px; font-weight: 800; color: var(--o-text);
+    direction: ltr; font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+  }
+  .ops-live-cell .lb {
+    font-size: 11px; color: var(--o-text-2); margin-top: 4px;
+    font-weight: 600;
+  }
+
+  /* ===================== ROTATING TILES ===================== */
+  .ops-rotate { padding: 0; }
+  .ops-rotate-head {
+    padding: 14px 16px 6px;
+  }
+  .ops-rotate-titles { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+  .ops-rotate-sub {
+    font-size: 10.5px;
+    color: var(--o-gold);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .ops-rotate-dots { display: inline-flex; gap: 5px; }
+  .ops-rotate-dots .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: rgba(245, 240, 232, .15);
+    transition: all .3s;
+  }
+  .ops-rotate-dots .dot.active {
+    background: var(--o-gold);
+    box-shadow: 0 0 8px var(--o-gold);
+    transform: scaleX(2.4);
+    border-radius: 999px;
+  }
+  .ops-rotate-stage {
+    position: relative;
+    flex: 1;
+    overflow: hidden;
+    padding: 4px 16px 14px;
+  }
+  .ops-rotate-slide {
+    position: absolute; inset: 4px 16px 14px;
+    display: flex; flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    opacity: 0;
+    transform: translateY(14px) scale(.96);
+    transition: opacity .55s var(--ease-out, cubic-bezier(.22,1,.36,1)),
+                transform .55s var(--ease-out, cubic-bezier(.22,1,.36,1));
+    pointer-events: none;
+  }
+  .ops-rotate-slide.active {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+  }
+  .ops-medal {
+    width: 56px; height: 56px;
+    filter: drop-shadow(0 6px 16px rgba(251, 215, 107, .4));
+    animation: opsMedalSpin 6s ease-in-out infinite;
+  }
+  @keyframes opsMedalSpin {
+    0%, 100% { transform: rotate(-4deg) scale(1); }
+    50%      { transform: rotate(4deg) scale(1.04); }
+  }
+  .ops-rotate-name {
+    font-size: 17px; font-weight: 800;
+    color: var(--o-text);
+    text-align: center;
+    line-height: 1.2;
+    margin-top: 2px;
+  }
+  .ops-rotate-entity {
+    font-size: 11.5px;
+    color: var(--o-text-2);
+    text-align: center;
+    font-weight: 600;
+  }
+  .ops-rotate-amount {
+    font-size: 22px; font-weight: 800;
+    color: var(--o-gold);
+    direction: ltr;
+    font-variant-numeric: tabular-nums;
+    margin-top: 2px;
+    text-shadow: 0 0 18px rgba(251, 215, 107, .4);
+  }
+  .ops-rotate-amount small {
+    font-size: .5em; color: var(--o-text-2); margin-inline-start: 4px; font-weight: 700;
+  }
+  .ops-rotate-meta {
+    display: flex; gap: 12px;
+    font-size: 10.5px;
+    color: var(--o-mute);
+    font-weight: 700;
+    margin-top: 2px;
+  }
+
+  /* ===================== CENTRAL HUB ===================== */
+  .ops-hub {
+    position: relative;
+    background:
+      radial-gradient(80% 60% at 50% 40%, rgba(178, 144, 121, .12), transparent 60%),
+      linear-gradient(180deg, rgba(38, 28, 22, .92), rgba(28, 21, 16, .96));
+    border: 1px solid var(--o-border-2);
+    border-radius: 22px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    isolation: isolate;
+    box-shadow:
+      inset 0 1px 0 rgba(245, 240, 232, .04),
+      0 30px 80px -40px rgba(0, 0, 0, .9);
+  }
+  .ops-hub-corner {
+    position: absolute; top: 12px; left: 16px;
+    font-size: 10px; letter-spacing: 1.6px;
+    color: var(--o-mute);
+    font-weight: 700;
+    z-index: 2;
+  }
+  .ops-hub-grid-bg {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(245, 240, 232, .035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(245, 240, 232, .035) 1px, transparent 1px);
+    background-size: 28px 28px;
+    mask-image: radial-gradient(closest-side at 50% 50%, #000 30%, transparent 80%);
+    -webkit-mask-image: radial-gradient(closest-side at 50% 50%, #000 30%, transparent 80%);
+    z-index: 0;
+  }
+  .ops-hub-rings {
+    position: absolute; inset: 0;
+    display: grid; place-items: center;
+    z-index: 0;
+  }
+  .ops-hub-rings .ring {
+    position: absolute;
+    border: 1px solid rgba(245, 240, 232, .07);
+    border-radius: 50%;
+    animation: opsRingPulse 5s ease-out infinite;
+  }
+  .ops-hub-rings .r1 { width: 280px; height: 280px; }
+  .ops-hub-rings .r2 { width: 380px; height: 380px; animation-delay: 1.2s; }
+  .ops-hub-rings .r3 { width: 480px; height: 480px; animation-delay: 2.4s; }
+  @keyframes opsRingPulse {
+    0%   { opacity: .25; transform: scale(.95); }
+    50%  { opacity: .55; }
+    100% { opacity: .15; transform: scale(1.05); }
+  }
+  .ops-hub-orbit {
+    position: absolute;
+    inset: 50% auto auto 50%;
+    transform: translate(50%, -50%);
+    width: 340px; height: 340px;
+    z-index: 0;
+  }
+  .ops-hub-orbit svg { width: 100%; height: 100%; }
+  .ops-progress-ring {
+    filter: drop-shadow(0 0 8px rgba(251, 215, 107, .35));
+  }
+
+  .ops-hub-content {
+    position: relative; z-index: 2;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    padding: 26px 18px 16px;
+    flex: 1;
+    gap: 10px;
+  }
+  .ops-hub-kicker {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 14px;
+    border-radius: 999px;
+    background: rgba(251, 215, 107, .12);
+    border: 1px solid rgba(251, 215, 107, .28);
+    color: var(--o-gold);
+    font-size: 11.5px; font-weight: 800;
+    letter-spacing: .5px;
+  }
+  .ops-hub-kicker-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--o-gold); animation: opsBlink 1.6s ease-in-out infinite;
+  }
+  .ops-hub-title {
+    margin: 4px 0 0;
+    font-size: clamp(32px, 4.4vw, 52px);
+    font-weight: 800;
+    color: var(--o-text);
+    letter-spacing: -.5px;
+    line-height: 1.05;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-shadow:
+      0 0 40px rgba(251, 215, 107, .35),
+      0 0 80px rgba(200, 157, 126, .25);
+  }
+  .ops-hub-crescent {
+    color: var(--o-gold);
+    display: inline-flex;
+    filter: drop-shadow(0 0 12px rgba(251, 215, 107, .6));
+    animation: opsCrescentFloat 4s ease-in-out infinite;
+  }
+  .ops-hub-crescent svg { width: 36px; height: 36px; }
+  @keyframes opsCrescentFloat {
+    0%, 100% { transform: translateY(0) rotate(-8deg); }
+    50%      { transform: translateY(-6px) rotate(8deg); }
+  }
+  .ops-hub-hijri {
+    display: inline-flex; align-items: baseline; gap: 10px;
+    margin-top: 8px;
+    padding: 10px 22px;
+    border-radius: 16px;
+    background: rgba(245, 240, 232, .04);
+    border: 1px solid var(--o-border);
+  }
+  .ops-hub-hijri .hd {
+    font-size: clamp(30px, 3.6vw, 42px);
+    font-weight: 800;
+    color: var(--o-gold);
+    line-height: 1;
+    text-shadow: 0 0 18px rgba(251, 215, 107, .45);
+  }
+  .ops-hub-hijri .hm {
+    font-size: clamp(18px, 2.4vw, 24px);
+    font-weight: 800;
+    color: var(--o-text);
+  }
+  .ops-hub-hijri .hy {
+    font-size: clamp(13px, 1.6vw, 16px);
+    font-weight: 700;
+    color: var(--o-text-2);
+  }
+  .ops-hub-progress-text {
+    display: flex; gap: 16px; align-items: baseline;
+    margin-top: 8px;
+    font-size: 13.5px; color: var(--o-text-2);
+    direction: ltr;
+    font-variant-numeric: tabular-nums;
+  }
+  .ops-hub-progress-text > span { font-weight: 700; color: var(--o-text); }
+  .ops-hub-progress-text small { color: var(--o-text-2); margin: 0 4px; font-size: .8em; }
+  .ops-hub-progress-text b {
+    font-size: 22px; font-weight: 800; color: var(--o-gold);
+    text-shadow: 0 0 16px rgba(251, 215, 107, .4);
+  }
+  .ops-hub-update {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 8px 16px;
+    border-radius: 999px;
+    background: rgba(74, 222, 128, .08);
+    border: 1px solid rgba(74, 222, 128, .25);
+    color: var(--o-ok);
+    font-size: 12px; font-weight: 700;
+    margin-top: 6px;
+  }
+  .ops-hub-update-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--o-ok);
+    box-shadow: 0 0 0 0 rgba(74, 222, 128, .6);
+    animation: opsPulse 1.4s ease-out infinite;
+  }
+  .ops-hub-update-label { color: var(--o-text-2); font-weight: 600; }
+  .ops-hub-update b { color: var(--o-ok); font-weight: 800; }
+
+  /* ===================== TICKER (شريط البث المباشر داخل الـ hub) ===================== */
+  .ops-hub-ticker {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background: rgba(15, 11, 8, .55);
+    border-top: 1px solid var(--o-border);
+    z-index: 2;
+  }
+  .ops-hub-ticker-tag {
+    font-size: 10.5px; font-weight: 800;
+    color: var(--o-danger);
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(248, 113, 113, .12);
+    border: 1px solid rgba(248, 113, 113, .3);
+    letter-spacing: .5px;
+    white-space: nowrap;
+  }
+  .ops-hub-ticker-track {
+    position: relative; overflow: hidden;
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+    height: 22px;
+  }
+  .ops-hub-ticker-loop {
+    display: inline-flex; gap: 14px;
+    white-space: nowrap;
+    animation: opsTicker 36s linear infinite;
+    font-size: 12px;
+    color: var(--o-text-2);
+    font-weight: 600;
+    line-height: 22px;
+  }
+  .ops-hub-ticker-loop:hover { animation-play-state: paused; }
+  .tk-item { color: var(--o-text); }
+  .tk-sep { color: var(--o-gold); opacity: .5; }
+  @keyframes opsTicker {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  /* ===================== ENTER ANIMATION ===================== */
+  @keyframes opsFadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .ops-root .ops-tile,
+  .ops-root .ops-hub,
+  .ops-root .ops-topbar {
+    animation: opsFadeIn .6s cubic-bezier(.22,1,.36,1) both;
+  }
+  .ops-root .ops-topbar { animation-delay: .02s; }
+  .ops-root .ops-amb     { animation-delay: .08s; }
+  .ops-root .ops-funds   { animation-delay: .16s; }
+  .ops-root .ops-rotate[data-rotor="boys"]  { animation-delay: .24s; }
+  .ops-root .ops-hub     { animation-delay: .12s; }
+  .ops-root .ops-total    { animation-delay: .12s; }
+  .ops-root .ops-complete { animation-delay: .20s; }
+  .ops-root .ops-rotate[data-rotor="girls"] { animation-delay: .28s; }
+
+  /* ===================== RESPONSIVE ===================== */
+  @media (max-width: 1080px) {
+    .ops-bento {
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr 1.4fr 1fr 1fr;
+    }
+    .ops-bento > .ops-hub     { grid-column: 1 / span 2; grid-row: 3; }
+    .ops-bento > .ops-amb     { grid-column: 1; grid-row: 1; }
+    .ops-bento > .ops-funds   { grid-column: 2; grid-row: 1; }
+    .ops-bento > .ops-total    { grid-column: 1; grid-row: 2; }
+    .ops-bento > .ops-complete { grid-column: 2; grid-row: 2; }
+    .ops-bento > [data-rotor="boys"]  { grid-column: 1; grid-row: 4; }
+    .ops-bento > [data-rotor="girls"] { grid-column: 2; grid-row: 4; }
+    .ops-root { height: auto; min-height: 100dvh; }
+    body:has(.ops-root) { overflow: auto; }
+  }
+  @media (max-width: 720px) {
+    .ops-topbar { font-size: 11px; padding: 0 10px; }
+    .ops-tb-center .ops-brand-tag { display: none; }
+    .ops-bento {
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto auto auto auto auto;
+      gap: 8px;
+    }
+    .ops-bento > .ops-hub { grid-column: 1 / -1; grid-row: 1; min-height: 360px; }
+    .ops-bento > .ops-amb     { grid-row: 2; }
+    .ops-bento > .ops-funds   { grid-row: 2; }
+    .ops-bento > .ops-total    { grid-row: 3; }
+    .ops-bento > .ops-complete { grid-row: 3; }
+    .ops-bento > [data-rotor="boys"]  { grid-row: 4; }
+    .ops-bento > [data-rotor="girls"] { grid-row: 4; }
+    .ops-hub-title { font-size: 28px; }
+    .ops-hub-hijri .hd { font-size: 28px; }
+    .ops-hub-hijri .hm { font-size: 18px; }
+    .ops-tile { padding: 12px; gap: 8px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ops-root *,
+    .ops-root *::before,
+    .ops-root *::after {
+      animation-duration: .01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: .01ms !important;
+    }
+  }
+</style>
+
+<!-- ============ SCRIPT ============ -->
 <script>
 (function () {
-  const root = document.querySelector('.dash-root');
+  const root = document.querySelector('.ops-root');
   if (!root) return;
 
+  // ============ تحويل الأرقام للعربية الهندية ============
+  const arabicDigits = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+  const toArabic = (n) => String(n).replace(/[0-9]/g, d => arabicDigits[+d]);
+
+  // ============ تنسيق رقم بالخانات ============
+  const fmtNum = (n) => Math.round(Number(n) || 0).toLocaleString('en-US');
+
+  // ============ Count-up للأرقام الكبيرة ============
   function countUp(el) {
-    const target = Number(el.dataset.target || 0);
-    const suffix = el.dataset.suffix || '';
-    const duration = 1400;
+    const target = Number(el.dataset.num || 0);
+    if (!target || target < 1) { el.textContent = '0'; return; }
+    const duration = 1500;
     const start = performance.now();
-    const fmt = (n) => Math.round(n).toLocaleString('en-US') + suffix;
-    // ease-out-expo-ish
     const ease = (t) => 1 - Math.pow(1 - t, 4);
     function tick(now) {
       const p = Math.min(1, (now - start) / duration);
-      el.textContent = fmt(target * ease(p));
+      el.textContent = fmtNum(target * ease(p));
       if (p < 1) requestAnimationFrame(tick);
-      else el.textContent = fmt(target);
+      else el.textContent = fmtNum(target);
     }
     requestAnimationFrame(tick);
   }
+  setTimeout(() => {
+    root.querySelectorAll('[data-num]').forEach((el, i) => {
+      setTimeout(() => countUp(el), 180 + i * 80);
+    });
+  }, 80);
 
-  // Trigger after first paint so initial states (opacity 0, width 0) are rendered first
-  requestAnimationFrame(() => {
-    setTimeout(() => {
-      root.classList.add('loaded');
-      root.querySelectorAll('.dash-num[data-target]').forEach((el, i) => {
-        setTimeout(() => countUp(el), 250 + i * 80);
-      });
-    }, 60);
-  });
+  // ============ ساعة النظام ============
+  const clockEl = document.getElementById('opsClock');
+  function tickClock() {
+    const d = new Date();
+    const hh = String(d.getHours()).padStart(2, '0');
+    const mm = String(d.getMinutes()).padStart(2, '0');
+    const ss = String(d.getSeconds()).padStart(2, '0');
+    if (clockEl) clockEl.textContent = toArabic(`${hh}:${mm}:${ss}`);
+  }
+  tickClock();
+  setInterval(tickClock, 1000);
+
+  // ============ التاريخ الميلادي + الهجري ============
+  try {
+    const now = new Date();
+    const gregEl = document.getElementById('opsGreg');
+    if (gregEl) {
+      const g = new Intl.DateTimeFormat('ar-EG-u-nu-arab', {
+        day: 'numeric', month: 'long', year: 'numeric'
+      }).format(now);
+      gregEl.textContent = g + ' م';
+    }
+
+    // الهجري — Umm al-Qura
+    const hijriFmt = new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura-nu-arab', {
+      day: 'numeric', month: 'long', year: 'numeric'
+    });
+    const parts = hijriFmt.formatToParts(now);
+    const get = (t) => (parts.find(p => p.type === t) || {}).value || '';
+    const dayEl = document.getElementById('opsHijriDay');
+    const monthEl = document.getElementById('opsHijriMonth');
+    const yearEl = document.getElementById('opsHijriYear');
+    if (dayEl)   dayEl.textContent   = get('day');
+    if (monthEl) monthEl.textContent = get('month');
+    if (yearEl)  yearEl.textContent  = get('year') + ' هـ';
+  } catch (e) {
+    // المتصفحات القديمة — نترك القيم الافتراضية
+  }
+
+  // ============ آخر تحديث (يعد التواني تصاعدياً) ============
+  let syncSeconds = 8;
+  const syncAgoEl = document.getElementById('opsSyncAgo');
+  const syncBigEl = document.getElementById('opsLastSyncBig');
+  function formatAgo(s) {
+    if (s < 60)   return 'قبل ' + toArabic(s) + ' ث';
+    if (s < 3600) return 'قبل ' + toArabic(Math.floor(s / 60)) + ' د';
+    return 'قبل ' + toArabic(Math.floor(s / 3600)) + ' س';
+  }
+  function tickSync() {
+    syncSeconds++;
+    if (syncAgoEl) syncAgoEl.textContent = formatAgo(syncSeconds);
+    if (syncBigEl) {
+      const sec = syncSeconds % 60;
+      const min = Math.floor(syncSeconds / 60);
+      if (min === 0) syncBigEl.textContent = 'قبل ' + toArabic(sec) + ' ثانية';
+      else syncBigEl.textContent = 'قبل ' + toArabic(min) + ' د و ' + toArabic(sec) + ' ث';
+    }
+    // كل ~60 ثانية: محاكاة عملية مزامنة
+    if (syncSeconds >= 60) {
+      syncSeconds = 0;
+      if (syncAgoEl) {
+        syncAgoEl.style.color = 'var(--o-ok)';
+        setTimeout(() => syncAgoEl.style.color = '', 1200);
+      }
+    }
+  }
+  tickSync();
+  setInterval(tickSync, 1000);
+
+  // ============ تبديل المحتوى داخل الشرائح الدوارة ============
+  function setupRotator(panel) {
+    const slides = Array.from(panel.querySelectorAll('.ops-rotate-slide'));
+    const dots   = Array.from(panel.querySelectorAll('.ops-rotate-dots .dot'));
+    const subEl  = panel.querySelector('[data-rotate-sub]');
+    if (slides.length < 2) return;
+
+    const subLabels = { amb: 'سفير', entity: 'جهة' };
+    let idx = 0;
+    function show(i) {
+      slides.forEach((s, k) => s.classList.toggle('active', k === i));
+      dots.forEach((d, k) => d.classList.toggle('active', k === i));
+      const key = slides[i].dataset.rotateKey;
+      if (subEl && subLabels[key]) subEl.textContent = subLabels[key];
+    }
+    show(0);
+    setInterval(() => {
+      idx = (idx + 1) % slides.length;
+      show(idx);
+    }, 6000);
+  }
+  root.querySelectorAll('.ops-rotate').forEach(setupRotator);
+
+  // ============ تحديث متوسط الأداء (محاكاة حية) ============
+  const perfEl = document.getElementById('opsAvgPerf');
+  let perfVal = 72;
+  setInterval(() => {
+    perfVal += (Math.random() < 0.5 ? -1 : 1);
+    perfVal = Math.max(64, Math.min(82, perfVal));
+    if (perfEl) perfEl.textContent = toArabic(perfVal) + '٪';
+  }, 4500);
+
 })();
 </script>
 

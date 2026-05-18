@@ -4339,9 +4339,10 @@ button.quick-action-card {
 
 /* ============================
    29) Flat White Theme Override
+   (لا يطبَّق على صفحة غرفة العمليات)
    ============================ */
-html,
-body {
+html:not(:has(.ops-root)),
+body:not(:has(.ops-root)) {
   background: var(--bg) !important;
 }
 
@@ -4349,9 +4350,9 @@ body:has(.dash-root) {
   background: var(--bg) !important;
 }
 
-*,
-*::before,
-*::after {
+body:not(:has(.ops-root)) *,
+body:not(:has(.ops-root)) *::before,
+body:not(:has(.ops-root)) *::after {
   box-shadow: none !important;
   text-shadow: none !important;
 }

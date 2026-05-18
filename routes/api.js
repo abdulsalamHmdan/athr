@@ -589,4 +589,25 @@ router.get("/out/ambassadors", requireOutApiKey, async (req, res) => {
   }
 });
 
+router.get("/out/boxes", requireOutApiKey, async (req, res) => {
+  try {
+    const funds = await AllFund.find(
+      {},
+      "name client_id id price_goal total done",
+    ).lean();
+    const data = funds.map((f) => ({
+      name: f.name,
+      client_id: f.client_id,
+      id: f.id,
+      price_goal: f.price_goal,
+      total: f.total,
+      done: f.done,
+    }));
+    res.json({ count: data.length, users: data });
+  } catch (e) {
+    console.error("out funds error:", e);
+    res.status(500).json({ error: "failed" });
+  }
+});
+
 module.exports = router;
