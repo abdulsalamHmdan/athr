@@ -92,10 +92,10 @@ router.get("/dashboard", async (req, res) => {
 
     // نأخذ فقط الصناديق المعتمدة: a = مكتمل، b = نشط. نتجاهل c تماماً.
     const funds = await AllFund.find(
-      { done: { $in: ["a", "b"] },currentTotal: { $gt: 0 }, },
+      { currentTotal: { $gt: 0 }, },
       "client_id name currentTotal price_goal done updatedAt",
     ).lean();
-    console.log("Fetched funds count:", funds.length);
+    // console.log("Fetched funds count:", funds.length);
 
     let totalDonations = 0;
     let donationsGoalSum = 0;
