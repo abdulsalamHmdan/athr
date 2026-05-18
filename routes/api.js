@@ -90,10 +90,12 @@ router.get("/dashboard", async (req, res) => {
       }
     }
 
+    // نأخذ فقط الصناديق المعتمدة: a = مكتمل، b = نشط. نتجاهل c تماماً.
     const funds = await AllFund.find(
-      { client_id: { $in: clientIds } },
+      { done: { $in: ["a", "b"] },currentTotal: { $gt: 0 }, },
       "client_id name currentTotal price_goal done updatedAt",
     ).lean();
+    console.log("Fetched funds count:", funds.length);
 
     let totalDonations = 0;
     let donationsGoalSum = 0;
@@ -120,18 +122,16 @@ router.get("/dashboard", async (req, res) => {
       if (f.done === "a") {
         fundsCompleted++;
         if (updatedToday) fundsCompletedToday++;
-      } else {
+      } else if (f.done === "b") {
         fundsActive++;
       }
       if (updatedToday) donationsToday += amount;
 
       totalsByClient.set(cid, (totalsByClient.get(cid) || 0) + amount);
       goalsByClient.set(cid, (goalsByClient.get(cid) || 0) + goal);
-      if (amount > 0) {
-        countByClient.set(cid, (countByClient.get(cid) || 0) + 1);
-        if (f.done === "a") {
-          completedByClient.set(cid, (completedByClient.get(cid) || 0) + 1);
-        }
+      countByClient.set(cid, (countByClient.get(cid) || 0) + 1);
+      if (f.done === "a") {
+        completedByClient.set(cid, (completedByClient.get(cid) || 0) + 1);
       }
     }
 
