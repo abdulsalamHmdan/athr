@@ -1389,16 +1389,16 @@
     setText('dashFundsTrend', '▲ ' + toArabic(s.fundsActive || 0));
 
     // ===== الهَب — حلقة التقدّم وإجمالي التبرعات =====
-    const donationsPct = pctOf(s.totalDonations || 0, s.donationsGoal || 0);
+    const donationsPct = pctOf(s.totalDonations || 0, 750000);
     const ring = document.getElementById('dashHubProgressRing');
     if (ring) ring.setAttribute('stroke-dashoffset', HUB_RING_LEN - (HUB_RING_LEN * donationsPct / 100));
     setNumber(document.getElementById('dashHubCurrentAmount'), s.totalDonations || 0);
-    setNumber(document.getElementById('dashHubGoalAmount'), s.donationsGoal || 0);
+    setNumber(document.getElementById('dashHubGoalAmount'), 750000);
     setText('dashHubPct', donationsPct + '%');
 
     // ===== إجمالي التبرعات (البطاقة اليمنى) =====
     setNumber(document.getElementById('dashTotalAmount'), s.totalDonations || 0);
-    setText('dashTotalGoal', fmtNum(s.donationsGoal || 0));
+    setText('dashTotalGoal', fmtNum(750000));
     setText('dashTotalPct', donationsPct + '%');
     setBarWidth('dashTotalBar', donationsPct);
     setNumber(document.getElementById('dashTotalToday'), s.donationsToday || 0);
