@@ -98,16 +98,16 @@
       </div>
     </section>
 
-    <!-- ROTATING PANEL — BOYS section -->
-    <section class="ops-tile ops-rotate" data-rotor="boys" aria-label="المراكز الأولى — قسم البنين">
+    <!-- ROTATING PANEL — Top Entities (مجمعات / دور) -->
+    <section class="ops-tile ops-rotate ops-leaderboard" data-rotor="topEntities" aria-label="أفضل المجمعات والدور">
       <div class="ops-tile-corner">T·03</div>
       <div class="ops-tile-head ops-rotate-head">
         <span class="ops-tile-icon gold">
           <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg>
         </span>
         <div class="ops-rotate-titles">
-          <span class="ops-tile-label">المركز الأول · بنين</span>
-          <span class="ops-rotate-sub" data-rotate-sub>سفير</span>
+          <span class="ops-tile-label">أفضل المجمعات والدور</span>
+          <span class="ops-rotate-sub" data-rotate-sub>المجمعات</span>
         </div>
         <div class="ops-rotate-dots" data-rotate-dots>
           <span class="dot active"></span>
@@ -115,32 +115,18 @@
         </div>
       </div>
 
-      <div class="ops-rotate-stage">
-        <!-- slide 1: Top Ambassador (boys) -->
-        <div class="ops-rotate-slide active" data-rotate-key="amb">
-          <div class="ops-medal">
-            <svg viewBox="0 0 64 64"><defs><linearGradient id="goldGradBoys" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#fbd76b"/><stop offset="1" stop-color="#b07a18"/></linearGradient></defs><circle cx="32" cy="34" r="22" fill="url(#goldGradBoys)" opacity=".95"/><path d="M22 8h20l-4 18H26z" fill="#9d7b64"/><path d="M32 22l3 7 7 .6-5.3 4.6 1.7 7.1L32 37.8l-6.4 3.5 1.7-7.1L22 29.6l7-.6z" fill="#fff" opacity=".85"/></svg>
-          </div>
-          <div class="ops-rotate-name" id="dashTopBoysAmbName">—</div>
-          <div class="ops-rotate-entity" id="dashTopBoysAmbEntity">—</div>
-          <div class="ops-rotate-amount"><span id="dashTopBoysAmbAmount">0</span> <small>ر.س</small></div>
-          <div class="ops-rotate-meta">
-            <span>● <b id="dashTopBoysAmbFunds">0</b> صندوقاً</span>
-            <span>● <b id="dashTopBoysAmbPct">0</b>% من الهدف</span>
-          </div>
+      <div class="ops-rotate-stage ops-lb-stage">
+        <!-- slide 1: Top مجمعات -->
+        <div class="ops-rotate-slide active ops-lb-slide" data-rotate-key="boys">
+          <ol class="ops-lb-list" id="dashTopEntitiesBoysList">
+            <li class="ops-lb-empty">لا توجد بيانات بعد…</li>
+          </ol>
         </div>
-        <!-- slide 2: Top Entity (boys) -->
-        <div class="ops-rotate-slide" data-rotate-key="entity">
-          <div class="ops-medal">
-            <svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="24" fill="#9d7b64" opacity=".22"/><path d="M16 44h32v6H16zM18 24l4-10h20l4 10v18H18z" fill="#9d7b64"/><path d="M22 28h20v10H22z" fill="#fbd76b"/></svg>
-          </div>
-          <div class="ops-rotate-name" id="dashTopBoysEntName">—</div>
-          <div class="ops-rotate-entity" id="dashTopBoysEntSub">— سفيراً · — صندوقاً</div>
-          <div class="ops-rotate-amount"><span id="dashTopBoysEntAmount">0</span> <small>ر.س</small></div>
-          <div class="ops-rotate-meta">
-            <span>● جهة #١</span>
-            <span>● <b id="dashTopBoysEntPct">0</b>% أداء</span>
-          </div>
+        <!-- slide 2: Top دور -->
+        <div class="ops-rotate-slide ops-lb-slide" data-rotate-key="girls">
+          <ol class="ops-lb-list" id="dashTopEntitiesGirlsList">
+            <li class="ops-lb-empty">لا توجد بيانات بعد…</li>
+          </ol>
         </div>
       </div>
     </section>
@@ -249,49 +235,16 @@
       </div>
     </section>
 
-    <section class="ops-tile ops-complete" aria-label="الأنشطة الحية">
-      <div class="ops-tile-corner">L·05</div>
-      <div class="ops-tile-head">
-        <span class="ops-tile-icon ok">
-          <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 100 20 10 10 0 000-20zm-1 14.41L6.59 12 8 10.59l3 3 5-5L17.41 10 11 16.41z"/></svg>
-        </span>
-        <span class="ops-tile-label">الأنشطة الحية</span>
-        <span class="ops-tile-trend"><span class="ops-blink"></span> الآن</span>
-      </div>
-      <div class="ops-live-grid">
-        <div class="ops-live-cell">
-          <div class="lv" id="dashLiveEntities">0</div>
-          <div class="lb">جهة مشاركة</div>
-        </div>
-        <div class="ops-live-cell">
-          <div class="lv" id="dashLiveAmbassadors">0</div>
-          <div class="lb">سفير على الخط</div>
-        </div>
-        <div class="ops-live-cell">
-          <div class="lv" id="dashLiveDonationsToday">0</div>
-          <div class="lb">تبرع اليوم (ر.س)</div>
-        </div>
-        <div class="ops-live-cell">
-          <div class="lv" id="dashLiveFundsCompleted">0</div>
-          <div class="lb">صندوق اكتمل</div>
-        </div>
-      </div>
-      <div class="ops-tile-foot">
-        <span>متوسط الأداء</span>
-        <b id="opsAvgPerf">٧٢٪</b>
-      </div>
-    </section>
-
-    <!-- ROTATING PANEL — GIRLS section -->
-    <section class="ops-tile ops-rotate" data-rotor="girls" aria-label="المراكز الأولى — قسم البنات">
+    <!-- ROTATING PANEL — أفضل ٢٠ سفيراً (مقسّمين على مجموعتين) — يمتد على صفّين -->
+    <section class="ops-tile ops-rotate ops-leaderboard ops-leaderboard-tall" data-rotor="topAmbs" aria-label="أفضل ٢٠ سفيراً">
       <div class="ops-tile-corner">T·06</div>
       <div class="ops-tile-head ops-rotate-head">
-        <span class="ops-tile-icon rose">
+        <span class="ops-tile-icon gold">
           <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg>
         </span>
         <div class="ops-rotate-titles">
-          <span class="ops-tile-label">المركز الأول · بنات</span>
-          <span class="ops-rotate-sub" data-rotate-sub>سفير</span>
+          <span class="ops-tile-label">أفضل ٢٠ سفيراً</span>
+          <span class="ops-rotate-sub" data-rotate-sub>المراكز ١ — ١٠</span>
         </div>
         <div class="ops-rotate-dots" data-rotate-dots>
           <span class="dot active"></span>
@@ -299,30 +252,18 @@
         </div>
       </div>
 
-      <div class="ops-rotate-stage">
-        <div class="ops-rotate-slide active" data-rotate-key="amb">
-          <div class="ops-medal">
-            <svg viewBox="0 0 64 64"><defs><linearGradient id="goldGradGirls" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#f6c4d3"/><stop offset="1" stop-color="#a87082"/></linearGradient></defs><circle cx="32" cy="34" r="22" fill="url(#goldGradGirls)" opacity=".95"/><path d="M22 8h20l-4 18H26z" fill="#7b5a4a"/><path d="M32 22l3 7 7 .6-5.3 4.6 1.7 7.1L32 37.8l-6.4 3.5 1.7-7.1L22 29.6l7-.6z" fill="#fff" opacity=".85"/></svg>
-          </div>
-          <div class="ops-rotate-name" id="dashTopGirlsAmbName">—</div>
-          <div class="ops-rotate-entity" id="dashTopGirlsAmbEntity">—</div>
-          <div class="ops-rotate-amount"><span id="dashTopGirlsAmbAmount">0</span> <small>ر.س</small></div>
-          <div class="ops-rotate-meta">
-            <span>● <b id="dashTopGirlsAmbFunds">0</b> صندوقاً</span>
-            <span>● <b id="dashTopGirlsAmbPct">0</b>% من الهدف</span>
-          </div>
+      <div class="ops-rotate-stage ops-lb-stage">
+        <!-- slide 1: ranks 1-10 -->
+        <div class="ops-rotate-slide active ops-lb-slide" data-rotate-key="g1">
+          <ol class="ops-lb-list ops-lb-list-amb" id="dashTopAmbsG1List">
+            <li class="ops-lb-empty">لا توجد بيانات بعد…</li>
+          </ol>
         </div>
-        <div class="ops-rotate-slide" data-rotate-key="entity">
-          <div class="ops-medal">
-            <svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="24" fill="#a87082" opacity=".22"/><path d="M16 44h32v6H16zM18 24l4-10h20l4 10v18H18z" fill="#a87082"/><path d="M22 28h20v10H22z" fill="#f6c4d3"/></svg>
-          </div>
-          <div class="ops-rotate-name" id="dashTopGirlsEntName">—</div>
-          <div class="ops-rotate-entity" id="dashTopGirlsEntSub">— سفيرة · — صندوقاً</div>
-          <div class="ops-rotate-amount"><span id="dashTopGirlsEntAmount">0</span> <small>ر.س</small></div>
-          <div class="ops-rotate-meta">
-            <span>● جهة #١</span>
-            <span>● <b id="dashTopGirlsEntPct">0</b>% أداء</span>
-          </div>
+        <!-- slide 2: ranks 11-20 -->
+        <div class="ops-rotate-slide ops-lb-slide" data-rotate-key="g2">
+          <ol class="ops-lb-list ops-lb-list-amb" id="dashTopAmbsG2List" start="11">
+            <li class="ops-lb-empty">لا توجد بيانات بعد…</li>
+          </ol>
         </div>
       </div>
     </section>
@@ -461,11 +402,10 @@
   /* عمود اليمين (في RTL يساوي الشمال البصري) */
   .ops-bento > .ops-amb       { grid-column: 1; grid-row: 1; }
   .ops-bento > .ops-funds     { grid-column: 1; grid-row: 2; }
-  .ops-bento > [data-rotor="boys"]  { grid-column: 1; grid-row: 3; }
-  /* عمود اليسار */
+  .ops-bento > [data-rotor="topEntities"]  { grid-column: 1; grid-row: 3; }
+  /* عمود اليسار — قائمة السفراء تمتد على صفّين بدل بطاقة "الأنشطة الحية" المحذوفة */
   .ops-bento > .ops-total     { grid-column: 3; grid-row: 1; }
-  .ops-bento > .ops-complete  { grid-column: 3; grid-row: 2; }
-  .ops-bento > [data-rotor="girls"] { grid-column: 3; grid-row: 3; }
+  .ops-bento > [data-rotor="topAmbs"] { grid-column: 3; grid-row: 2 / span 2; }
 
   /* ===================== TILE BASE ===================== */
   .ops-tile {
@@ -792,6 +732,108 @@
     margin-top: 2px;
   }
 
+  /* ===================== LEADERBOARD (قوائم الترتيب) ===================== */
+  .ops-leaderboard .ops-lb-stage { padding: 4px 12px 12px; }
+  .ops-leaderboard .ops-lb-slide {
+    inset: 4px 12px 12px;
+    display: block;
+    overflow: hidden;
+  }
+  .ops-lb-list {
+    list-style: none;
+    margin: 0; padding: 0;
+    counter-reset: lb;
+    display: flex; flex-direction: column;
+    gap: 4px;
+    height: 100%;
+  }
+  .ops-lb-list-amb { gap: 3px; }
+  .ops-lb-list > li {
+    counter-increment: lb;
+    display: grid;
+    grid-template-columns: 24px 1fr auto;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 10px;
+    border-radius: 10px;
+    background: rgba(245, 240, 232, .03);
+    border: 1px solid var(--o-border);
+    font-size: 12px;
+    min-height: 0;
+  }
+  .ops-lb-list > li.ops-lb-empty {
+    grid-template-columns: 1fr;
+    color: var(--o-mute);
+    text-align: center;
+    font-weight: 600;
+    padding: 14px;
+  }
+  .ops-lb-list > li::before {
+    content: counter(lb);
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px;
+    border-radius: 7px;
+    background: rgba(200, 157, 126, .12);
+    color: var(--o-primary);
+    font-weight: 800;
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    direction: ltr;
+  }
+  .ops-lb-list > li:nth-child(1)::before {
+    background: linear-gradient(135deg, #fbd76b, #b07a18);
+    color: #2a1d10;
+    box-shadow: 0 0 12px rgba(251, 215, 107, .45);
+  }
+  .ops-lb-list > li:nth-child(2)::before {
+    background: linear-gradient(135deg, #e6e6e6, #9a9a9a);
+    color: #1a1410;
+  }
+  .ops-lb-list > li:nth-child(3)::before {
+    background: linear-gradient(135deg, #d29670, #8a5230);
+    color: #fff;
+  }
+  .ops-lb-name {
+    display: flex; flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+  }
+  .ops-lb-name b {
+    color: var(--o-text);
+    font-weight: 800;
+    font-size: 12.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .ops-lb-name span {
+    color: var(--o-text-2);
+    font-size: 10.5px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .ops-lb-amount {
+    direction: ltr;
+    font-variant-numeric: tabular-nums;
+    color: var(--o-gold);
+    font-weight: 800;
+    font-size: 13px;
+    text-align: left;
+    white-space: nowrap;
+  }
+  .ops-lb-amount small {
+    font-size: 9.5px;
+    color: var(--o-text-2);
+    margin-inline-start: 3px;
+    font-weight: 700;
+  }
+  .ops-leaderboard-tall .ops-lb-list > li {
+    padding: 7px 12px;
+    font-size: 12.5px;
+  }
+
   /* ===================== CENTRAL HUB ===================== */
   .ops-hub {
     position: relative;
@@ -1019,11 +1061,10 @@
   .ops-root .ops-topbar { animation-delay: .02s; }
   .ops-root .ops-amb     { animation-delay: .08s; }
   .ops-root .ops-funds   { animation-delay: .16s; }
-  .ops-root .ops-rotate[data-rotor="boys"]  { animation-delay: .24s; }
+  .ops-root .ops-rotate[data-rotor="topEntities"]  { animation-delay: .24s; }
   .ops-root .ops-hub     { animation-delay: .12s; }
   .ops-root .ops-total    { animation-delay: .12s; }
-  .ops-root .ops-complete { animation-delay: .20s; }
-  .ops-root .ops-rotate[data-rotor="girls"] { animation-delay: .28s; }
+  .ops-root .ops-rotate[data-rotor="topAmbs"] { animation-delay: .28s; }
 
   /* ===================== RESPONSIVE ===================== */
   @media (max-width: 1080px) {
@@ -1035,9 +1076,8 @@
     .ops-bento > .ops-amb     { grid-column: 1; grid-row: 1; }
     .ops-bento > .ops-funds   { grid-column: 2; grid-row: 1; }
     .ops-bento > .ops-total    { grid-column: 1; grid-row: 2; }
-    .ops-bento > .ops-complete { grid-column: 2; grid-row: 2; }
-    .ops-bento > [data-rotor="boys"]  { grid-column: 1; grid-row: 4; }
-    .ops-bento > [data-rotor="girls"] { grid-column: 2; grid-row: 4; }
+    .ops-bento > [data-rotor="topEntities"]  { grid-column: 2; grid-row: 2; }
+    .ops-bento > [data-rotor="topAmbs"]      { grid-column: 1 / span 2; grid-row: 4; }
     .ops-root { height: auto; min-height: 100dvh; }
     body:has(.ops-root) { overflow: auto; }
   }
@@ -1052,10 +1092,9 @@
     .ops-bento > .ops-hub { grid-column: 1 / -1; grid-row: 1; min-height: 360px; }
     .ops-bento > .ops-amb     { grid-row: 2; }
     .ops-bento > .ops-funds   { grid-row: 2; }
-    .ops-bento > .ops-total    { grid-row: 3; }
-    .ops-bento > .ops-complete { grid-row: 3; }
-    .ops-bento > [data-rotor="boys"]  { grid-row: 4; }
-    .ops-bento > [data-rotor="girls"] { grid-row: 4; }
+    .ops-bento > .ops-total                  { grid-column: 1 / -1; grid-row: 3; }
+    .ops-bento > [data-rotor="topEntities"]  { grid-column: 1 / -1; grid-row: 4; }
+    .ops-bento > [data-rotor="topAmbs"]      { grid-column: 1 / -1; grid-row: 5; min-height: 480px; }
     .ops-hub-title { font-size: 28px; }
     .ops-hub-hijri .hd { font-size: 28px; }
     .ops-hub-hijri .hm { font-size: 18px; }
@@ -1187,30 +1226,29 @@
   tickSync();
   setInterval(tickSync, 1000);
 
-  // ===== الشرائح الدوّارة (سفير ↔ جهة) =====
+  // ===== الشرائح الدوّارة (لكل بطاقة عنوانان فرعيان) =====
+  const ROTOR_SUB_LABELS = {
+    topEntities: { boys: 'المجمعات', girls: 'الدور النسائية' },
+    topAmbs:     { g1:   'المراكز ١ — ١٠', g2: 'المراكز ١١ — ٢٠' },
+  };
   function setupRotator(panel) {
     const slides = Array.from(panel.querySelectorAll('.ops-rotate-slide'));
     const dots   = Array.from(panel.querySelectorAll('.ops-rotate-dots .dot'));
     const subEl  = panel.querySelector('[data-rotate-sub]');
     if (slides.length < 2) return;
-    const subLabels = { amb: 'سفير', entity: 'جهة' };
+    const rotor = panel.dataset.rotor;
+    const labelMap = (ROTOR_SUB_LABELS[rotor]) || {};
     let idx = 0;
     function show(i) {
       slides.forEach((s, k) => s.classList.toggle('active', k === i));
       dots.forEach((d, k) => d.classList.toggle('active', k === i));
       const key = slides[i].dataset.rotateKey;
-      if (subEl && subLabels[key]) subEl.textContent = subLabels[key];
+      if (subEl && labelMap[key]) subEl.textContent = labelMap[key];
     }
     show(0);
-    setInterval(() => { idx = (idx + 1) % slides.length; show(idx); }, 6000);
+    setInterval(() => { idx = (idx + 1) % slides.length; show(idx); }, 7000);
   }
   root.querySelectorAll('.ops-rotate').forEach(setupRotator);
-
-  // ===== متوسط الأداء — يُحسب من نسبة الإنجاز الفعلية =====
-  const perfEl = document.getElementById('opsAvgPerf');
-  function setPerf(pct) {
-    if (perfEl) perfEl.textContent = toArabic(Math.max(0, Math.min(100, Math.round(pct)))) + '٪';
-  }
 
   // ===== الشريط الدوّار للأنشطة =====
   function renderTicker(items) {
@@ -1224,16 +1262,51 @@
     }).join('');
   }
 
+  // ===== رسم قائمة الجهات =====
+  const esc = (v) => String(v == null ? '' : v)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  function renderEntityList(elId, rows) {
+    const el = document.getElementById(elId);
+    if (!el) return;
+    if (!rows || !rows.length) {
+      el.innerHTML = '<li class="ops-lb-empty">لا توجد بيانات بعد…</li>';
+      return;
+    }
+    el.innerHTML = rows.map((r) => `
+      <li>
+        <span class="ops-lb-name">
+          <b>${esc(r.name)}</b>
+          <span>${fmtNum(r.ambassadors || 0)} سفيراً · ${fmtNum(r.funds || 0)} صندوقاً</span>
+        </span>
+        <span class="ops-lb-amount">${fmtNum(r.amount || 0)} <small>ر.س</small></span>
+      </li>
+    `).join('');
+  }
+
+  // ===== رسم قائمة السفراء (مع رقم البداية لتسلسل العدّاد) =====
+  function renderAmbList(elId, rows, startCounter) {
+    const el = document.getElementById(elId);
+    if (!el) return;
+    if (startCounter) el.style.counterReset = 'lb ' + (startCounter - 1);
+    if (!rows || !rows.length) {
+      el.innerHTML = '<li class="ops-lb-empty">لا توجد بيانات بعد…</li>';
+      return;
+    }
+    el.innerHTML = rows.map((r) => `
+      <li>
+        <span class="ops-lb-name">
+          <b>${esc(r.name)}</b>
+          <span>${esc(r.entity || '—')} · ${fmtNum(r.funds || 0)} صندوقاً</span>
+        </span>
+        <span class="ops-lb-amount">${fmtNum(r.amount || 0)} <small>ر.س</small></span>
+      </li>
+    `).join('');
+  }
+
   // ===== تطبيق البيانات على الواجهة =====
   const HUB_RING_LEN = 791.68;
   function applyDashboard(d) {
     const s = (d && d.stats) || {};
-    const tb = (d && d.topBoys) || {};
-    const tg = (d && d.topGirls) || {};
-    const tba = tb.ambassador || {};
-    const tbe = tb.entity || {};
-    const tga = tg.ambassador || {};
-    const tge = tg.entity || {};
 
     // ===== السفراء =====
     setNumber(document.getElementById('dashAmbTotal'), s.ambassadorsTotal || 0);
@@ -1278,34 +1351,12 @@
     setNumber(document.getElementById('dashTotalToday'), s.donationsToday || 0);
     setText('dashTotalTrend', '▲ ' + toArabic(donationsPct) + '٪');
 
-    // ===== الشبكة الحيّة =====
-    setText('dashLiveEntities', toArabic(s.entities || 0));
-    setText('dashLiveAmbassadors', toArabic(s.liveAmbassadors || 0));
-    setText('dashLiveDonationsToday', toArabic(fmtNum(s.donationsToday || 0)));
-    setText('dashLiveFundsCompleted', toArabic(s.fundsCompletedToday || 0));
-    setPerf(donationsPct);
-
-    // ===== المراكز الأولى — بنين =====
-    setText('dashTopBoysAmbName', tba.name || '—');
-    setText('dashTopBoysAmbEntity', tba.entity || '—');
-    setNumber(document.getElementById('dashTopBoysAmbAmount'), tba.amount || 0);
-    setText('dashTopBoysAmbFunds', fmtNum(tba.funds || 0));
-    setText('dashTopBoysAmbPct', String(tba.pct || 0));
-    setText('dashTopBoysEntName', tbe.name || '—');
-    setText('dashTopBoysEntSub', `${fmtNum(tbe.ambassadors || 0)} سفيراً · ${fmtNum(tbe.funds || 0)} صندوقاً`);
-    setNumber(document.getElementById('dashTopBoysEntAmount'), tbe.amount || 0);
-    setText('dashTopBoysEntPct', String(tbe.pct || 0));
-
-    // ===== المراكز الأولى — بنات =====
-    setText('dashTopGirlsAmbName', tga.name || '—');
-    setText('dashTopGirlsAmbEntity', tga.entity || '—');
-    setNumber(document.getElementById('dashTopGirlsAmbAmount'), tga.amount || 0);
-    setText('dashTopGirlsAmbFunds', fmtNum(tga.funds || 0));
-    setText('dashTopGirlsAmbPct', String(tga.pct || 0));
-    setText('dashTopGirlsEntName', tge.name || '—');
-    setText('dashTopGirlsEntSub', `${fmtNum(tge.ambassadors || 0)} سفيرة · ${fmtNum(tge.funds || 0)} صندوقاً`);
-    setNumber(document.getElementById('dashTopGirlsEntAmount'), tge.amount || 0);
-    setText('dashTopGirlsEntPct', String(tge.pct || 0));
+    // ===== قوائم الترتيب =====
+    renderEntityList('dashTopEntitiesBoysList',  d && d.topEntitiesBoys);
+    renderEntityList('dashTopEntitiesGirlsList', d && d.topEntitiesGirls);
+    const ambs = (d && d.topAmbassadors) || [];
+    renderAmbList('dashTopAmbsG1List', ambs.slice(0, 10), 1);
+    renderAmbList('dashTopAmbsG2List', ambs.slice(10, 20), 11);
 
     // ===== شريط الأنشطة =====
     renderTicker(d && d.liveFeed);

@@ -28,7 +28,12 @@
       "Bash(taskkill //F //PID 18660)",
       "Bash(node -c \"C:\\\\Users\\\\asus\\\\Desktop\\\\athr piont\\\\routes\\\\api.js\")",
       "Bash(node --check \"C:\\\\Users\\\\asus\\\\Desktop\\\\athr piont\\\\routes\\\\api.js\")",
-      "Bash(node -e \"const ejs=require\\('ejs'\\);const fs=require\\('fs'\\);try{ejs.compile\\(fs.readFileSync\\('C:/Users/asus/Desktop/athr piont/views/dashboard.ejs','utf8'\\),{filename:'C:/Users/asus/Desktop/athr piont/views/dashboard.ejs'}\\);console.log\\('dashboard.ejs OK'\\)}catch\\(e\\){console.error\\('EJS error:',e.message\\);process.exit\\(1\\)}\")"
+      "Bash(node -e \"const ejs=require\\('ejs'\\);const fs=require\\('fs'\\);try{ejs.compile\\(fs.readFileSync\\('C:/Users/asus/Desktop/athr piont/views/dashboard.ejs','utf8'\\),{filename:'C:/Users/asus/Desktop/athr piont/views/dashboard.ejs'}\\);console.log\\('dashboard.ejs OK'\\)}catch\\(e\\){console.error\\('EJS error:',e.message\\);process.exit\\(1\\)}\")",
+      "Bash(node -e \"const ejs=require\\('ejs'\\);const fs=require\\('fs'\\);try{ejs.compile\\(fs.readFileSync\\('C:/Users/asus/Desktop/athr piont/views/dashboard.ejs','utf8'\\),{filename:'C:/Users/asus/Desktop/athr piont/views/dashboard.ejs'}\\);console.log\\('EJS OK'\\)}catch\\(e\\){console.error\\('EJS error:',e.message\\);process.exit\\(1\\)}\")",
+      "Bash(curl -s http://localhost:3077/api/dashboard)",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{try{const j=JSON.parse\\(d\\);console.log\\('keys:',Object.keys\\(j\\).sort\\(\\).join\\(','\\)\\);console.log\\('stats keys:',Object.keys\\(j.stats||{}\\).sort\\(\\).join\\(','\\)\\);console.log\\('topEntitiesBoys count:',\\(j.topEntitiesBoys||[]\\).length\\);console.log\\('topEntitiesGirls count:',\\(j.topEntitiesGirls||[]\\).length\\);console.log\\('topAmbassadors count:',\\(j.topAmbassadors||[]\\).length\\);if\\(\\(j.topAmbassadors||[]\\)[0]\\)console.log\\('top amb sample:',JSON.stringify\\(j.topAmbassadors[0]\\)\\);if\\(\\(j.topEntitiesBoys||[]\\)[0]\\)console.log\\('top boys ent sample:',JSON.stringify\\(j.topEntitiesBoys[0]\\)\\);console.log\\('stats sample:',JSON.stringify\\(j.stats\\)\\);}catch\\(e\\){console.log\\('parse error',e.message,d.slice\\(0,200\\)\\)}}\\)\")",
+      "Bash(curl -s -o /dev/null -w \"/dashboard HTTP %{http_code}\\\\n\" http://localhost:3077/dashboard)",
+      "Bash(curl -s http://localhost:3077/dashboard)"
     ]
   }
 }

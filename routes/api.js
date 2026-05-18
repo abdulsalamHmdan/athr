@@ -178,57 +178,62 @@ router.get("/dashboard", async (req, res) => {
       }
     }
 
-    function pickTopAmbassador(kind) {
-      let best = null;
-      for (const a of ambassadors) {
-        const ent = entityById.get(String(a.entity || ""));
-        if (!ent || ent.kind !== kind) continue;
+    // === ترتيب الجهات (مجمعات / دور) من الأعلى للأقل ===
+    const entitiesArr = Array.from(entityStats.values()).filter(
+      (e) => e.amount > 0,
+    );
+    function mapEntityRow(e, i) {
+      return {
+        rank: i + 1,
+        name: e.name,
+        amount: Math.round(e.amount),
+        ambassadors: e.ambassadors,
+        funds: e.funds,
+        pct: e.goal > 0
+          ? Math.min(100, Math.round((e.amount / e.goal) * 100))
+          : 0,
+      };
+    }
+    const topEntitiesBoys = entitiesArr
+      .filter((e) => e.kind === "بنين")
+      .sort((a, b) => b.amount - a.amount)
+      .slice(0, 10)
+      .map(mapEntityRow);
+    const topEntitiesGirls = entitiesArr
+      .filter((e) => e.kind === "بنات")
+      .sort((a, b) => b.amount - a.amount)
+      .slice(0, 10)
+      .map(mapEntityRow);
+
+    // === أفضل ٢٠ سفيراً بغض النظر عن الجهة ===
+    const topAmbassadors = ambassadors
+      .map((a) => {
         const cid = Number(a.platformProfileId);
-        if (!Number.isFinite(cid)) continue;
-        const amount = totalsByClient.get(cid) || 0;
-        if (!best || amount > best.amount) {
-          const ambGoal = goalsByClient.get(cid) || 0;
-          best = {
-            name: a.name || "—",
-            entity: ent.name,
-            amount,
-            funds: countByClient.get(cid) || 0,
-            pct: ambGoal > 0
-              ? Math.min(100, Math.round((amount / ambGoal) * 100))
-              : 0,
-          };
-        }
-      }
-      return best || { name: "—", entity: "—", amount: 0, funds: 0, pct: 0 };
-    }
-
-    function pickTopEntity(kind) {
-      let best = null;
-      for (const s of entityStats.values()) {
-        if (s.kind !== kind) continue;
-        if (!best || s.amount > best.amount) {
-          best = {
-            name: s.name,
-            amount: s.amount,
-            ambassadors: s.ambassadors,
-            funds: s.funds,
-            pct: s.goal > 0
-              ? Math.min(100, Math.round((s.amount / s.goal) * 100))
-              : 0,
-          };
-        }
-      }
-      return best || { name: "—", amount: 0, ambassadors: 0, funds: 0, pct: 0 };
-    }
-
-    const topBoys = {
-      ambassador: pickTopAmbassador("بنين"),
-      entity: pickTopEntity("بنين"),
-    };
-    const topGirls = {
-      ambassador: pickTopAmbassador("بنات"),
-      entity: pickTopEntity("بنات"),
-    };
+        const amount = Number.isFinite(cid)
+          ? totalsByClient.get(cid) || 0
+          : 0;
+        const funds = Number.isFinite(cid)
+          ? countByClient.get(cid) || 0
+          : 0;
+        const goal = Number.isFinite(cid)
+          ? goalsByClient.get(cid) || 0
+          : 0;
+        const ent = entityById.get(String(a.entity || ""));
+        return {
+          name: a.name || "—",
+          entity: ent ? ent.name : "—",
+          kind: ent ? ent.kind : "",
+          amount: Math.round(amount),
+          funds,
+          pct: goal > 0
+            ? Math.min(100, Math.round((amount / goal) * 100))
+            : 0,
+        };
+      })
+      .filter((a) => a.amount > 0)
+      .sort((a, b) => b.amount - a.amount)
+      .slice(0, 20)
+      .map((a, i) => ({ rank: i + 1, ...a }));
 
     const liveFeed = [];
     try {
@@ -314,8 +319,9 @@ router.get("/dashboard", async (req, res) => {
         entities: entitiesCount,
         liveAmbassadors,
       },
-      topBoys,
-      topGirls,
+      topEntitiesBoys,
+      topEntitiesGirls,
+      topAmbassadors,
       liveFeed,
       lastSyncAt,
       generatedAt: now.toISOString(),
