@@ -98,7 +98,7 @@
       </div>
     </section>
 
-    <!-- ROTATING PANEL — Top Entities (مجمعات / دور) -->
+    <!-- ROTATING PANEL — Top Entities (مجمعات / دور) — صفحاته تُبنى ديناميكياً -->
     <section class="ops-tile ops-rotate ops-leaderboard" data-rotor="topEntities" aria-label="أفضل المجمعات والدور">
       <div class="ops-tile-corner">T·03</div>
       <div class="ops-tile-head ops-rotate-head">
@@ -107,28 +107,11 @@
         </span>
         <div class="ops-rotate-titles">
           <span class="ops-tile-label">أفضل المجمعات والدور</span>
-          <span class="ops-rotate-sub" data-rotate-sub>المجمعات</span>
+          <span class="ops-rotate-sub" data-rotate-sub>—</span>
         </div>
-        <div class="ops-rotate-dots" data-rotate-dots>
-          <span class="dot active"></span>
-          <span class="dot"></span>
-        </div>
+        <div class="ops-rotate-dots" data-rotate-dots></div>
       </div>
-
-      <div class="ops-rotate-stage ops-lb-stage">
-        <!-- slide 1: Top مجمعات -->
-        <div class="ops-rotate-slide active ops-lb-slide" data-rotate-key="boys">
-          <ol class="ops-lb-list" id="dashTopEntitiesBoysList">
-            <li class="ops-lb-empty">لا توجد بيانات بعد…</li>
-          </ol>
-        </div>
-        <!-- slide 2: Top دور -->
-        <div class="ops-rotate-slide ops-lb-slide" data-rotate-key="girls">
-          <ol class="ops-lb-list" id="dashTopEntitiesGirlsList">
-            <li class="ops-lb-empty">لا توجد بيانات بعد…</li>
-          </ol>
-        </div>
-      </div>
+      <div class="ops-rotate-stage ops-lb-stage" data-stage></div>
     </section>
 
     <!-- ────── CENTRAL HUB ────── -->
@@ -657,7 +640,13 @@
     text-transform: uppercase;
     letter-spacing: 1px;
   }
-  .ops-rotate-dots { display: inline-flex; gap: 5px; }
+  .ops-rotate-dots {
+    display: inline-flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    max-width: 76px;
+  }
   .ops-rotate-dots .dot {
     width: 6px; height: 6px; border-radius: 50%;
     background: rgba(245, 240, 232, .15);
@@ -1235,18 +1224,24 @@
     const slides = Array.from(panel.querySelectorAll('.ops-rotate-slide'));
     const dots   = Array.from(panel.querySelectorAll('.ops-rotate-dots .dot'));
     const subEl  = panel.querySelector('[data-rotate-sub]');
-    if (slides.length < 2) return;
+    if (panel._opsRotateTimer) clearInterval(panel._opsRotateTimer);
     const rotor = panel.dataset.rotor;
     const labelMap = (ROTOR_SUB_LABELS[rotor]) || {};
     let idx = 0;
     function show(i) {
+      if (!slides.length) return;
       slides.forEach((s, k) => s.classList.toggle('active', k === i));
       dots.forEach((d, k) => d.classList.toggle('active', k === i));
       const key = slides[i].dataset.rotateKey;
-      if (subEl && labelMap[key]) subEl.textContent = labelMap[key];
+      const label = slides[i].dataset.rotateLabel || labelMap[key];
+      if (subEl && label) subEl.textContent = label;
     }
     show(0);
-    setInterval(() => { idx = (idx + 1) % slides.length; show(idx); }, 7000);
+    if (slides.length < 2) return;
+    panel._opsRotateTimer = setInterval(() => {
+      idx = (idx + 1) % slides.length;
+      show(idx);
+    }, 7000);
   }
   root.querySelectorAll('.ops-rotate').forEach(setupRotator);
 
@@ -1265,14 +1260,9 @@
   // ===== رسم قائمة الجهات =====
   const esc = (v) => String(v == null ? '' : v)
     .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  function renderEntityList(elId, rows) {
-    const el = document.getElementById(elId);
-    if (!el) return;
-    if (!rows || !rows.length) {
-      el.innerHTML = '<li class="ops-lb-empty">لا توجد بيانات بعد…</li>';
-      return;
-    }
-    el.innerHTML = rows.map((r) => `
+  function renderEntityRows(rows) {
+    if (!rows || !rows.length) return '<li class="ops-lb-empty">لا توجد بيانات بعد…</li>';
+    return rows.map((r) => `
       <li>
         <span class="ops-lb-name">
           <b>${esc(r.name)}</b>
@@ -1281,6 +1271,44 @@
         <span class="ops-lb-amount">${fmtNum(r.amount || 0)} <small>ر.س</small></span>
       </li>
     `).join('');
+  }
+
+  function renderEntityLeaderboard(boys, girls) {
+    const panel = root.querySelector('[data-rotor="topEntities"]');
+    if (!panel) return;
+    const stage = panel.querySelector('[data-stage]');
+    const dots = panel.querySelector('[data-rotate-dots]');
+    if (!stage || !dots) return;
+
+    const pageSize = 4;
+    const slides = [];
+    [
+      { key: 'boys', label: 'المجمعات', rows: boys || [] },
+      { key: 'girls', label: 'الدور النسائية', rows: girls || [] },
+    ].forEach((group) => {
+      const rows = group.rows.length ? group.rows : [];
+      const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
+      for (let page = 0; page < totalPages; page += 1) {
+        const start = page * pageSize;
+        const pageRows = rows.slice(start, start + pageSize);
+        const from = pageRows.length ? start + 1 : 0;
+        const to = start + pageRows.length;
+        const label = pageRows.length
+          ? `${group.label} ${toArabic(from)} — ${toArabic(to)}`
+          : group.label;
+        slides.push(`
+          <div class="ops-rotate-slide ops-lb-slide" data-rotate-key="${group.key}-${page + 1}" data-rotate-label="${esc(label)}">
+            <ol class="ops-lb-list" style="counter-reset: lb ${start}">
+              ${renderEntityRows(pageRows)}
+            </ol>
+          </div>
+        `);
+      }
+    });
+
+    stage.innerHTML = slides.join('');
+    dots.innerHTML = slides.map((_, i) => `<span class="dot${i === 0 ? ' active' : ''}"></span>`).join('');
+    setupRotator(panel);
   }
 
   // ===== رسم قائمة السفراء (مع رقم البداية لتسلسل العدّاد) =====
@@ -1352,8 +1380,7 @@
     setText('dashTotalTrend', '▲ ' + toArabic(donationsPct) + '٪');
 
     // ===== قوائم الترتيب =====
-    renderEntityList('dashTopEntitiesBoysList',  d && d.topEntitiesBoys);
-    renderEntityList('dashTopEntitiesGirlsList', d && d.topEntitiesGirls);
+    renderEntityLeaderboard(d && d.topEntitiesBoys, d && d.topEntitiesGirls);
     const ambs = (d && d.topAmbassadors) || [];
     renderAmbList('dashTopAmbsG1List', ambs.slice(0, 10), 1);
     renderAmbList('dashTopAmbsG2List', ambs.slice(10, 20), 11);

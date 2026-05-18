@@ -197,12 +197,12 @@ router.get("/dashboard", async (req, res) => {
     const topEntitiesBoys = entitiesArr
       .filter((e) => e.kind === "بنين")
       .sort((a, b) => b.amount - a.amount)
-      .slice(0, 10)
+      .slice(0, 20)
       .map(mapEntityRow);
     const topEntitiesGirls = entitiesArr
       .filter((e) => e.kind === "بنات")
       .sort((a, b) => b.amount - a.amount)
-      .slice(0, 10)
+      .slice(0, 20)
       .map(mapEntityRow);
 
     // === أفضل ٢٠ سفيراً بغض النظر عن الجهة ===
