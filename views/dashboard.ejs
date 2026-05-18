@@ -147,6 +147,10 @@
       </div>
 
       <div class="ops-hub-content">
+        <div class="ops-hub-logo-wrap" aria-label="شعار نقاط الأثر">
+          <img class="ops-hub-logo" src="/img/logo.png" alt="نقاط الأثر">
+        </div>
+
         <div class="ops-hub-kicker">
           <span class="ops-hub-kicker-dot"></span>
           الحملة الحالية
@@ -895,6 +899,27 @@
     padding: 26px 18px 16px;
     flex: 1;
     gap: 10px;
+  }
+  .ops-hub-logo-wrap {
+    width: clamp(76px, 8.4vw, 112px);
+    height: clamp(76px, 8.4vw, 112px);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 50% 38%, rgba(245, 240, 232, .14), rgba(245, 240, 232, .05) 62%, rgba(15, 11, 8, .1));
+    border: 1px solid rgba(245, 240, 232, .16);
+    box-shadow:
+      0 0 0 5px rgba(251, 215, 107, .06),
+      0 18px 40px -24px rgba(251, 215, 107, .75);
+    overflow: hidden;
+  }
+  .ops-hub-logo {
+    width: 78%;
+    height: 78%;
+    object-fit: contain;
+    filter: drop-shadow(0 8px 18px rgba(0, 0, 0, .34));
   }
   .ops-hub-kicker {
     display: inline-flex; align-items: center; gap: 6px;
