@@ -25,7 +25,10 @@
       "Bash(npm start *)",
       "mcp__Claude_Preview__preview_start",
       "Bash(netstat -ano)",
-      "Bash(taskkill //F //PID 18660)"
+      "Bash(taskkill //F //PID 18660)",
+      "Bash(node -c \"C:\\\\Users\\\\asus\\\\Desktop\\\\athr piont\\\\routes\\\\api.js\")",
+      "Bash(node --check \"C:\\\\Users\\\\asus\\\\Desktop\\\\athr piont\\\\routes\\\\api.js\")",
+      "Bash(node -e \"const ejs=require\\('ejs'\\);const fs=require\\('fs'\\);try{ejs.compile\\(fs.readFileSync\\('C:/Users/asus/Desktop/athr piont/views/dashboard.ejs','utf8'\\),{filename:'C:/Users/asus/Desktop/athr piont/views/dashboard.ejs'}\\);console.log\\('dashboard.ejs OK'\\)}catch\\(e\\){console.error\\('EJS error:',e.message\\);process.exit\\(1\\)}\")"
     ]
   }
 }

@@ -1,56 +1,6 @@
 <%- include('partials/head') %>
 
-<%
-// ========== بيانات تجريبية (تُربط لاحقاً بقاعدة البيانات) ==========
-const stats = {
-  ambassadorsTotal: 124,
-  ambassadorsMembers: 45,
-  ambassadorsExternal: 79,
-  ambassadorsDelta7d: 8,
-
-  totalDonations: 284750,
-  donationsGoal: 500000,
-  donationsToday: 14820,
-
-  fundsTotal: 312,
-  fundsActive: 198,
-  fundsCompleted: 128,
-  fundsGoal: 500,
-
-  entities: 18,
-  liveAmbassadors: 6,
-};
-
-// المراكز الأولى — قسم البنين
-const topBoys = {
-  ambassador: { name: 'عبدالله الحربي',  entity: 'مجمع الأندلس',   amount: 42800, funds: 18, pct: 86 },
-  entity:     { name: 'مجمع الأندلس',    amount: 98400, ambassadors: 14, funds: 94, pct: 92 },
-};
-
-// المراكز الأولى — قسم البنات
-const topGirls = {
-  ambassador: { name: 'سارة القحطاني',  entity: 'دار النور',       amount: 38450, funds: 16, pct: 78 },
-  entity:     { name: 'دار النور',       amount: 81200, ambassadors: 11, funds: 78, pct: 84 },
-};
-
-// أحدث الأنشطة — يظهر كشريط متحرك
-const liveFeed = [
-  '+ ٢٥٠ ر.س من متبرع · صندوق "إفطار صائم" — قبل ٤ ث',
-  '🎉 صندوق جديد فُعّل · مجمع الفرقان — قبل ١٢ ث',
-  '🏆 السفير محمد العتيبي تجاوز ٣٠ ألف ر.س — قبل ٢٣ ث',
-  '✅ اكتمل صندوق "كسوة العيد" — قبل ٣٤ ث',
-  '+ ١,٢٠٠ ر.س دفعة واحدة · صندوق "أضحية" — قبل ٤٧ ث',
-  '👤 سفير جديد التحق · دار البديعة — قبل ١:١٠',
-];
-
-function fmt(n) { return Number(n).toLocaleString('en-US'); }
-function pct(a, b) { return Math.min(100, Math.round((a / b) * 100)); }
-
-const donationsPct = pct(stats.totalDonations, stats.donationsGoal);
-const completedPct = pct(stats.fundsCompleted, stats.fundsTotal);
-const activePct = pct(stats.fundsActive, stats.fundsTotal);
-const fundsPct = pct(stats.fundsTotal, stats.fundsGoal);
-%>
+<%# جميع البيانات تُجلب من /api/dashboard وتُحقن لاحقاً بواسطة السكربت في أسفل الصفحة. %>
 
 <div class="ops-root">
 
@@ -98,19 +48,19 @@ const fundsPct = pct(stats.fundsTotal, stats.fundsGoal);
           <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-4.4 0-8 2.2-8 5v3h16v-3c0-2.8-3.6-5-8-5z"/></svg>
         </span>
         <span class="ops-tile-label">السفراء</span>
-        <span class="ops-tile-trend up">▲ <%= stats.ambassadorsDelta7d %></span>
+        <span class="ops-tile-trend up" id="dashAmbDelta">▲ 0</span>
       </div>
-      <div class="ops-tile-value" data-num="<%= stats.ambassadorsTotal %>">0</div>
+      <div class="ops-tile-value" id="dashAmbTotal" data-num="0">0</div>
       <div class="ops-mini-bars">
         <div class="ops-mini-bar">
           <span class="lbl">منسوبون</span>
-          <span class="bar"><i style="--w:<%= pct(stats.ambassadorsMembers, stats.ambassadorsTotal) %>%"></i></span>
-          <span class="val"><%= stats.ambassadorsMembers %></span>
+          <span class="bar"><i id="dashAmbMembersBar" style="--w:0%"></i></span>
+          <span class="val" id="dashAmbMembersVal">0</span>
         </div>
         <div class="ops-mini-bar">
           <span class="lbl">خارج الجمعية</span>
-          <span class="bar"><i style="--w:<%= pct(stats.ambassadorsExternal, stats.ambassadorsTotal) %>%"></i></span>
-          <span class="val"><%= stats.ambassadorsExternal %></span>
+          <span class="bar"><i id="dashAmbExternalBar" style="--w:0%"></i></span>
+          <span class="val" id="dashAmbExternalVal">0</span>
         </div>
       </div>
       <svg class="ops-sparkline" viewBox="0 0 120 30" preserveAspectRatio="none" aria-hidden="true">
@@ -126,25 +76,25 @@ const fundsPct = pct(stats.fundsTotal, stats.fundsGoal);
           <svg viewBox="0 0 24 24"><path fill="currentColor" d="M20 8h-3V6a2 2 0 00-2-2H9a2 2 0 00-2 2v2H4a1 1 0 00-1 1v9a3 3 0 003 3h12a3 3 0 003-3V9a1 1 0 00-1-1zM9 6h6v2H9V6z"/></svg>
         </span>
         <span class="ops-tile-label">الصناديق</span>
-        <span class="ops-tile-trend up">▲ ٥ جديد</span>
+        <span class="ops-tile-trend up" id="dashFundsTrend">▲ 0</span>
       </div>
-      <div class="ops-tile-value" data-num="<%= stats.fundsTotal %>">0</div>
+      <div class="ops-tile-value" id="dashFundsTotal" data-num="0">0</div>
       <div class="ops-tile-row">
         <div class="ops-pill ops-pill-live">
           <span class="ops-pill-dot"></span>
-          نشطة <b><%= stats.fundsActive %></b>
+          نشطة <b id="dashFundsActive">0</b>
         </div>
         <div class="ops-pill">
-          ✓ مكتملة <b><%= stats.fundsCompleted %></b>
+          ✓ مكتملة <b id="dashFundsCompleted">0</b>
         </div>
       </div>
-      <div class="ops-stack-bar" title="<%= activePct %>% نشطة · <%= completedPct %>% مكتملة">
-        <span class="seg seg-a" style="--w:<%= activePct %>%"></span>
-        <span class="seg seg-b" style="--w:<%= completedPct %>%"></span>
+      <div class="ops-stack-bar" id="dashFundsStack" title="">
+        <span class="seg seg-a" id="dashFundsActiveBar" style="--w:0%"></span>
+        <span class="seg seg-b" id="dashFundsCompletedBar" style="--w:0%"></span>
       </div>
       <div class="ops-tile-foot">
-        <span>الهدف <%= stats.fundsGoal %></span>
-        <b><%= fundsPct %>%</b>
+        <span>الهدف <b id="dashFundsGoal">0</b></span>
+        <b id="dashFundsPct">0%</b>
       </div>
     </section>
 
@@ -171,12 +121,12 @@ const fundsPct = pct(stats.fundsTotal, stats.fundsGoal);
           <div class="ops-medal">
             <svg viewBox="0 0 64 64"><defs><linearGradient id="goldGradBoys" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#fbd76b"/><stop offset="1" stop-color="#b07a18"/></linearGradient></defs><circle cx="32" cy="34" r="22" fill="url(#goldGradBoys)" opacity=".95"/><path d="M22 8h20l-4 18H26z" fill="#9d7b64"/><path d="M32 22l3 7 7 .6-5.3 4.6 1.7 7.1L32 37.8l-6.4 3.5 1.7-7.1L22 29.6l7-.6z" fill="#fff" opacity=".85"/></svg>
           </div>
-          <div class="ops-rotate-name">عبدالله الحربي</div>
-          <div class="ops-rotate-entity"><%= topBoys.ambassador.entity %></div>
-          <div class="ops-rotate-amount"><%= fmt(topBoys.ambassador.amount) %> <small>ر.س</small></div>
+          <div class="ops-rotate-name" id="dashTopBoysAmbName">—</div>
+          <div class="ops-rotate-entity" id="dashTopBoysAmbEntity">—</div>
+          <div class="ops-rotate-amount"><span id="dashTopBoysAmbAmount">0</span> <small>ر.س</small></div>
           <div class="ops-rotate-meta">
-            <span>● <%= topBoys.ambassador.funds %> صندوقاً</span>
-            <span>● <%= topBoys.ambassador.pct %>% من الهدف</span>
+            <span>● <b id="dashTopBoysAmbFunds">0</b> صندوقاً</span>
+            <span>● <b id="dashTopBoysAmbPct">0</b>% من الهدف</span>
           </div>
         </div>
         <!-- slide 2: Top Entity (boys) -->
@@ -184,12 +134,12 @@ const fundsPct = pct(stats.fundsTotal, stats.fundsGoal);
           <div class="ops-medal">
             <svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="24" fill="#9d7b64" opacity=".22"/><path d="M16 44h32v6H16zM18 24l4-10h20l4 10v18H18z" fill="#9d7b64"/><path d="M22 28h20v10H22z" fill="#fbd76b"/></svg>
           </div>
-          <div class="ops-rotate-name"><%= topBoys.entity.name %></div>
-          <div class="ops-rotate-entity"><%= topBoys.entity.ambassadors %> سفيراً · <%= topBoys.entity.funds %> صندوقاً</div>
-          <div class="ops-rotate-amount"><%= fmt(topBoys.entity.amount) %> <small>ر.س</small></div>
+          <div class="ops-rotate-name" id="dashTopBoysEntName">—</div>
+          <div class="ops-rotate-entity" id="dashTopBoysEntSub">— سفيراً · — صندوقاً</div>
+          <div class="ops-rotate-amount"><span id="dashTopBoysEntAmount">0</span> <small>ر.س</small></div>
           <div class="ops-rotate-meta">
             <span>● جهة #١</span>
-            <span>● <%= topBoys.entity.pct %>% أداء</span>
+            <span>● <b id="dashTopBoysEntPct">0</b>% أداء</span>
           </div>
         </div>
       </div>
@@ -220,9 +170,9 @@ const fundsPct = pct(stats.fundsTotal, stats.fundsGoal);
           </defs>
           <circle cx="160" cy="160" r="148" fill="none" stroke="url(#trackGrad)" stroke-width="1.4" stroke-dasharray="2 4"/>
           <circle cx="160" cy="160" r="126" fill="none" stroke="rgba(245,240,232,.08)" stroke-width="1"/>
-          <circle class="ops-progress-ring" cx="160" cy="160" r="126" fill="none"
+          <circle id="dashHubProgressRing" class="ops-progress-ring" cx="160" cy="160" r="126" fill="none"
                   stroke="url(#ringHubGrad)" stroke-width="3.6" stroke-linecap="round"
-                  stroke-dasharray="791.68" stroke-dashoffset="<%= 791.68 - (791.68 * donationsPct / 100) %>"
+                  stroke-dasharray="791.68" stroke-dashoffset="791.68"
                   transform="rotate(-90 160 160)"/>
         </svg>
       </div>
@@ -247,8 +197,8 @@ const fundsPct = pct(stats.fundsTotal, stats.fundsGoal);
         </div>
 
         <div class="ops-hub-progress-text">
-          <span><%= fmt(stats.totalDonations) %> <small>من</small> <%= fmt(stats.donationsGoal) %> <small>ر.س</small></span>
-          <b><%= donationsPct %>%</b>
+          <span><b id="dashHubCurrentAmount">0</b> <small>من</small> <b id="dashHubGoalAmount">0</b> <small>ر.س</small></span>
+          <b id="dashHubPct">0%</b>
         </div>
 
         <div class="ops-hub-update">
@@ -261,9 +211,9 @@ const fundsPct = pct(stats.fundsTotal, stats.fundsGoal);
       <div class="ops-hub-ticker" aria-label="آخر الأنشطة">
         <div class="ops-hub-ticker-tag">● بث مباشر</div>
         <div class="ops-hub-ticker-track">
-          <div class="ops-hub-ticker-loop">
-            <% liveFeed.forEach((t) => { %><span class="tk-item"><%= t %></span><span class="tk-sep">◆</span><% }) %>
-            <% liveFeed.forEach((t) => { %><span class="tk-item"><%= t %></span><span class="tk-sep">◆</span><% }) %>
+          <div class="ops-hub-ticker-loop" id="dashTickerLoop">
+            <span class="tk-item">في انتظار البيانات…</span><span class="tk-sep">◆</span>
+            <span class="tk-item">في انتظار البيانات…</span><span class="tk-sep">◆</span>
           </div>
         </div>
       </div>
@@ -277,20 +227,20 @@ const fundsPct = pct(stats.fundsTotal, stats.fundsGoal);
           <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg>
         </span>
         <span class="ops-tile-label">إجمالي التبرعات</span>
-        <span class="ops-tile-trend up">▲ ٥٫٢٪</span>
+        <span class="ops-tile-trend up" id="dashTotalTrend">▲ 0٪</span>
       </div>
       <div class="ops-tile-value big">
-        <span data-num="<%= stats.totalDonations %>">0</span>
+        <span id="dashTotalAmount" data-num="0">0</span>
         <small>ر.س</small>
       </div>
       <div class="ops-tile-foot">
-        <span>الهدف <%= fmt(stats.donationsGoal) %></span>
-        <b><%= donationsPct %>%</b>
+        <span>الهدف <b id="dashTotalGoal">0</b></span>
+        <b id="dashTotalPct">0%</b>
       </div>
-      <div class="ops-bar"><span style="--w:<%= donationsPct %>%"></span></div>
+      <div class="ops-bar"><span id="dashTotalBar" style="--w:0%"></span></div>
       <div class="ops-tile-row tight">
         <div class="ops-pill ops-pill-soft">
-          + <b><%= fmt(stats.donationsToday) %></b> اليوم
+          + <b id="dashTotalToday">0</b> اليوم
         </div>
         <div class="ops-pill ops-pill-soft">
           <span class="ops-pill-dot ok"></span>
@@ -310,19 +260,19 @@ const fundsPct = pct(stats.fundsTotal, stats.fundsGoal);
       </div>
       <div class="ops-live-grid">
         <div class="ops-live-cell">
-          <div class="lv">١٨</div>
+          <div class="lv" id="dashLiveEntities">0</div>
           <div class="lb">جهة مشاركة</div>
         </div>
         <div class="ops-live-cell">
-          <div class="lv">٦</div>
+          <div class="lv" id="dashLiveAmbassadors">0</div>
           <div class="lb">سفير على الخط</div>
         </div>
         <div class="ops-live-cell">
-          <div class="lv">٤٢</div>
-          <div class="lb">تبرع اليوم</div>
+          <div class="lv" id="dashLiveDonationsToday">0</div>
+          <div class="lb">تبرع اليوم (ر.س)</div>
         </div>
         <div class="ops-live-cell">
-          <div class="lv">٣</div>
+          <div class="lv" id="dashLiveFundsCompleted">0</div>
           <div class="lb">صندوق اكتمل</div>
         </div>
       </div>
@@ -354,24 +304,24 @@ const fundsPct = pct(stats.fundsTotal, stats.fundsGoal);
           <div class="ops-medal">
             <svg viewBox="0 0 64 64"><defs><linearGradient id="goldGradGirls" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#f6c4d3"/><stop offset="1" stop-color="#a87082"/></linearGradient></defs><circle cx="32" cy="34" r="22" fill="url(#goldGradGirls)" opacity=".95"/><path d="M22 8h20l-4 18H26z" fill="#7b5a4a"/><path d="M32 22l3 7 7 .6-5.3 4.6 1.7 7.1L32 37.8l-6.4 3.5 1.7-7.1L22 29.6l7-.6z" fill="#fff" opacity=".85"/></svg>
           </div>
-          <div class="ops-rotate-name"><%= topGirls.ambassador.name %></div>
-          <div class="ops-rotate-entity"><%= topGirls.ambassador.entity %></div>
-          <div class="ops-rotate-amount"><%= fmt(topGirls.ambassador.amount) %> <small>ر.س</small></div>
+          <div class="ops-rotate-name" id="dashTopGirlsAmbName">—</div>
+          <div class="ops-rotate-entity" id="dashTopGirlsAmbEntity">—</div>
+          <div class="ops-rotate-amount"><span id="dashTopGirlsAmbAmount">0</span> <small>ر.س</small></div>
           <div class="ops-rotate-meta">
-            <span>● <%= topGirls.ambassador.funds %> صندوقاً</span>
-            <span>● <%= topGirls.ambassador.pct %>% من الهدف</span>
+            <span>● <b id="dashTopGirlsAmbFunds">0</b> صندوقاً</span>
+            <span>● <b id="dashTopGirlsAmbPct">0</b>% من الهدف</span>
           </div>
         </div>
         <div class="ops-rotate-slide" data-rotate-key="entity">
           <div class="ops-medal">
             <svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="24" fill="#a87082" opacity=".22"/><path d="M16 44h32v6H16zM18 24l4-10h20l4 10v18H18z" fill="#a87082"/><path d="M22 28h20v10H22z" fill="#f6c4d3"/></svg>
           </div>
-          <div class="ops-rotate-name"><%= topGirls.entity.name %></div>
-          <div class="ops-rotate-entity"><%= topGirls.entity.ambassadors %> سفيرة · <%= topGirls.entity.funds %> صندوقاً</div>
-          <div class="ops-rotate-amount"><%= fmt(topGirls.entity.amount) %> <small>ر.س</small></div>
+          <div class="ops-rotate-name" id="dashTopGirlsEntName">—</div>
+          <div class="ops-rotate-entity" id="dashTopGirlsEntSub">— سفيرة · — صندوقاً</div>
+          <div class="ops-rotate-amount"><span id="dashTopGirlsEntAmount">0</span> <small>ر.س</small></div>
           <div class="ops-rotate-meta">
             <span>● جهة #١</span>
-            <span>● <%= topGirls.entity.pct %>% أداء</span>
+            <span>● <b id="dashTopGirlsEntPct">0</b>% أداء</span>
           </div>
         </div>
       </div>
@@ -1129,35 +1079,43 @@ const fundsPct = pct(stats.fundsTotal, stats.fundsGoal);
   const root = document.querySelector('.ops-root');
   if (!root) return;
 
-  // ============ تحويل الأرقام للعربية الهندية ============
   const arabicDigits = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
   const toArabic = (n) => String(n).replace(/[0-9]/g, d => arabicDigits[+d]);
-
-  // ============ تنسيق رقم بالخانات ============
   const fmtNum = (n) => Math.round(Number(n) || 0).toLocaleString('en-US');
+  const pctOf = (a, b) => (b > 0 ? Math.min(100, Math.round((a / b) * 100)) : 0);
 
-  // ============ Count-up للأرقام الكبيرة ============
-  function countUp(el) {
-    const target = Number(el.dataset.num || 0);
-    if (!target || target < 1) { el.textContent = '0'; return; }
-    const duration = 1500;
-    const start = performance.now();
-    const ease = (t) => 1 - Math.pow(1 - t, 4);
-    function tick(now) {
-      const p = Math.min(1, (now - start) / duration);
-      el.textContent = fmtNum(target * ease(p));
+  // ===== Count-up مرن (يأخذ هدفاً جديداً ويتحرك من القيمة الحالية) =====
+  const animTokens = new WeakMap();
+  function setNumber(el, target, opts) {
+    if (!el) return;
+    const t = Math.max(0, Math.round(Number(target) || 0));
+    const startVal = Number(String(el.textContent || '0').replace(/[^\d.-]/g, '')) || 0;
+    if (opts && opts.instant) { el.textContent = fmtNum(t); return; }
+    if (t === startVal) { el.textContent = fmtNum(t); return; }
+    const duration = 900;
+    const startTime = performance.now();
+    const ease = (k) => 1 - Math.pow(1 - k, 4);
+    const token = Symbol('countup');
+    animTokens.set(el, token);
+    (function tick(now) {
+      if (animTokens.get(el) !== token) return;
+      const p = Math.min(1, (now - startTime) / duration);
+      const v = startVal + (t - startVal) * ease(p);
+      el.textContent = fmtNum(v);
       if (p < 1) requestAnimationFrame(tick);
-      else el.textContent = fmtNum(target);
-    }
-    requestAnimationFrame(tick);
+      else el.textContent = fmtNum(t);
+    })(startTime);
   }
-  setTimeout(() => {
-    root.querySelectorAll('[data-num]').forEach((el, i) => {
-      setTimeout(() => countUp(el), 180 + i * 80);
-    });
-  }, 80);
+  function setText(id, text) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = text;
+  }
+  function setBarWidth(id, pct) {
+    const el = document.getElementById(id);
+    if (el) el.style.setProperty('--w', pct + '%');
+  }
 
-  // ============ ساعة النظام ============
+  // ===== ساعة النظام =====
   const clockEl = document.getElementById('opsClock');
   function tickClock() {
     const d = new Date();
@@ -1169,7 +1127,7 @@ const fundsPct = pct(stats.fundsTotal, stats.fundsGoal);
   tickClock();
   setInterval(tickClock, 1000);
 
-  // ============ التاريخ الميلادي + الهجري ============
+  // ===== التاريخ الميلادي + الهجري =====
   try {
     const now = new Date();
     const gregEl = document.getElementById('opsGreg');
@@ -1179,8 +1137,6 @@ const fundsPct = pct(stats.fundsTotal, stats.fundsGoal);
       }).format(now);
       gregEl.textContent = g + ' م';
     }
-
-    // الهجري — Umm al-Qura
     const hijriFmt = new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura-nu-arab', {
       day: 'numeric', month: 'long', year: 'numeric'
     });
@@ -1192,47 +1148,51 @@ const fundsPct = pct(stats.fundsTotal, stats.fundsGoal);
     if (dayEl)   dayEl.textContent   = get('day');
     if (monthEl) monthEl.textContent = get('month');
     if (yearEl)  yearEl.textContent  = get('year') + ' هـ';
-  } catch (e) {
-    // المتصفحات القديمة — نترك القيم الافتراضية
-  }
+  } catch (e) {}
 
-  // ============ آخر تحديث (يعد التواني تصاعدياً) ============
-  let syncSeconds = 8;
+  // ===== مؤقّت آخر مزامنة — يحسب من lastSyncAt الحقيقي =====
+  let lastSyncAt = null;
   const syncAgoEl = document.getElementById('opsSyncAgo');
   const syncBigEl = document.getElementById('opsLastSyncBig');
-  function formatAgo(s) {
+  function fmtAgoShort(s) {
     if (s < 60)   return 'قبل ' + toArabic(s) + ' ث';
     if (s < 3600) return 'قبل ' + toArabic(Math.floor(s / 60)) + ' د';
-    return 'قبل ' + toArabic(Math.floor(s / 3600)) + ' س';
+    if (s < 86400) return 'قبل ' + toArabic(Math.floor(s / 3600)) + ' س';
+    return 'قبل ' + toArabic(Math.floor(s / 86400)) + ' يوم';
+  }
+  function fmtAgoLong(s) {
+    if (s < 60) return 'قبل ' + toArabic(s) + ' ثانية';
+    if (s < 3600) {
+      const m = Math.floor(s / 60);
+      const sec = s % 60;
+      return 'قبل ' + toArabic(m) + ' د و ' + toArabic(sec) + ' ث';
+    }
+    if (s < 86400) {
+      const h = Math.floor(s / 3600);
+      const m = Math.floor((s % 3600) / 60);
+      return 'قبل ' + toArabic(h) + ' س و ' + toArabic(m) + ' د';
+    }
+    return 'قبل ' + toArabic(Math.floor(s / 86400)) + ' يوم';
   }
   function tickSync() {
-    syncSeconds++;
-    if (syncAgoEl) syncAgoEl.textContent = formatAgo(syncSeconds);
-    if (syncBigEl) {
-      const sec = syncSeconds % 60;
-      const min = Math.floor(syncSeconds / 60);
-      if (min === 0) syncBigEl.textContent = 'قبل ' + toArabic(sec) + ' ثانية';
-      else syncBigEl.textContent = 'قبل ' + toArabic(min) + ' د و ' + toArabic(sec) + ' ث';
+    if (!lastSyncAt) {
+      if (syncAgoEl) syncAgoEl.textContent = '—';
+      if (syncBigEl) syncBigEl.textContent = 'لم تتم المزامنة بعد';
+      return;
     }
-    // كل ~60 ثانية: محاكاة عملية مزامنة
-    if (syncSeconds >= 60) {
-      syncSeconds = 0;
-      if (syncAgoEl) {
-        syncAgoEl.style.color = 'var(--o-ok)';
-        setTimeout(() => syncAgoEl.style.color = '', 1200);
-      }
-    }
+    const s = Math.max(0, Math.floor((Date.now() - lastSyncAt) / 1000));
+    if (syncAgoEl) syncAgoEl.textContent = fmtAgoShort(s);
+    if (syncBigEl) syncBigEl.textContent = fmtAgoLong(s);
   }
   tickSync();
   setInterval(tickSync, 1000);
 
-  // ============ تبديل المحتوى داخل الشرائح الدوارة ============
+  // ===== الشرائح الدوّارة (سفير ↔ جهة) =====
   function setupRotator(panel) {
     const slides = Array.from(panel.querySelectorAll('.ops-rotate-slide'));
     const dots   = Array.from(panel.querySelectorAll('.ops-rotate-dots .dot'));
     const subEl  = panel.querySelector('[data-rotate-sub]');
     if (slides.length < 2) return;
-
     const subLabels = { amb: 'سفير', entity: 'جهة' };
     let idx = 0;
     function show(i) {
@@ -1242,22 +1202,142 @@ const fundsPct = pct(stats.fundsTotal, stats.fundsGoal);
       if (subEl && subLabels[key]) subEl.textContent = subLabels[key];
     }
     show(0);
-    setInterval(() => {
-      idx = (idx + 1) % slides.length;
-      show(idx);
-    }, 6000);
+    setInterval(() => { idx = (idx + 1) % slides.length; show(idx); }, 6000);
   }
   root.querySelectorAll('.ops-rotate').forEach(setupRotator);
 
-  // ============ تحديث متوسط الأداء (محاكاة حية) ============
+  // ===== متوسط الأداء — يُحسب من نسبة الإنجاز الفعلية =====
   const perfEl = document.getElementById('opsAvgPerf');
-  let perfVal = 72;
-  setInterval(() => {
-    perfVal += (Math.random() < 0.5 ? -1 : 1);
-    perfVal = Math.max(64, Math.min(82, perfVal));
-    if (perfEl) perfEl.textContent = toArabic(perfVal) + '٪';
-  }, 4500);
+  function setPerf(pct) {
+    if (perfEl) perfEl.textContent = toArabic(Math.max(0, Math.min(100, Math.round(pct)))) + '٪';
+  }
 
+  // ===== الشريط الدوّار للأنشطة =====
+  function renderTicker(items) {
+    const loop = document.getElementById('dashTickerLoop');
+    if (!loop) return;
+    const list = (items && items.length) ? items : ['—'];
+    const seq = list.concat(list); // مكرّر مرتين حتى يبدو متواصلاً
+    loop.innerHTML = seq.map((t) => {
+      const safe = String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      return `<span class="tk-item">${safe}</span><span class="tk-sep">◆</span>`;
+    }).join('');
+  }
+
+  // ===== تطبيق البيانات على الواجهة =====
+  const HUB_RING_LEN = 791.68;
+  function applyDashboard(d) {
+    const s = (d && d.stats) || {};
+    const tb = (d && d.topBoys) || {};
+    const tg = (d && d.topGirls) || {};
+    const tba = tb.ambassador || {};
+    const tbe = tb.entity || {};
+    const tga = tg.ambassador || {};
+    const tge = tg.entity || {};
+
+    // ===== السفراء =====
+    setNumber(document.getElementById('dashAmbTotal'), s.ambassadorsTotal || 0);
+    setText('dashAmbDelta', '▲ ' + toArabic(s.ambassadorsDelta7d || 0));
+    const memPct = pctOf(s.ambassadorsMembers || 0, s.ambassadorsTotal || 0);
+    const extPct = pctOf(s.ambassadorsExternal || 0, s.ambassadorsTotal || 0);
+    const mBar = document.getElementById('dashAmbMembersBar');
+    const eBar = document.getElementById('dashAmbExternalBar');
+    if (mBar) mBar.style.setProperty('--w', memPct + '%');
+    if (eBar) eBar.style.setProperty('--w', extPct + '%');
+    setText('dashAmbMembersVal', fmtNum(s.ambassadorsMembers || 0));
+    setText('dashAmbExternalVal', fmtNum(s.ambassadorsExternal || 0));
+
+    // ===== الصناديق =====
+    setNumber(document.getElementById('dashFundsTotal'), s.fundsTotal || 0);
+    setText('dashFundsActive', fmtNum(s.fundsActive || 0));
+    setText('dashFundsCompleted', fmtNum(s.fundsCompleted || 0));
+    const activePct = pctOf(s.fundsActive || 0, s.fundsTotal || 0);
+    const completedPct = pctOf(s.fundsCompleted || 0, s.fundsTotal || 0);
+    setBarWidth('dashFundsActiveBar', activePct);
+    setBarWidth('dashFundsCompletedBar', completedPct);
+    const stack = document.getElementById('dashFundsStack');
+    if (stack) stack.title = activePct + '% نشطة · ' + completedPct + '% مكتملة';
+    setText('dashFundsGoal', fmtNum(s.fundsGoal || 0));
+    const fundsPct = pctOf(s.fundsTotal || 0, s.fundsGoal || 0);
+    setText('dashFundsPct', fundsPct + '%');
+    setText('dashFundsTrend', '▲ ' + toArabic(s.fundsActive || 0));
+
+    // ===== الهَب — حلقة التقدّم وإجمالي التبرعات =====
+    const donationsPct = pctOf(s.totalDonations || 0, s.donationsGoal || 0);
+    const ring = document.getElementById('dashHubProgressRing');
+    if (ring) ring.setAttribute('stroke-dashoffset', HUB_RING_LEN - (HUB_RING_LEN * donationsPct / 100));
+    setNumber(document.getElementById('dashHubCurrentAmount'), s.totalDonations || 0);
+    setNumber(document.getElementById('dashHubGoalAmount'), s.donationsGoal || 0);
+    setText('dashHubPct', donationsPct + '%');
+
+    // ===== إجمالي التبرعات (البطاقة اليمنى) =====
+    setNumber(document.getElementById('dashTotalAmount'), s.totalDonations || 0);
+    setText('dashTotalGoal', fmtNum(s.donationsGoal || 0));
+    setText('dashTotalPct', donationsPct + '%');
+    setBarWidth('dashTotalBar', donationsPct);
+    setNumber(document.getElementById('dashTotalToday'), s.donationsToday || 0);
+    setText('dashTotalTrend', '▲ ' + toArabic(donationsPct) + '٪');
+
+    // ===== الشبكة الحيّة =====
+    setText('dashLiveEntities', toArabic(s.entities || 0));
+    setText('dashLiveAmbassadors', toArabic(s.liveAmbassadors || 0));
+    setText('dashLiveDonationsToday', toArabic(fmtNum(s.donationsToday || 0)));
+    setText('dashLiveFundsCompleted', toArabic(s.fundsCompletedToday || 0));
+    setPerf(donationsPct);
+
+    // ===== المراكز الأولى — بنين =====
+    setText('dashTopBoysAmbName', tba.name || '—');
+    setText('dashTopBoysAmbEntity', tba.entity || '—');
+    setNumber(document.getElementById('dashTopBoysAmbAmount'), tba.amount || 0);
+    setText('dashTopBoysAmbFunds', fmtNum(tba.funds || 0));
+    setText('dashTopBoysAmbPct', String(tba.pct || 0));
+    setText('dashTopBoysEntName', tbe.name || '—');
+    setText('dashTopBoysEntSub', `${fmtNum(tbe.ambassadors || 0)} سفيراً · ${fmtNum(tbe.funds || 0)} صندوقاً`);
+    setNumber(document.getElementById('dashTopBoysEntAmount'), tbe.amount || 0);
+    setText('dashTopBoysEntPct', String(tbe.pct || 0));
+
+    // ===== المراكز الأولى — بنات =====
+    setText('dashTopGirlsAmbName', tga.name || '—');
+    setText('dashTopGirlsAmbEntity', tga.entity || '—');
+    setNumber(document.getElementById('dashTopGirlsAmbAmount'), tga.amount || 0);
+    setText('dashTopGirlsAmbFunds', fmtNum(tga.funds || 0));
+    setText('dashTopGirlsAmbPct', String(tga.pct || 0));
+    setText('dashTopGirlsEntName', tge.name || '—');
+    setText('dashTopGirlsEntSub', `${fmtNum(tge.ambassadors || 0)} سفيرة · ${fmtNum(tge.funds || 0)} صندوقاً`);
+    setNumber(document.getElementById('dashTopGirlsEntAmount'), tge.amount || 0);
+    setText('dashTopGirlsEntPct', String(tge.pct || 0));
+
+    // ===== شريط الأنشطة =====
+    renderTicker(d && d.liveFeed);
+
+    // ===== توقيت آخر مزامنة =====
+    if (d && d.lastSyncAt) {
+      const parsed = Date.parse(d.lastSyncAt);
+      if (!Number.isNaN(parsed)) lastSyncAt = parsed;
+    } else if (d && d.generatedAt) {
+      const parsed = Date.parse(d.generatedAt);
+      if (!Number.isNaN(parsed)) lastSyncAt = parsed;
+    }
+    tickSync();
+  }
+
+  // ===== جلب البيانات + تحديث دوري =====
+  async function loadDashboard() {
+    try {
+      const r = await fetch('/api/dashboard', { cache: 'no-store' });
+      if (!r.ok) throw new Error('http ' + r.status);
+      const data = await r.json();
+      applyDashboard(data);
+      if (syncAgoEl) {
+        syncAgoEl.style.color = 'var(--o-ok)';
+        setTimeout(() => { syncAgoEl.style.color = ''; }, 900);
+      }
+    } catch (e) {
+      console.error('[dashboard] load failed:', e);
+    }
+  }
+  loadDashboard();
+  setInterval(loadDashboard, 30000);
 })();
 </script>
 

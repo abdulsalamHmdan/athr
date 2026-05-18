@@ -2,6 +2,7 @@ const express = require("express");
 const Fund = require("../models/Fund");
 const AllFund = require("../models/AllFund");
 const Ambassador = require("../models/Ambassador");
+const AmbassadorActivity = require("../models/AmbassadorActivity");
 const SyncMeta = require("../models/SyncMeta");
 const { listEntities, entityName } = require("../services/entities");
 const { logAmbassadorActivity } = require("../services/activityLog");
@@ -31,6 +32,299 @@ let cacheM = (duration) => {
 };
 
 // ===== Public APIs (لا تتطلب تسجيل دخول) =====
+
+// ===== Dashboard (شاشة العمليات) — يجمّع كل المؤشرات من قاعدة البيانات =====
+function classifyEntityKind(entity) {
+  const sid = String((entity && entity.id) || "");
+  if (sid === "330") return "إدارة";
+  if (sid === "550") return "خارج";
+  const s = String((entity && entity.name) || "").trim();
+  if (s.startsWith("مجمع")) return "بنين";
+  return "بنات";
+}
+
+const arabicDigitsServer = ["٠","١","٢","٣","٤","٥","٦","٧","٨","٩"];
+function toArabicDigits(n) {
+  return String(n).replace(/[0-9]/g, (d) => arabicDigitsServer[+d]);
+}
+function formatAgoArabic(seconds) {
+  const s = Math.max(0, Math.floor(seconds));
+  if (s < 60) return "قبل " + toArabicDigits(s) + " ث";
+  if (s < 3600) return "قبل " + toArabicDigits(Math.floor(s / 60)) + " د";
+  if (s < 86400) return "قبل " + toArabicDigits(Math.floor(s / 3600)) + " س";
+  return "قبل " + toArabicDigits(Math.floor(s / 86400)) + " يوم";
+}
+
+router.get("/dashboard", async (req, res) => {
+  try {
+    const now = new Date();
+    const startOfDay = new Date(now);
+    startOfDay.setHours(0, 0, 0, 0);
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 3600 * 1000);
+
+    const entities = listEntities();
+    const entityById = new Map();
+    for (const e of entities) {
+      entityById.set(String(e.id), { ...e, kind: classifyEntityKind(e) });
+    }
+
+    const ambassadors = await Ambassador.find(
+      {},
+      "name entity isMember platformProfileId createdAt",
+    ).lean();
+
+    const ambassadorsTotal = ambassadors.length;
+    const ambassadorsMembers = ambassadors.filter((a) => a.isMember).length;
+    const ambassadorsExternal = ambassadorsTotal - ambassadorsMembers;
+    const ambassadorsDelta7d = ambassadors.filter(
+      (a) => a.createdAt && new Date(a.createdAt) >= sevenDaysAgo,
+    ).length;
+
+    const ambByClient = new Map();
+    const clientIds = [];
+    for (const a of ambassadors) {
+      const cid = Number(a.platformProfileId);
+      if (Number.isFinite(cid)) {
+        ambByClient.set(cid, a);
+        clientIds.push(cid);
+      }
+    }
+
+    const funds = await AllFund.find(
+      { client_id: { $in: clientIds } },
+      "client_id name currentTotal price_goal done updatedAt",
+    ).lean();
+
+    let totalDonations = 0;
+    let donationsGoalSum = 0;
+    let donationsToday = 0;
+    let fundsTotal = 0;
+    let fundsActive = 0;
+    let fundsCompleted = 0;
+    let fundsCompletedToday = 0;
+    const totalsByClient = new Map();
+    const goalsByClient = new Map();
+    const countByClient = new Map();
+    const completedByClient = new Map();
+
+    for (const f of funds) {
+      const cid = Number(f.client_id);
+      const amount = Number(f.currentTotal) || 0;
+      const goal = Number(f.price_goal) || 0;
+      const updatedToday =
+        f.updatedAt && new Date(f.updatedAt) >= startOfDay;
+
+      totalDonations += amount;
+      donationsGoalSum += goal;
+      fundsTotal++;
+      if (f.done === "a") {
+        fundsCompleted++;
+        if (updatedToday) fundsCompletedToday++;
+      } else {
+        fundsActive++;
+      }
+      if (updatedToday) donationsToday += amount;
+
+      totalsByClient.set(cid, (totalsByClient.get(cid) || 0) + amount);
+      goalsByClient.set(cid, (goalsByClient.get(cid) || 0) + goal);
+      if (amount > 0) {
+        countByClient.set(cid, (countByClient.get(cid) || 0) + 1);
+        if (f.done === "a") {
+          completedByClient.set(cid, (completedByClient.get(cid) || 0) + 1);
+        }
+      }
+    }
+
+    const donationsGoal = donationsGoalSum > 0 ? donationsGoalSum : 500000;
+    const fundsGoal = Math.max(fundsTotal, 100);
+
+    const entitiesWithAmbs = new Set(
+      ambassadors.map((a) => String(a.entity || "")).filter(Boolean),
+    );
+    const entitiesCount = entitiesWithAmbs.size;
+
+    let liveAmbassadors = 0;
+    try {
+      const recent = await AmbassadorActivity.distinct("ambassador", {
+        createdAt: { $gte: new Date(now.getTime() - 15 * 60 * 1000) },
+      });
+      liveAmbassadors = recent.length;
+    } catch (_) {}
+
+    const entityStats = new Map();
+    for (const a of ambassadors) {
+      const eid = String(a.entity || "");
+      const ent = entityById.get(eid);
+      if (!ent) continue;
+      let s = entityStats.get(eid);
+      if (!s) {
+        s = {
+          id: eid,
+          name: ent.name,
+          kind: ent.kind,
+          amount: 0,
+          ambassadors: 0,
+          funds: 0,
+          goal: 0,
+        };
+        entityStats.set(eid, s);
+      }
+      s.ambassadors++;
+      const cid = Number(a.platformProfileId);
+      if (Number.isFinite(cid)) {
+        s.amount += totalsByClient.get(cid) || 0;
+        s.funds += countByClient.get(cid) || 0;
+        s.goal += goalsByClient.get(cid) || 0;
+      }
+    }
+
+    function pickTopAmbassador(kind) {
+      let best = null;
+      for (const a of ambassadors) {
+        const ent = entityById.get(String(a.entity || ""));
+        if (!ent || ent.kind !== kind) continue;
+        const cid = Number(a.platformProfileId);
+        if (!Number.isFinite(cid)) continue;
+        const amount = totalsByClient.get(cid) || 0;
+        if (!best || amount > best.amount) {
+          const ambGoal = goalsByClient.get(cid) || 0;
+          best = {
+            name: a.name || "—",
+            entity: ent.name,
+            amount,
+            funds: countByClient.get(cid) || 0,
+            pct: ambGoal > 0
+              ? Math.min(100, Math.round((amount / ambGoal) * 100))
+              : 0,
+          };
+        }
+      }
+      return best || { name: "—", entity: "—", amount: 0, funds: 0, pct: 0 };
+    }
+
+    function pickTopEntity(kind) {
+      let best = null;
+      for (const s of entityStats.values()) {
+        if (s.kind !== kind) continue;
+        if (!best || s.amount > best.amount) {
+          best = {
+            name: s.name,
+            amount: s.amount,
+            ambassadors: s.ambassadors,
+            funds: s.funds,
+            pct: s.goal > 0
+              ? Math.min(100, Math.round((s.amount / s.goal) * 100))
+              : 0,
+          };
+        }
+      }
+      return best || { name: "—", amount: 0, ambassadors: 0, funds: 0, pct: 0 };
+    }
+
+    const topBoys = {
+      ambassador: pickTopAmbassador("بنين"),
+      entity: pickTopEntity("بنين"),
+    };
+    const topGirls = {
+      ambassador: pickTopAmbassador("بنات"),
+      entity: pickTopEntity("بنات"),
+    };
+
+    const liveFeed = [];
+    try {
+      const acts = await AmbassadorActivity.find({
+        action: {
+          $in: [
+            "create_fund",
+            "create_fund_success",
+            "request_prize",
+            "share_fund_link",
+            "share_created_fund_link",
+          ],
+        },
+      })
+        .populate("ambassador", "name entity")
+        .sort({ createdAt: -1 })
+        .limit(8)
+        .lean();
+      for (const a of acts) {
+        const name = (a.ambassador && a.ambassador.name) || "سفير";
+        const ago = formatAgoArabic(
+          (now.getTime() - new Date(a.createdAt).getTime()) / 1000,
+        );
+        if (a.action === "create_fund" || a.action === "create_fund_success") {
+          const fundName =
+            (a.details && a.details.fundName) || "صندوق جديد";
+          liveFeed.push(
+            `🎉 السفير ${name} فعّل صندوقاً جديداً · ${fundName} — ${ago}`,
+          );
+        } else if (a.action === "request_prize") {
+          const tier =
+            a.details && a.details.tier ? ` (${a.details.tier})` : "";
+          liveFeed.push(`🏆 ${name} طلب صرف جائزة${tier} — ${ago}`);
+        } else {
+          liveFeed.push(`📤 ${name} شارك رابط صندوق — ${ago}`);
+        }
+      }
+    } catch (_) {}
+
+    try {
+      const newAmbs = await Ambassador.find({}, "name entity createdAt")
+        .sort({ createdAt: -1 })
+        .limit(3)
+        .lean();
+      for (const a of newAmbs) {
+        if (!a.createdAt) continue;
+        const seconds =
+          (now.getTime() - new Date(a.createdAt).getTime()) / 1000;
+        if (seconds > 7 * 24 * 3600) continue;
+        const eName =
+          (entityById.get(String(a.entity || "")) || {}).name || "";
+        liveFeed.push(
+          `👤 سفير جديد التحق · ${a.name}${eName ? ` — ${eName}` : ""} — ${formatAgoArabic(seconds)}`,
+        );
+      }
+    } catch (_) {}
+
+    if (!liveFeed.length) {
+      liveFeed.push("في انتظار أول نشاط من السفراء…");
+    }
+
+    let lastSyncAt = null;
+    try {
+      const meta = await SyncMeta.findOne({ key: "funds" }).lean();
+      lastSyncAt = meta && meta.lastSyncAt ? meta.lastSyncAt : null;
+    } catch (_) {}
+
+    res.set("Cache-Control", "no-store");
+    res.json({
+      stats: {
+        ambassadorsTotal,
+        ambassadorsMembers,
+        ambassadorsExternal,
+        ambassadorsDelta7d,
+        totalDonations: Math.round(totalDonations),
+        donationsGoal: Math.round(donationsGoal),
+        donationsToday: Math.round(donationsToday),
+        fundsTotal,
+        fundsActive,
+        fundsCompleted,
+        fundsCompletedToday,
+        fundsGoal,
+        entities: entitiesCount,
+        liveAmbassadors,
+      },
+      topBoys,
+      topGirls,
+      liveFeed,
+      lastSyncAt,
+      generatedAt: now.toISOString(),
+    });
+  } catch (e) {
+    console.error("dashboard api error:", e);
+    res.status(500).json({ error: "failed" });
+  }
+});
 
 // آخر وقت تم فيه تحديث بيانات الصناديق من المنصة
 router.get("/sync-status", async (req, res) => {
