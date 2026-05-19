@@ -33,7 +33,9 @@
       "Bash(curl -s http://localhost:3077/api/dashboard)",
       "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{try{const j=JSON.parse\\(d\\);console.log\\('keys:',Object.keys\\(j\\).sort\\(\\).join\\(','\\)\\);console.log\\('stats keys:',Object.keys\\(j.stats||{}\\).sort\\(\\).join\\(','\\)\\);console.log\\('topEntitiesBoys count:',\\(j.topEntitiesBoys||[]\\).length\\);console.log\\('topEntitiesGirls count:',\\(j.topEntitiesGirls||[]\\).length\\);console.log\\('topAmbassadors count:',\\(j.topAmbassadors||[]\\).length\\);if\\(\\(j.topAmbassadors||[]\\)[0]\\)console.log\\('top amb sample:',JSON.stringify\\(j.topAmbassadors[0]\\)\\);if\\(\\(j.topEntitiesBoys||[]\\)[0]\\)console.log\\('top boys ent sample:',JSON.stringify\\(j.topEntitiesBoys[0]\\)\\);console.log\\('stats sample:',JSON.stringify\\(j.stats\\)\\);}catch\\(e\\){console.log\\('parse error',e.message,d.slice\\(0,200\\)\\)}}\\)\")",
       "Bash(curl -s -o /dev/null -w \"/dashboard HTTP %{http_code}\\\\n\" http://localhost:3077/dashboard)",
-      "Bash(curl -s http://localhost:3077/dashboard)"
+      "Bash(curl -s http://localhost:3077/dashboard)",
+      "Bash(curl -s -o /dev/null -w \"no-session GET / => HTTP %{http_code} | redirect: %{redirect_url}\\\\n\" http://localhost:3077/)",
+      "Bash(curl -s -o /dev/null -w \"no-session GET /login => HTTP %{http_code} | redirect: %{redirect_url}\\\\n\" http://localhost:3077/login)"
     ]
   }
 }

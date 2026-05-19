@@ -35,9 +35,18 @@ router.get('/centers/:id/board', (req, res) => {
   });
 });
 
-router.get('/', (req, res) => res.render('index', { title: 'الرئيسية' }));
-router.get('/signup', (req, res) => res.render('signup', { title: 'تسجيل سفير جديد' }));
-router.get('/login', (req, res) => res.render('login', { title: 'تسجيل الدخول' }));
+router.get('/', (req, res) => {
+  if (req.session.ambassadorId) return res.redirect('/ambassador/home');
+  res.render('index', { title: 'الرئيسية' });
+});
+router.get('/signup', (req, res) => {
+  if (req.session.ambassadorId) return res.redirect('/ambassador/home');
+  res.render('signup', { title: 'تسجيل سفير جديد' });
+});
+router.get('/login', (req, res) => {
+  if (req.session.ambassadorId) return res.redirect('/ambassador/home');
+  res.render('login', { title: 'تسجيل الدخول' });
+});
 router.get('/forgot-password', (req, res) => res.render('forgot-password', { title: 'إعادة تعيين كلمة المرور' }));
 router.get('/dashboard', (req, res) => res.render('dashboard', { title: 'لوحة الإحصائيات' }));
 
