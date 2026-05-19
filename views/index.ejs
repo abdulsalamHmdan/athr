@@ -14,8 +14,81 @@
     <div class="page-actions">
       <a class="btn block lg" href="/signup">تسجيل كسفير جديد</a>
       <a class="btn secondary block lg" href="/login">تسجيل الدخول</a>
+      <a class="btn secondary block lg" id="share_btn" href="#" target="_blank" rel="noopener">رسالة النشر</a>
     </div>
   </div>
+
+  <script>
+    const SHARE_TEXT = `أثرٌ يبدأ منك
+ويمتدّ إليهم ..
+ساهم .. ودَع أثرَك حاضرًا بينهم ✨
+
+donate.utq.org.sa/p/45/paynow?reff=18526`;
+    const SHARE_VIDEO_PATH = '/v_share/d2.mp4';
+    const SHARE_VIDEO_NAME = 'd2.mp4';
+
+    (function () {
+      const btn = document.getElementById('share_btn');
+      const waFallback = 'https://wa.me/?text=' + encodeURIComponent(SHARE_TEXT);
+      btn.href = waFallback;
+
+      const originalLabel = btn.textContent;
+      const setBusy = (label) => {
+        btn.classList.add('disabled');
+        btn.setAttribute('aria-busy', 'true');
+        btn.textContent = label;
+      };
+      const resetBtn = () => {
+        btn.classList.remove('disabled');
+        btn.removeAttribute('aria-busy');
+        btn.textContent = originalLabel;
+      };
+
+      btn.addEventListener('click', async (e) => {
+        if (!navigator.canShare || !navigator.share) return;
+        e.preventDefault();
+        if (btn.classList.contains('disabled')) return;
+        setBusy('جارٍ تحميل الفيديو…');
+        try {
+          const res = await fetch(SHARE_VIDEO_PATH);
+          if (!res.ok) throw new Error('fetch failed');
+
+          const total = Number(res.headers.get('Content-Length')) || 0;
+          let blob;
+          if (total && res.body && typeof res.body.getReader === 'function') {
+            const reader = res.body.getReader();
+            const chunks = [];
+            let loaded = 0;
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              chunks.push(value);
+              loaded += value.length;
+              const pct = Math.min(100, Math.round((loaded / total) * 100));
+              setBusy(`جارٍ تحميل الفيديو… ${pct}%`);
+            }
+            blob = new Blob(chunks, { type: res.headers.get('Content-Type') || 'video/mp4' });
+          } else {
+            blob = await res.blob();
+          }
+
+          const file = new File([blob], SHARE_VIDEO_NAME, { type: blob.type || 'video/mp4' });
+          if (!navigator.canShare({ files: [file] })) {
+            window.open(waFallback, '_blank', 'noopener');
+            return;
+          }
+          setBusy('جاهز للمشاركة…');
+          await navigator.share({ files: [file], text: SHARE_TEXT });
+        } catch (err) {
+          if (!err || err.name !== 'AbortError') {
+            window.open(waFallback, '_blank', 'noopener');
+          }
+        } finally {
+          resetBtn();
+        }
+      });
+    })();
+  </script>
 
   <div class="panel-grid panel-grid-3">
     <article class="info-card">
