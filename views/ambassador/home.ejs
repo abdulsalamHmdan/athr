@@ -1309,14 +1309,50 @@ donate.utq.org.sa/p/45/paynow?reff=18526`;
       }
       setBusy('جاهز للمشاركة…');
       await navigator.share({ files: [file], text: SHARE_TEXT });
+      logShareActivity('share_sheet');
     } catch (err) {
       if (!err || err.name !== 'AbortError') {
         window.open(waFallback, '_blank', 'noopener');
+        logShareActivity('fallback_link');
       }
     } finally {
       resetBtn();
     }
   });
+
+  function logShareActivity(mode) {
+    try {
+      fetch('/ambassador/activity', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'share_message',
+          details: { mode, video: SHARE_VIDEO_NAME },
+          path: '/ambassador/home',
+        }),
+        keepalive: true,
+      });
+    } catch (e) {}
+  }
+})();
+
+(function showShareCtaHint() {
+  const KEY = 'share_cta_hint_seen_v1';
+  try {
+    if (localStorage.getItem(KEY)) return;
+  } catch (e) {}
+  setTimeout(() => {
+    if (!window.App || typeof App.notify !== 'function') return;
+    App.notify({
+      title: 'جديد: رسالة النشر',
+      message:
+        'أضفنا لك زر "رسالة النشر" في الأعلى. بضغطة واحدة يفتح واتساب جاهزًا برسالة الحملة ومقطع الفيديو لمشاركته مع معارفك.',
+      type: 'info',
+      confirmText: 'فهمت',
+    }).then(() => {
+      try { localStorage.setItem(KEY, '1'); } catch (e) {}
+    });
+  }, 800);
 })();
 </script>
 
