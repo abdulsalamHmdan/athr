@@ -4,7 +4,9 @@ const mongoose = require("mongoose");
 const AllFund = require("../models/AllFund");
 
 async function syncFunds() {
-  for (let page = 1; page <= 12; page++) {
+  let page = 1;
+  let pageCount = 1;
+  while (page <= pageCount) {
     console.log(`--- Page ${page} ---`);
     const res = await fetch(
       `http://donate.utq.org.sa/api/v1/goal/list?page=${page}`,
@@ -14,6 +16,7 @@ async function syncFunds() {
       }
     );
     const json = await res.json();
+    pageCount = json.page_count || pageCount;
     const funds = json.results.map((g) => ({
       id: g.id,
       name: g.name,
@@ -46,6 +49,7 @@ async function syncFunds() {
     } else {
       console.log("No funds returned from API for page", page);
     }
+    page++;
   }
 }
 

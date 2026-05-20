@@ -4,7 +4,9 @@ const mongoose = require("mongoose");
 const AllFund = require("../models/AllFund");
 
 async function syncFundTotals() {
-  for (let page = 0; page <= 12; page++) {
+  let page = 0;
+  let hasMore = true;
+  while (hasMore) {
     console.log(`--- Page ${page} ---`);
     const res = await fetch(
       `https://donate.utq.org.sa/api/v1/orders/report/goals?page=${page}&ts=1777150800-${Math.ceil(Date.now() / 1000)}`,
@@ -14,6 +16,7 @@ async function syncFundTotals() {
       }
     );
     const json = await res.json();
+    hasMore = Boolean(json.hasMore);
 
     const results = Array.isArray(json.items) ? json.items : [];
     const now = new Date();
@@ -42,6 +45,7 @@ async function syncFundTotals() {
     } else {
       console.log("No results returned from API for page", page);
     }
+    page++;
   }
 }
 
