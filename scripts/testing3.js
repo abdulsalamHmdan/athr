@@ -24,7 +24,6 @@ async function syncFunds() {
       type: g.type.id,
       total: g.stats.sold_total,
       done: g.stats.progress >= 100? "a" : g.stats.progress>0? "b" : "c",
-      phone:""
     }));
 
     const ops = funds.map((f) => ({
