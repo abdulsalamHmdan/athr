@@ -751,11 +751,19 @@
   const tierLabel = { bronze: 'برونزية', silver: 'فضية', gold: 'ذهبية' };
 
   async function loadPrizeCatalog() {
-    if (prizeCatalog.length) return prizeCatalog;
+    prizeCatalog = [];
     try {
-      const res = await fetch('/data/prizes3.json', { cache: 'no-cache' });
-      const data = await res.json();
-      prizeCatalog = Array.isArray(data.prizes) ? data.prizes : [];
+      const [catalogRes, stockRes] = await Promise.all([
+        fetch('/data/prizes3.json', { cache: 'no-cache' }),
+        fetch('/ambassador/prize-stock', { cache: 'no-cache' }),
+      ]);
+      const data = await catalogRes.json();
+      const stockData = stockRes.ok ? await stockRes.json() : { distributed: {} };
+      const distributed = stockData.distributed || {};
+      prizeCatalog = (Array.isArray(data.prizes) ? data.prizes : []).map((p) => ({
+        ...p,
+        stock: Math.max(0, Number(p.stock || 0) - Number(distributed[p.id] || 0)),
+      }));
     } catch (e) {
       prizeCatalog = [];
     }

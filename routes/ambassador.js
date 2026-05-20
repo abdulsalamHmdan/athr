@@ -195,6 +195,21 @@ router.get('/funds', requireAmbassador, async (req, res) => {
 
 router.get('/funds-data', requireAmbassador, sendFundsData);
 
+router.get('/prize-stock', requireAmbassador, async (req, res) => {
+  try {
+    const rows = await PrizeRequest.aggregate([
+      { $match: { status: { $in: ['pending', 'approved', 'paid'] }, prizeId: { $nin: ['', null] } } },
+      { $group: { _id: '$prizeId', count: { $sum: 1 } } },
+    ]);
+    const distributed = {};
+    for (const r of rows) distributed[r._id] = r.count;
+    res.json({ distributed });
+  } catch (e) {
+    console.error('[ambassador/prize-stock] failed:', e.message);
+    res.json({ distributed: {} });
+  }
+});
+
 router.get('/requests', requireAmbassador, async (req, res) => {
   const list = await PrizeRequest.find({ ambassador: req.session.ambassadorId })
     .sort({ createdAt: -1 })
