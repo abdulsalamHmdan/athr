@@ -3,19 +3,20 @@ configDotenv();
 const mongoose = require("mongoose");
 const AllFund = require("../models/AllFund");
 
-(async () => {
-  try {
-    await mongoose.connect(process.env.MONGO_URI);
-    console.log("MongoDB connected");
-
+async function syncFunds() {
+  let page = 1;
+  let pageCount = 1;
+  while (page <= pageCount) {
+    console.log(`--- Page ${page} ---`);
     const res = await fetch(
-      "http://donate.utq.org.sa/api/v1/goal/list?page=11",
+      `http://donate.utq.org.sa/api/v1/goal/list?page=${page}`,
       {
         method: "get",
         headers: { k: process.env.DONATE_API_KEY },
       }
     );
     const json = await res.json();
+    pageCount = json.page_count || pageCount;
     const funds = json.results.map((g) => ({
       id: g.id,
       name: g.name,
@@ -26,7 +27,6 @@ const AllFund = require("../models/AllFund");
       type: g.type.id,
       total: g.stats.sold_total,
       done: g.stats.progress >= 100? "a" : g.stats.progress>0? "b" : "c",
-      phone:""
     }));
 
     const ops = funds.map((f) => ({
@@ -40,17 +40,31 @@ const AllFund = require("../models/AllFund");
     if (ops.length) {
       const result = await AllFund.bulkWrite(ops);
       console.log("Saved funds:", {
+        page,
         matched: result.matchedCount,
         modified: result.modifiedCount,
         upserted: result.upsertedCount,
         total: funds.length,
       });
     } else {
-      console.log("No funds returned from API");
+      console.log("No funds returned from API for page", page);
     }
-  } catch (err) {
-    console.error(err);
-  } finally {
-    await mongoose.disconnect();
+    page++;
   }
-})();
+}
+
+if (require.main === module) {
+  (async () => {
+    try {
+      await mongoose.connect(process.env.MONGO_URI);
+      console.log("MongoDB connected");
+      await syncFunds();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      await mongoose.disconnect();
+    }
+  })();
+}
+
+module.exports = syncFunds;

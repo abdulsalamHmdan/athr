@@ -118,7 +118,7 @@
       "description": "جهاز PlayStation 5 Slim مع يدّي تحكم DualSense، تجربة ألعاب من الجيل الجديد بأداء فائق ورسومات مذهلة.",
       "image": "/img/prizes/g5.jpeg",
       "tier": "gold",
-      "stock": 5
+      "stock": 0
     },
     {
       "id": "g6",
@@ -126,7 +126,7 @@
       "description": "سكوتر كهربائي قابل للطي بمقعد مريح وإضاءة أمامية قوية، وسيلة تنقل عملية وسريعة.",
       "image": "/img/prizes/g6.jpeg",
       "tier": "gold",
-      "stock": 5
+      "stock": 2
     },
     {
       "id": "g7",
@@ -134,7 +134,7 @@
       "description": "سكوتر كهربائي قابل للطي بتصميم عصري وأداء قوي، مثالي للتنقل اليومي بكل سهولة.",
       "image": "/img/prizes/g7.jpeg",
       "tier": "gold",
-      "stock": 5
+      "stock": 2
     }
   ]
 }
