@@ -40,6 +40,7 @@
       <button class="seg-btn is-active" data-tab="all">الكل <span class="seg-count" id="cAll">0</span></button>
       <button class="seg-btn" data-tab="مجمع">المجمعات <span class="seg-count" id="cMaj">0</span></button>
       <button class="seg-btn" data-tab="دار">الدور النسائية <span class="seg-count" id="cDar">0</span></button>
+      <button class="seg-btn" data-tab="روضات">الروضات <span class="seg-count" id="cRou">0</span></button>
       <button class="seg-btn" data-tab="ادارة">الادارة <span class="seg-count" id="cAdm">0</span></button>
       <button class="seg-btn" data-tab="خارج">من خارج الجمعية <span class="seg-count" id="cOut">0</span></button>
     </div>
@@ -78,6 +79,17 @@
       <span class="sec-count-pill" id="secCDar">0</span>
     </div>
     <div class="centers-grid" id="grid-dar"></div>
+  </section>
+
+  <section class="centers-section" data-sec="روضات">
+    <div class="sec-head">
+      <span class="sec-icon sec-icon-rou" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12 2C9.8 2 8 3.8 8 6c0 1.5.8 2.8 2 3.5V12H6v2h2v6h2v-6h4v6h2v-6h2v-2h-4V9.5c1.2-.7 2-2 2-3.5 0-2.2-1.8-4-4-4zm0 2c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2z"/></svg>
+      </span>
+      <h3>الروضات</h3>
+      <span class="sec-count-pill" id="secCRou">0</span>
+    </div>
+    <div class="centers-grid" id="grid-rou"></div>
   </section>
 
   <section class="centers-section" data-sec="ادارة">
@@ -219,6 +231,7 @@
   }
   .sec-icon-maj{ background:var(--cc-primary-soft); color:var(--cc-primary); }
   .sec-icon-dar{ background:var(--cc-green-soft); color:var(--cc-green); }
+  .sec-icon-rou{ background:var(--cc-purple-soft); color:var(--cc-purple); }
   .sec-icon-oth{ background:var(--cc-amber-soft); color:var(--cc-amber); }
   .sec-count-pill{
     margin-inline-start:auto;
@@ -251,6 +264,7 @@
     border-color: color-mix(in srgb, var(--accent) 35%, var(--cc-border));
   }
   .center-card.cc-dar{ --accent:var(--cc-green); --accent-soft:var(--cc-green-soft); }
+  .center-card.cc-rou{ --accent:var(--cc-purple); --accent-soft:var(--cc-purple-soft); }
   .center-card.cc-oth{ --accent:var(--cc-amber); --accent-soft:var(--cc-amber-soft); }
 
   .cc-top{ display:flex; align-items:flex-start; gap:10px; }
@@ -315,6 +329,7 @@
     const id = String((c && c.id) ?? '');
     if (id === '330') return 'ادارة';
     if (id === '550') return 'خارج';
+    if (id === '227') return 'روضات';
     const s = String((c && c.name) || '').trim();
     if (s.startsWith('مجمع')) return 'مجمع';
     return 'دار';
@@ -329,12 +344,13 @@
     if (kind === 'مجمع') return 'مجمع';
     if (kind === 'ادارة') return 'الادارة';
     if (kind === 'خارج') return 'من خارج الجمعية';
+    if (kind === 'روضات') return 'الروضات';
     return 'دار نسائية';
   }
 
   function cardHtml(c){
     const k = classify(c);
-    const cls = k === 'دار' ? 'cc-dar' : (k === 'ادارة' || k === 'خارج') ? 'cc-oth' : '';
+    const cls = k === 'دار' ? 'cc-dar' : k === 'روضات' ? 'cc-rou' : (k === 'ادارة' || k === 'خارج') ? 'cc-oth' : '';
     return `
       <a class="center-card ${cls}" href="/centers/${encodeURIComponent(c.id)}">
         <div class="cc-top">
@@ -363,7 +379,7 @@
     const q = document.getElementById('q').value.trim();
     const filtered = centers.filter(c => !q || (c.name || '').includes(q));
 
-    const groups = { 'مجمع':[], 'دار':[], 'ادارة':[], 'خارج':[] };
+    const groups = { 'مجمع':[], 'دار':[], 'روضات':[], 'ادارة':[], 'خارج':[] };
     for (const c of filtered) groups[classify(c)].push(c);
     for (const k of Object.keys(groups)){
       groups[k].sort((a,b) => b.totalDonations - a.totalDonations);
@@ -376,15 +392,17 @@
     };
     wrap('grid-maj', groups['مجمع']);
     wrap('grid-dar', groups['دار']);
+    wrap('grid-rou', groups['روضات']);
     wrap('grid-adm', groups['ادارة']);
     wrap('grid-out', groups['خارج']);
 
     document.getElementById('secCMaj').textContent = fmt(groups['مجمع'].length);
     document.getElementById('secCDar').textContent = fmt(groups['دار'].length);
+    document.getElementById('secCRou').textContent = fmt(groups['روضات'].length);
     document.getElementById('secCAdm').textContent = fmt(groups['ادارة'].length);
     document.getElementById('secCOut').textContent = fmt(groups['خارج'].length);
 
-    const tabMap = { 'مجمع':'مجمع', 'دار':'دار', 'ادارة':'ادارة', 'خارج':'خارج' };
+    const tabMap = { 'مجمع':'مجمع', 'دار':'دار', 'روضات':'روضات', 'ادارة':'ادارة', 'خارج':'خارج' };
     const visible = (activeTab === 'all')
       ? filtered
       : (groups[tabMap[activeTab]] || []);
@@ -459,7 +477,7 @@
     centers = d.centers || [];
 
     let totalAmb = 0, totalFunds = 0, totalAmount = 0;
-    const counts = { 'مجمع':0, 'دار':0, 'ادارة':0, 'خارج':0 };
+    const counts = { 'مجمع':0, 'دار':0, 'روضات':0, 'ادارة':0, 'خارج':0 };
     for (const c of centers){
       totalAmb += c.ambassadorsCount || 0;
       totalFunds += c.fundsCount || 0;
@@ -473,6 +491,7 @@
     document.getElementById('cAll').textContent = fmt(centers.length);
     document.getElementById('cMaj').textContent = fmt(counts['مجمع']);
     document.getElementById('cDar').textContent = fmt(counts['دار']);
+    document.getElementById('cRou').textContent = fmt(counts['روضات']);
     document.getElementById('cAdm').textContent = fmt(counts['ادارة']);
     document.getElementById('cOut').textContent = fmt(counts['خارج']);
 

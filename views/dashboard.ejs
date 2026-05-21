@@ -98,15 +98,15 @@
       </div>
     </section>
 
-    <!-- ROTATING PANEL — Top Entities (مجمعات / دور) — صفحاته تُبنى ديناميكياً -->
-    <section class="ops-tile ops-rotate ops-leaderboard" data-rotor="topEntities" aria-label="أفضل المجمعات والدور">
+    <!-- ROTATING PANEL — Top Entities (مجمعات / دور / روضات) — صفحاته تُبنى ديناميكياً -->
+    <section class="ops-tile ops-rotate ops-leaderboard" data-rotor="topEntities" aria-label="أفضل المجمعات والدور والروضات">
       <div class="ops-tile-corner">T·03</div>
       <div class="ops-tile-head ops-rotate-head">
         <span class="ops-tile-icon gold">
           <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg>
         </span>
         <div class="ops-rotate-titles">
-          <span class="ops-tile-label">أفضل المجمعات والدور</span>
+          <span class="ops-tile-label">أفضل المجمعات والدور والروضات</span>
           <span class="ops-rotate-sub" data-rotate-sub>—</span>
         </div>
         <div class="ops-rotate-dots" data-rotate-dots></div>
@@ -1242,7 +1242,7 @@
 
   // ===== الشرائح الدوّارة (لكل بطاقة عنوانان فرعيان) =====
   const ROTOR_SUB_LABELS = {
-    topEntities: { boys: 'المجمعات', girls: 'الدور النسائية' },
+    topEntities: { boys: 'المجمعات', girls: 'الدور النسائية', roudat: 'الروضات' },
     topAmbs:     { g1:   'المراكز ١ — ١٠', g2: 'المراكز ١١ — ٢٠' },
   };
   function setupRotator(panel) {
@@ -1298,7 +1298,7 @@
     `).join('');
   }
 
-  function renderEntityLeaderboard(boys, girls) {
+  function renderEntityLeaderboard(boys, girls, roudat) {
     const panel = root.querySelector('[data-rotor="topEntities"]');
     if (!panel) return;
     const stage = panel.querySelector('[data-stage]');
@@ -1310,6 +1310,7 @@
     [
       { key: 'boys', label: 'المجمعات', rows: boys || [] },
       { key: 'girls', label: 'الدور النسائية', rows: girls || [] },
+      { key: 'roudat', label: 'الروضات', rows: roudat || [] },
     ].forEach((group) => {
       const rows = group.rows.length ? group.rows : [];
       const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
@@ -1405,7 +1406,7 @@
     setText('dashTotalTrend', '▲ ' + toArabic(donationsPct) + '٪');
 
     // ===== قوائم الترتيب =====
-    renderEntityLeaderboard(d && d.topEntitiesBoys, d && d.topEntitiesGirls);
+    renderEntityLeaderboard(d && d.topEntitiesBoys, d && d.topEntitiesGirls, d && d.topEntitiesRoudat);
     const ambs = (d && d.topAmbassadors) || [];
     renderAmbList('dashTopAmbsG1List', ambs.slice(0, 10), 1);
     renderAmbList('dashTopAmbsG2List', ambs.slice(10, 20), 11);

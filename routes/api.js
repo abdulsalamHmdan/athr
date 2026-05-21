@@ -38,6 +38,7 @@ function classifyEntityKind(entity) {
   const sid = String((entity && entity.id) || "");
   if (sid === "330") return "إدارة";
   if (sid === "550") return "خارج";
+  if (sid === "227") return "روضات";
   const s = String((entity && entity.name) || "").trim();
   if (s.startsWith("مجمع")) return "بنين";
   return "بنات";
@@ -204,6 +205,11 @@ router.get("/dashboard", async (req, res) => {
       .sort((a, b) => b.amount - a.amount)
       .slice(0, 20)
       .map(mapEntityRow);
+    const topEntitiesRoudat = entitiesArr
+      .filter((e) => e.kind === "روضات")
+      .sort((a, b) => b.amount - a.amount)
+      .slice(0, 20)
+      .map(mapEntityRow);
 
     // === أفضل ٢٠ سفيراً بغض النظر عن الجهة ===
     const topAmbassadors = ambassadors
@@ -321,6 +327,7 @@ router.get("/dashboard", async (req, res) => {
       },
       topEntitiesBoys,
       topEntitiesGirls,
+      topEntitiesRoudat,
       topAmbassadors,
       liveFeed,
       lastSyncAt,
@@ -408,6 +415,7 @@ function classifyEntity(e) {
   const id = String((e && e.id) || "");
   if (id === "330") return "ادارة";
   if (id === "550") return "خارج";
+  if (id === "227") return "روضات";
   const s = String((e && e.name) || "").trim();
   if (s.startsWith("مجمع")) return "مجمع";
   return "دار";
@@ -416,6 +424,7 @@ function classifyEntity(e) {
 function kindLabelPlural(kind) {
   if (kind === "مجمع") return "المجمعات";
   if (kind === "دار") return "الدور النسائية";
+  if (kind === "روضات") return "الروضات";
   if (kind === "ادارة") return "الإدارة";
   if (kind === "خارج") return "من خارج الجمعية";
   return "";
