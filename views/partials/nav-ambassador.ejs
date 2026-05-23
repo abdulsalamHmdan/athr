@@ -1,10 +1,14 @@
 <div class="amb-topbar">
-  <div class="amb-topbar-profile">
+  <div class="amb-topbar-profile" data-open-account role="button" tabindex="0" aria-label="الحساب الشخصي" title="الحساب الشخصي">
     <img src="/img/logo.png" alt="شعار المنصة">
     <div class="amb-topbar-meta">
       <span>لوحة السفير</span>
-      <strong><%= ambassadorName || 'السفير' %></strong>
+      <strong data-amb-name><%= ambassadorName || 'السفير' %></strong>
     </div>
+    <svg class="amb-topbar-profile-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+      <path d="M12 20h9"></path>
+      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+    </svg>
   </div>
   <div class="amb-topbar-actions">
     <button type="button" class="amb-topbar-home" data-top-home aria-label="الصفحة الرئيسية" title="الصفحة الرئيسية">
@@ -53,6 +57,44 @@
       <button type="button" class="btn sm" id="copyEntryLinkBtn">نسخ الرابط</button>
     </div>
     <p class="entry-link-note" id="entryLinkNote">احرص على حفظه في الملاحظات أو مدير كلمات المرور.</p>
+  </div>
+</div>
+
+<div class="entry-link-modal account-modal" id="accountModal" hidden>
+  <div class="entry-link-backdrop" data-close-account></div>
+  <div class="entry-link-card account-card" role="dialog" aria-modal="true" aria-labelledby="accountTitle">
+    <button type="button" class="entry-link-close" data-close-account aria-label="إغلاق">×</button>
+    <h3 id="accountTitle">الحساب الشخصي</h3>
+    <p class="entry-link-subtitle">عدّل اسمك أو جهتك إذا اخترت جهة خاطئة عند التسجيل.</p>
+
+    <form id="accountForm" novalidate>
+      <div class="account-field">
+        <label for="accName">الاسم</label>
+        <input id="accName" name="name" type="text" maxlength="100" required autocomplete="name">
+      </div>
+
+      <div class="account-field">
+        <label for="accPhone">رقم الجوال</label>
+        <input id="accPhone" type="tel" readonly disabled>
+        <span class="account-hint">رقم الجوال مرتبط بحسابك ولا يمكن تعديله.</span>
+      </div>
+
+      <div class="account-field">
+        <label for="accIsMember">هل أنت من منسوبي الجمعية؟</label>
+        <select id="accIsMember" name="isMember">
+          <option value="false">لا</option>
+          <option value="true">نعم</option>
+        </select>
+      </div>
+
+      <div class="account-field" id="accEntityWrap" hidden>
+        <label for="accEntity">الجهة</label>
+        <select id="accEntity" name="entity"></select>
+      </div>
+
+      <button type="submit" class="btn block ok" id="accSaveBtn" style="margin-top:6px;">حفظ التعديلات</button>
+      <div class="msg" id="accMsg"></div>
+    </form>
   </div>
 </div>
 
@@ -168,4 +210,144 @@
       trackAmbNavActivity('click_notifications_toggle');
     });
   }
+
+  (function initAccountDialog() {
+    const modal = document.getElementById('accountModal');
+    if (!modal) return;
+
+    const openEls = document.querySelectorAll('[data-open-account]');
+    const closeEls = modal.querySelectorAll('[data-close-account]');
+    const form = document.getElementById('accountForm');
+    const nameInput = document.getElementById('accName');
+    const phoneInput = document.getElementById('accPhone');
+    const memberSelect = document.getElementById('accIsMember');
+    const entityWrap = document.getElementById('accEntityWrap');
+    const entitySelect = document.getElementById('accEntity');
+    const saveBtn = document.getElementById('accSaveBtn');
+    const msgEl = document.getElementById('accMsg');
+    let entitiesLoaded = false;
+
+    function setMsg(text, type) {
+      msgEl.textContent = text || '';
+      msgEl.className = 'msg' + (type ? ' ' + type : '');
+    }
+
+    function syncEntityVisibility() {
+      const isMember = memberSelect.value === 'true';
+      entityWrap.hidden = !isMember;
+      entitySelect.required = isMember;
+    }
+
+    function fillEntities(entities, selectedId) {
+      entitySelect.innerHTML = '';
+      const placeholder = document.createElement('option');
+      placeholder.value = '';
+      placeholder.textContent = '— اختر الجهة —';
+      entitySelect.appendChild(placeholder);
+      (entities || []).forEach((e) => {
+        const opt = document.createElement('option');
+        opt.value = e.id;
+        opt.textContent = e.name;
+        entitySelect.appendChild(opt);
+      });
+      if (selectedId != null) entitySelect.value = String(selectedId);
+    }
+
+    async function loadProfile() {
+      setMsg('جاري تحميل بياناتك...', '');
+      saveBtn.disabled = true;
+      try {
+        const res = await fetch('/ambassador/profile', { headers: { accept: 'application/json' } });
+        if (res.status === 401) { location.href = '/login'; return; }
+        const data = await res.json();
+        if (!res.ok || !data || !data.profile) throw new Error('failed');
+
+        if (!entitiesLoaded) {
+          fillEntities(data.entities, null);
+          entitiesLoaded = true;
+        }
+        nameInput.value = data.profile.name || '';
+        phoneInput.value = data.profile.phone ? '0' + data.profile.phone : '';
+        memberSelect.value = data.profile.isMember ? 'true' : 'false';
+        if (data.profile.isMember) entitySelect.value = String(data.profile.entity || '');
+        syncEntityVisibility();
+        setMsg('', '');
+        saveBtn.disabled = false;
+      } catch (e) {
+        setMsg('تعذر تحميل بياناتك، حاول مرة أخرى.', 'err');
+      }
+    }
+
+    function openModal() {
+      modal.hidden = false;
+      document.body.classList.add('modal-open');
+      trackAmbNavActivity('open_account_modal');
+      loadProfile();
+    }
+
+    function closeModal() {
+      modal.hidden = true;
+      document.body.classList.remove('modal-open');
+    }
+
+    openEls.forEach((el) => {
+      el.addEventListener('click', openModal);
+      el.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          openModal();
+        }
+      });
+    });
+
+    closeEls.forEach((el) => el.addEventListener('click', closeModal));
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !modal.hidden) closeModal();
+    });
+
+    memberSelect.addEventListener('change', syncEntityVisibility);
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = nameInput.value.trim();
+      const isMember = memberSelect.value === 'true';
+      const entity = entitySelect.value;
+
+      if (!name) { setMsg('الرجاء إدخال الاسم.', 'err'); return; }
+      if (isMember && !entity) { setMsg('الرجاء اختيار الجهة.', 'err'); return; }
+
+      saveBtn.disabled = true;
+      const oldLabel = saveBtn.textContent;
+      saveBtn.textContent = 'جاري الحفظ...';
+      setMsg('', '');
+      try {
+        const res = await fetch('/ambassador/profile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, isMember, entity }),
+        });
+        if (res.status === 401) { location.href = '/login'; return; }
+        const data = await res.json();
+        if (!res.ok || !data || !data.ok) {
+          setMsg((data && data.error) || 'تعذر حفظ التعديلات.', 'err');
+          return;
+        }
+
+        document.querySelectorAll('[data-amb-name]').forEach((el) => {
+          el.textContent = data.profile.name || 'السفير';
+        });
+        trackAmbNavActivity('update_profile', { isMember, entity });
+        closeModal();
+        if (window.App && typeof App.notify === 'function') {
+          App.notify({ title: 'تم الحفظ', message: 'تم تحديث بيانات حسابك بنجاح.', type: 'success', confirmText: 'تمام' });
+        }
+      } catch (err) {
+        setMsg('تعذر الاتصال بالخادم، حاول لاحقاً.', 'err');
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = oldLabel;
+      }
+    });
+  })();
 </script>

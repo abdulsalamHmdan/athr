@@ -6,6 +6,9 @@ const AllFund = require('../models/AllFund');
 const { requireAmbassador } = require('../middleware/auth');
 const { logAmbassadorActivity } = require('../services/activityLog');
 const { trySendWhatsapp } = require('../services/whatsapp');
+const { ENTITIES, entityName, listEntities } = require('../services/entities');
+
+const NON_MEMBER_ENTITY = '550';
 
 
 
@@ -147,6 +150,69 @@ router.get('/me', requireAmbassador, async (req, res) => {
       referralLink: link,
     },
     stats,
+  });
+});
+
+router.get('/profile', requireAmbassador, async (req, res) => {
+  const amb = await Ambassador.findById(req.session.ambassadorId, 'name phone isMember entity');
+  if (!amb) return res.status(404).json({ error: 'غير موجود' });
+  res.json({
+    ok: true,
+    profile: {
+      name: amb.name,
+      phone: amb.phone,
+      isMember: !!amb.isMember,
+      entity: amb.entity,
+      entityName: entityName(amb.entity),
+    },
+    entities: listEntities().filter((e) => e.id !== NON_MEMBER_ENTITY),
+  });
+});
+
+router.post('/profile', requireAmbassador, async (req, res) => {
+  const amb = await Ambassador.findById(req.session.ambassadorId);
+  if (!amb) return res.status(404).json({ error: 'غير موجود' });
+
+  const name = String(req.body?.name ?? '').trim();
+  if (!name) return res.status(400).json({ error: 'الرجاء إدخال الاسم' });
+  if (name.length > 100) return res.status(400).json({ error: 'الاسم طويل جداً' });
+
+  const isMember = req.body?.isMember === true || req.body?.isMember === 'true';
+  let entity;
+  if (isMember) {
+    entity = String(req.body?.entity ?? '').trim();
+    if (!ENTITIES[entity] || entity === NON_MEMBER_ENTITY) {
+      return res.status(400).json({ error: 'الرجاء اختيار جهة صحيحة' });
+    }
+  } else {
+    entity = NON_MEMBER_ENTITY;
+  }
+
+  const before = { name: amb.name, isMember: !!amb.isMember, entity: amb.entity };
+  amb.name = name;
+  amb.isMember = isMember;
+  amb.entity = entity;
+  await amb.save();
+
+  req.session.ambassadorName = amb.name;
+
+  await logAmbassadorActivity({
+    ambassadorId: amb._id,
+    action: 'update_profile',
+    details: { before, after: { name, isMember, entity } },
+    source: 'server',
+    path: '/ambassador/profile',
+  });
+
+  res.json({
+    ok: true,
+    profile: {
+      name: amb.name,
+      phone: amb.phone,
+      isMember: amb.isMember,
+      entity: amb.entity,
+      entityName: entityName(amb.entity),
+    },
   });
 });
 

@@ -35,7 +35,19 @@
       "Bash(curl -s -o /dev/null -w \"/dashboard HTTP %{http_code}\\\\n\" http://localhost:3077/dashboard)",
       "Bash(curl -s http://localhost:3077/dashboard)",
       "Bash(curl -s -o /dev/null -w \"no-session GET / => HTTP %{http_code} | redirect: %{redirect_url}\\\\n\" http://localhost:3077/)",
-      "Bash(curl -s -o /dev/null -w \"no-session GET /login => HTTP %{http_code} | redirect: %{redirect_url}\\\\n\" http://localhost:3077/login)"
+      "Bash(curl -s -o /dev/null -w \"no-session GET /login => HTTP %{http_code} | redirect: %{redirect_url}\\\\n\" http://localhost:3077/login)",
+      "Bash(node --check routes/ambassador.js)",
+      "Bash(ls .claude)",
+      "Bash(cat .claude/launch.json)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3077/login)",
+      "Bash(curl -s -i http://localhost:3077/ambassador/profile -H \"accept: application/json\")",
+      "Bash(curl -s -i http://localhost:3099/ambassador/profile -H \"accept: application/json\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" -X POST http://localhost:3099/ambassador/profile -H \"Content-Type: application/json\" -H \"accept: application/json\" -d \"{}\")",
+      "Bash(node -e \"const ejs=require\\('ejs'\\); ejs.renderFile\\('views/partials/nav-ambassador.ejs',{ambassadorName:'تجربة الاسم'},{},\\(e,html\\)=>{ if\\(e\\){console.error\\('EJS ERROR:',e.message\\);process.exit\\(1\\);} const checks=['data-open-account','accountModal','accEntityWrap','data-amb-name','حفظ التعديلات']; const missing=checks.filter\\(c=>!html.includes\\(c\\)\\); console.log\\('EJS render OK, length',html.length\\); console.log\\(missing.length?\\('MISSING: '+missing.join\\(', '\\)\\):'all key markers present'\\); }\\);\")",
+      "Bash(node -e \"const fs=require\\('fs'\\);const s=fs.readFileSync\\('views/partials/nav-ambassador.ejs','utf8'\\);const m=s.match\\(/<script>\\([\\\\s\\\\S]*?\\)<\\\\/script>\\\\s*$/\\);if\\(!m\\){console.error\\('no inline script found'\\);process.exit\\(1\\);}fs.writeFileSync\\(require\\('os'\\).tmpdir\\(\\)+'/navamb_check.js',m[1]\\);\")",
+      "Bash(node -e \"console.log\\(require\\('os'\\).tmpdir\\(\\)\\)\")",
+      "Bash(node --check \"$\\(node -e \"console.log\\(require\\('os'\\).tmpdir\\(\\)\\)\"\\)/navamb_check.js\")",
+      "PowerShell($c = Get-NetTCPConnection -LocalPort 3099 -State Listen -ErrorAction SilentlyContinue; if \\($c\\) { $c.OwningProcess | Select-Object -Unique | ForEach-Object { Write-Output \"Stopping PID $_\"; Stop-Process -Id $_ -Force } } else { Write-Output \"nothing listening on 3099\" })"
     ]
   }
 }
