@@ -20,7 +20,7 @@ router.get('/share', (req, res) => {
 });
 // صفحة عامة — مشاركة رسالة النشر مع عبارات شكر
 router.get('/mbarkh', (req, res) => {
-  res.render('public/mbarkh', { title: 'المعايدة' });
+  res.render('public/mbarkh2', { title: 'المعايدة' });
 });
 
 // صفحات عامة بدون تسجيل دخول — قائمة المجمعات وتفاصيل كل مجمع
