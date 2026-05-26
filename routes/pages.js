@@ -9,6 +9,11 @@ function renderAmbassadorPage(req, res, view, locals) {
   return res.render(view, { ...locals, ambassadorName });
 }
 
+// صفحة عامة — تحفيز يوم عرفة (النقطة بنقطتين)
+router.get('/arafah', (req, res) => {
+  res.render('public/arafah', { title: 'يوم عرفة — النقطة بنقطتين' });
+});
+
 // صفحات عامة بدون تسجيل دخول — قائمة المجمعات وتفاصيل كل مجمع
 router.get('/centers',  (req, res) => {
   res.render('public/centers', {

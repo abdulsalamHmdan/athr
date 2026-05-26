@@ -1,0 +1,201 @@
+<%- include('../partials/head') %>
+
+<div class="arafah-page">
+
+  <!-- HERO -->
+  <section class="ar-hero">
+    <div class="ar-hero-glow"></div>
+    <div class="ar-hero-inner">
+      <div class="ar-badge">
+        <span class="ar-2x">2x</span>
+        النقطة بنقطتين
+      </div>
+      <h1>يوم عرفة</h1>
+      <p class="ar-tag">تضاعف لك الأجر… وتبقى لك الأثر</p>
+    </div>
+  </section>
+
+  <!-- DOUBLE POINTS CARD -->
+  <article class="ar-card ar-card-hero">
+    <div class="ar-icon">
+      <span class="ar-2x lg">2x</span>
+    </div>
+    <h2>نقاطك تتضاعف في يوم عرفة</h2>
+    <p>
+      احتساباً لفضل هذا اليوم العظيم، كل نقطة تكسبها يوم عرفة
+      <b>تُحتسب بنقطتين</b>. ضاعِف أثرك وضاعِف أجرك في يومٍ
+      لا يُعدله يوم.
+    </p>
+  </article>
+
+  <!-- INFO GRID -->
+  <div class="ar-grid">
+    <article class="ar-card">
+      <div class="ar-mini-icon ar-amber">🎁</div>
+      <h3>النقاط الإضافية في يوم العيد</h3>
+      <p>
+        النقاط المُضاعفة التي تجمعها في يوم عرفة ستُضاف إلى رصيدك
+        <b>يوم العيد</b> — فرحة الأجر تكتمل مع فرحة العيد.
+      </p>
+    </article>
+
+    <article class="ar-card">
+      <div class="ar-mini-icon ar-green">🌙</div>
+      <h3>تحفيز خاص للعشر الأوائل</h3>
+      <p>
+         <b>للعشر الأوائل</b> تحفيز الخاص في يوم عرفة. اغتنم أيامًا ما العمل الصالح
+        في أيامٍ أحبّ إلى الله منها.
+      </p>
+    </article>
+  </div>
+
+  <!-- VIRTUE / REMINDERS -->
+  <section class="ar-virtue">
+    <h3>تذكّر فضل يوم عرفة</h3>
+    <ul class="ar-reminders">
+      <li>
+        <span class="ar-dot"></span>
+        صيام يوم عرفة يُكفّر سنةً ماضيةً وسنةً مقبلة.
+      </li>
+      <li>
+        <span class="ar-dot"></span>
+        ما من يومٍ أكثر أن يعتق الله فيه عبدًا من النار من يوم عرفة.
+      </li>
+      <li>
+        <span class="ar-dot"></span>
+        خير الدعاء دعاء يوم عرفة، فأكثِر من الدعاء والذكر والاستغفار.
+      </li>
+      <li>
+        <span class="ar-dot"></span>
+        احتسب كل عملٍ صالح، فالأجر مضاعف والأثر باقٍ.
+      </li>
+    </ul>
+  </section>
+
+  <!-- CTA -->
+  <div class="ar-cta">
+    <a class="btn block lg" href="/ambassador/home">ابدأ الآن واكسب نقاطك المضاعفة</a>
+    <a class="btn secondary block lg" href="/centers">استعرض المجمعات</a>
+  </div>
+
+</div>
+
+<style>
+  .arafah-page{
+    --ar-blue:#3b6ea5;
+    --ar-deep:#274b73;
+    --ar-gold:#c9a227;
+    --ar-green:#16a34a;
+    --ar-green-soft:#e8f7ee;
+    --ar-amber:#d97706;
+    --ar-amber-soft:#fef3e2;
+    --ar-text:#1a2733;
+    --ar-mute:#6b7785;
+    --ar-border:#d7dde5;
+    max-width:760px; margin:0 auto;
+  }
+
+  /* HERO */
+  .ar-hero{
+    position:relative; overflow:hidden;
+    border-radius:24px; margin:4px 0 18px;
+    padding:40px 24px 34px; text-align:center;
+    background:linear-gradient(160deg, var(--ar-blue), var(--ar-deep));
+    color:#fff;
+  }
+  .ar-hero-glow{
+    position:absolute; top:-60px; inset-inline-start:50%;
+    transform:translateX(-50%);
+    width:280px; height:280px; border-radius:50%;
+    background:radial-gradient(circle, rgba(255,255,255,.35), transparent 65%);
+    pointer-events:none;
+  }
+  .ar-hero-inner{ position:relative; }
+  .ar-badge{
+    display:inline-flex; align-items:center; gap:8px;
+    background:rgba(255,255,255,.16);
+    border:1px solid rgba(255,255,255,.3);
+    backdrop-filter:blur(4px);
+    color:#fff; padding:7px 16px; border-radius:999px;
+    font-size:14px; font-weight:700;
+  }
+  .ar-2x{
+    display:inline-flex; align-items:center; justify-content:center;
+    background:var(--ar-gold); color:#3a2e00;
+    font-weight:900; border-radius:8px;
+    padding:2px 8px; font-size:14px; line-height:1;
+    letter-spacing:.5px;
+    box-shadow:0 2px 8px rgba(201,162,39,.45);
+  }
+  .ar-2x.lg{ font-size:26px; padding:8px 14px; border-radius:14px; }
+  .ar-hero h1{
+    margin:16px 0 6px; font-size:40px; font-weight:900;
+    text-shadow:0 4px 18px rgba(0,0,0,.25);
+  }
+  .ar-tag{ margin:0; font-size:15px; opacity:.92; font-weight:500; }
+
+  /* CARDS */
+  .ar-card{
+    background:#fff; border:1px solid var(--ar-border);
+    border-radius:18px; padding:22px;
+  }
+  .ar-card-hero{
+    text-align:center; margin-bottom:16px;
+    border-color:color-mix(in srgb, var(--ar-gold) 35%, var(--ar-border));
+    background:linear-gradient(180deg, #fffdf5, #fff);
+  }
+  .ar-icon{ margin-bottom:6px; }
+  .ar-card-hero h2{
+    margin:10px 0 8px; font-size:22px; font-weight:800; color:var(--ar-text);
+  }
+  .ar-card-hero p{ margin:0; color:var(--ar-mute); font-size:14.5px; line-height:1.9; }
+  .ar-card-hero b{ color:var(--ar-green); }
+
+  .ar-grid{
+    display:grid; gap:14px; margin-bottom:16px;
+    grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));
+  }
+  .ar-card h3{
+    margin:12px 0 8px; font-size:16px; font-weight:800; color:var(--ar-text);
+  }
+  .ar-card p{ margin:0; color:var(--ar-mute); font-size:13.5px; line-height:1.85; }
+  .ar-card b{ color:var(--ar-text); font-weight:800; }
+  .ar-mini-icon{
+    width:46px; height:46px; border-radius:13px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:22px;
+  }
+  .ar-amber{ background:var(--ar-amber-soft); }
+  .ar-green{ background:var(--ar-green-soft); }
+
+  /* VIRTUE */
+  .ar-virtue{
+    background:#fff; border:1px solid var(--ar-border);
+    border-radius:18px; padding:22px; margin-bottom:16px;
+  }
+  .ar-virtue h3{
+    margin:0 0 14px; font-size:17px; font-weight:800; color:var(--ar-text);
+  }
+  .ar-reminders{ list-style:none; margin:0; padding:0; display:grid; gap:12px; }
+  .ar-reminders li{
+    display:flex; align-items:flex-start; gap:10px;
+    color:var(--ar-text); font-size:14px; line-height:1.8;
+  }
+  .ar-dot{
+    flex-shrink:0; margin-top:8px;
+    width:9px; height:9px; border-radius:50%;
+    background:var(--ar-gold);
+    box-shadow:0 0 0 4px color-mix(in srgb, var(--ar-gold) 18%, transparent);
+  }
+
+  /* CTA */
+  .ar-cta{ display:grid; gap:10px; margin-top:18px; }
+
+  @media (max-width:520px){
+    .ar-hero h1{ font-size:32px; }
+    .ar-hero{ padding:34px 18px 28px; }
+    .ar-card-hero h2{ font-size:19px; }
+  }
+</style>
+
+<%- include('../partials/foot') %>
