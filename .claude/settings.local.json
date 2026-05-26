@@ -51,7 +51,8 @@
       "Bash(node scripts/extracting2.js)",
       "PowerShell(Stop-Process -Id 5228 -Force)",
       "PowerShell(\"stopped\")",
-      "Bash(ls -la .claude/)"
+      "Bash(ls -la .claude/)",
+      "PowerShell(Rename-Item \"C:\\\\Users\\\\asus\\\\Desktop\\\\athr piont\\\\views\\\\public\\\\mbarkh.EJS\" \"mbarkh.ejs\")"
     ]
   }
 }
