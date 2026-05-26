@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>تهنئة عيد مبارك</title>
+    <style>
+        @font-face {
+            font-family: "LamaSans";
+            src: url("lma/LamaSans-Black.ttf");
+            font-weight: bold;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif; /* استخدم خط عربي عصري كخط افتراضي */
+            text-align: center;
+            background-color: #f7f9fc;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-family: 'LamaSans', sans-serif;
+            font-size: 3em;
+            color: #1b5e20;
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            font-size: 1.5em;
+            color: #555;
+            margin-bottom: 30px;
+        }
+
+        .welcome-text {
+            font-size: 1.2em;
+            color: #777;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .input-container {
+            margin-bottom: 30px;
+        }
+
+        input {
+            padding: 15px 25px;
+            width: 80%;
+            max-width: 400px;
+            border: 2px solid #ddd;
+            border-radius: 30px;
+            font-size: 1.2em;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #1b5e20;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        button {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 30px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        .download-btn {
+            background-color: #1b5e20;
+            color: white;
+        }
+
+        .download-btn:hover {
+            background-color: #144618;
+        }
+
+        .share-btn {
+            background-color: #fff;
+            color: #1b5e20;
+            border: 2px solid #1b5e20;
+        }
+
+        .share-btn:hover {
+            background-color: #f1f8f1;
+        }
+
+        canvas {
+            max-width: 100%;
+            margin-top: 40px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            /* display: none; */
+        }
+        img{
+            max-width: 100%;
+            margin-top: 40px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        /* خط من Google Fonts كخط افتراضي */
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>عيد مبارك!</h1>
+        <h2>صانع تهنئة عيد الفطر</h2>
+
+        <p class="welcome-text">
+            كل عام وأنتم بخير! نتمنى لكم عيداً سعيداً مليئاً بالفرح والبركات. <br />
+            استخدم أداتنا البسيطة لإضافة اسمك إلى بطاقة التهنئة الخاصة بنا ومشاركتها مع أحبائك.
+        </p>
+
+        <p class="welcome-text">
+            <b>طريقة الاستعمال:</b> اكتب اسمك في المربع أدناه، وستظهر بطاقة التهنئة المخصصة فوراً. ثم يمكنك تحميلها أو مشاركتها مباشرة.
+        </p>
+
+        <div class="input-container">
+            <input
+                type="text"
+                value=""
+                id="nameInput"
+                placeholder="أدخل اسمك هنا..."
+                oninput="drawCanvas()"
+            />
+        </div>
+
+        <div class="button-container">
+            <button class="download-btn" onclick="downloadImage()">تحميل الصورة</button>
+            <button class="share-btn" onclick="shareImage()">مشاركة مباشرة</button>
+        </div>
+
+        <canvas id="eidCanvas"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('eidCanvas');
+        const ctx = canvas.getContext('2d');
+        const nameInput = document.getElementById('nameInput');
+        const img = new Image();
+
+        // مسار صورتك
+        // img.src = 'img.jpeg'; 
+        img.src = 'img/AAA.jpeg'; 
+
+        // دالة الرسم الرئيسية
+        async function drawCanvas() {
+            // التأكد من تحميل الخط أولاً لتجنب رسم خط افتراضي
+            await document.fonts.load("bold 10px LamaSans");
+
+            // رسم الصورة الخلفية
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0);
+
+            const name = nameInput.value;
+            if (!name) return;
+
+            let fontSize = 30; // حجم البدء (يمكنك زيادته لخط لاما لأنه عريض)
+            const maxWidth = canvas.width * 0.65; // ترك مساحة أمان 
+            
+            ctx.fillStyle = "#4d413b"; 
+            ctx.textAlign = "center";
+
+            // حلقة التصغير التلقائي
+            do {
+                ctx.font = `bold ${fontSize}px 'LamaSans'`;
+                fontSize -= 2;
+            } while (ctx.measureText(name).width > maxWidth && fontSize > 20);
+
+            // الإحداثيات (تحت كلمة أخوكم/)
+            const x = canvas.width / 2;
+            const y = canvas.height * 0.63; // عدلها قليلاً للأعلى أو الأسفل حسب رغبتك
+
+            ctx.fillText(name, x, y);
+        }
+
+        function downloadImage() {
+            const link = document.createElement('a');
+            link.download = 'عيد-مبارك.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        function shareImage() {
+            // تحقق مما إذا كانت واجهة Web Share مدعومة
+            if (navigator.share) {
+                canvas.toBlob((blob) => {
+                    const file = new File([blob], 'eid-greeting.png', { type: 'image/png' });
+                    navigator.share({
+                        title: 'تهنئة عيد الفطر',
+                        text: 'كل عام وأنتم بخير',
+                        files: [file]
+                    })
+                    .then(() => console.log('تمت المشاركة بنجاح!'))
+                    .catch((error) => console.log('فشلت المشاركة:', error));
+                });
+            } else {
+                alert('عذراً، وظيفة المشاركة غير مدعومة في متصفحك. يرجى استخدام متصفح يدعم هذه الميزة أو تحميل الصورة بدلاً من ذلك.');
+            }
+        }
+
+        // تشغيل الرسم عند تحميل الصورة أو الكتابة
+        img.onload = () => {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            drawCanvas();
+        };
+
+        nameInput.addEventListener('input', drawCanvas);
+    </script>
+</body>
+</html>

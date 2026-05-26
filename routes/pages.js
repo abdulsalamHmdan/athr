@@ -18,6 +18,10 @@ router.get('/arafah', (req, res) => {
 router.get('/share', (req, res) => {
   res.render('public/share', { title: 'شارك أثرك' });
 });
+// صفحة عامة — مشاركة رسالة النشر مع عبارات شكر
+router.get('/mbarkh', (req, res) => {
+  res.render('public/mbarkh', { title: 'المعايدة' });
+});
 
 // صفحات عامة بدون تسجيل دخول — قائمة المجمعات وتفاصيل كل مجمع
 router.get('/centers',  (req, res) => {
