@@ -109,6 +109,25 @@
     font-size:14.5px; line-height:1.9; opacity:.94; font-weight:500;
   }
 
+  /* SHARE CTA — the global flat-white theme forces .card backgrounds to white
+     and strips shadows, so the color lives in the text + the WhatsApp button. */
+  .share-page .share-cta-card{
+    align-items:center;
+    border:1px solid var(--sp-border);
+    border-inline-start:4px solid #128C7E;
+  }
+  .share-page .share-cta-kicker{
+    background:rgba(18,140,126,.12); color:#0f7a6e;
+  }
+  .share-page .share-cta-title{ color:var(--sp-text); }
+  .share-page .share-cta-desc{ color:var(--sp-mute); }
+  .share-page .share-cta-btn{
+    background:#128C7E; color:#fff;
+  }
+  .share-page .share-cta-btn:hover:not(:disabled){
+    background:#0f7a6e; color:#fff;
+  }
+
   /* THANK YOU */
   .share-thanks{
     background:#fff; border:1px solid var(--sp-border);
