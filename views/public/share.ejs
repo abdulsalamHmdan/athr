@@ -1,0 +1,228 @@
+<%- include('../partials/head') %>
+
+<div class="share-page">
+
+  <!-- HERO -->
+  <section class="share-hero">
+    <div class="share-hero-glow"></div>
+    <div class="share-hero-inner">
+      <span class="share-badge">شكراً لك ✨</span>
+      <h1>أثرُك يصنع الفرق</h1>
+      <p class="share-tag">
+        امتنانٌ خاص لكلّ يدٍ امتدّت بالخير… مشاركتك تضاعف الأثر،
+        وتفتح أبواب الأجر لمن لا تعرفهم.
+      </p>
+    </div>
+  </section>
+
+  <!-- SHARE CTA -->
+  <div class="card share-cta-card" id="shareCtaCard">
+    <div class="share-cta-content">
+      <span class="share-cta-kicker">شارك أثرك</span>
+      <h2 class="share-cta-title">رسالة النشر</h2>
+      <p class="share-cta-desc">انشر رسالة الحملة مع الفيديو مباشرة عبر واتساب بضغطة واحدة.</p>
+    </div>
+    <button type="button" class="btn lg share-cta-btn" id="amb_share_btn">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+        <path d="M20.52 3.48A11.86 11.86 0 0 0 12.04 0C5.5 0 .2 5.3.2 11.84c0 2.09.55 4.13 1.6 5.93L0 24l6.4-1.68a11.83 11.83 0 0 0 5.64 1.44h.01c6.54 0 11.84-5.3 11.84-11.84 0-3.17-1.23-6.14-3.37-8.44zM12.05 21.5h-.01a9.66 9.66 0 0 1-4.93-1.35l-.35-.21-3.8 1 1.02-3.7-.23-.38a9.66 9.66 0 0 1-1.48-5.12c0-5.36 4.36-9.71 9.72-9.71 2.6 0 5.04 1.01 6.87 2.85a9.65 9.65 0 0 1 2.85 6.87c0 5.36-4.36 9.75-9.66 9.75zm5.3-7.27c-.29-.15-1.71-.84-1.98-.94-.27-.1-.47-.15-.66.15-.2.29-.76.94-.93 1.13-.17.2-.34.22-.63.07-.29-.15-1.23-.45-2.34-1.45-.87-.78-1.45-1.74-1.62-2.03-.17-.29-.02-.45.13-.6.13-.13.29-.34.43-.51.15-.17.2-.29.29-.49.1-.2.05-.37-.02-.51-.07-.15-.66-1.6-.91-2.18-.24-.57-.48-.5-.66-.5h-.56c-.2 0-.51.07-.78.37-.27.29-1.03 1-1.03 2.45s1.06 2.84 1.21 3.04c.15.2 2.08 3.18 5.04 4.46.7.3 1.25.48 1.68.62.71.22 1.35.19 1.86.12.57-.09 1.71-.7 1.96-1.37.24-.67.24-1.25.17-1.37-.07-.12-.27-.2-.56-.34z"/>
+      </svg>
+      <span class="share-cta-label">رسالة النشر</span>
+    </button>
+  </div>
+
+  <!-- THANK YOU PHRASES -->
+  <section class="share-thanks">
+    <span class="share-thanks-kicker">عبارات شكر</span>
+    <h3 class="share-thanks-title">كلماتٌ من القلب… لكلّ مَن شارك الأثر</h3>
+
+    <div class="share-quotes">
+      <article class="share-quote">
+        <span class="share-quote-mark">&rdquo;</span>
+        <p>شكراً لأنك اخترت أن تكون أثراً باقياً، وأن تمدّ يدك حيث ينتظر الخير.</p>
+      </article>
+
+      <article class="share-quote">
+        <span class="share-quote-mark">&rdquo;</span>
+        <p>كلّ مشاركةٍ منك صدقةٌ تتجدّد، وأثرٌ يكبر بعدد مَن يصله خيرك.</p>
+      </article>
+
+      <article class="share-quote">
+        <span class="share-quote-mark">&rdquo;</span>
+        <p>بك نصل، ومعك نستمر… فجزاك الله خير الجزاء على ما قدّمت.</p>
+      </article>
+
+      <article class="share-quote">
+        <span class="share-quote-mark">&rdquo;</span>
+        <p>ما زرعتَه اليوم سيظلّ يُثمر، وما نشرتَه من خيرٍ لن ينقطع أجره.</p>
+      </article>
+    </div>
+
+    <p class="share-dua">
+      جعل الله ما بذلتَه في ميزان حسناتك، وبارك في أثرك وأهلك. 🤍
+    </p>
+  </section>
+
+</div>
+
+<style>
+  .share-page{
+    --sp-rose:#9d7b64;
+    --sp-deep:#5c4133;
+    --sp-gold:#c2a878;
+    --sp-text:#1b1411;
+    --sp-mute:#746456;
+    --sp-border:#e8dbd0;
+    --sp-soft:#fcf9f6;
+    max-width:760px; margin:0 auto;
+  }
+
+  /* HERO */
+  .share-hero{
+    position:relative; overflow:hidden;
+    border-radius:24px; margin:4px 0 18px;
+    padding:42px 24px 36px; text-align:center;
+    background:linear-gradient(160deg, var(--sp-rose), var(--sp-deep));
+    color:#fff;
+  }
+  .share-hero-glow{
+    position:absolute; top:-70px; inset-inline-start:50%;
+    transform:translateX(-50%);
+    width:300px; height:300px; border-radius:50%;
+    background:radial-gradient(circle, rgba(255,255,255,.30), transparent 65%);
+    pointer-events:none;
+  }
+  .share-hero-inner{ position:relative; }
+  .share-badge{
+    display:inline-flex; align-items:center; gap:6px;
+    background:rgba(255,255,255,.16);
+    border:1px solid rgba(255,255,255,.3);
+    backdrop-filter:blur(4px);
+    color:#fff; padding:7px 16px; border-radius:999px;
+    font-size:13.5px; font-weight:700;
+  }
+  .share-hero h1{
+    margin:16px 0 8px; font-size:36px; font-weight:900;
+    text-shadow:0 4px 18px rgba(0,0,0,.22);
+  }
+  .share-tag{
+    margin:0 auto; max-width:480px;
+    font-size:14.5px; line-height:1.9; opacity:.94; font-weight:500;
+  }
+
+  /* THANK YOU */
+  .share-thanks{
+    background:#fff; border:1px solid var(--sp-border);
+    border-radius:20px; padding:24px 22px; margin-top:16px;
+  }
+  .share-thanks-kicker{
+    display:inline-block; font-size:11.5px; font-weight:800;
+    letter-spacing:.04em; color:var(--sp-rose);
+    background:var(--sp-soft); border:1px solid var(--sp-border);
+    padding:5px 12px; border-radius:999px; margin-bottom:12px;
+  }
+  .share-thanks-title{
+    margin:0 0 18px; font-size:19px; font-weight:800; color:var(--sp-text);
+    line-height:1.7;
+  }
+  .share-quotes{ display:grid; gap:12px; }
+  .share-quote{
+    position:relative;
+    background:linear-gradient(180deg, var(--sp-soft), #fff);
+    border:1px solid var(--sp-border);
+    border-inline-start:4px solid var(--sp-gold);
+    border-radius:14px; padding:16px 18px 16px 16px;
+    display:flex; align-items:flex-start; gap:10px;
+  }
+  .share-quote-mark{
+    flex-shrink:0; font-size:30px; line-height:1; font-weight:900;
+    color:var(--sp-gold); margin-top:2px;
+  }
+  .share-quote p{
+    margin:0; color:var(--sp-text); font-size:14.5px; line-height:1.85; font-weight:500;
+  }
+  .share-dua{
+    margin:18px 0 0; text-align:center;
+    color:var(--sp-deep); font-size:14.5px; font-weight:700; line-height:1.9;
+  }
+
+  @media (max-width:520px){
+    .share-hero h1{ font-size:30px; }
+    .share-hero{ padding:34px 18px 28px; }
+    .share-thanks-title{ font-size:17px; }
+  }
+</style>
+
+<script>
+(function setupShareCta() {
+  const SHARE_TEXT = `أثرٌ يبدأ منك
+ويمتدّ إليهم ..
+ساهم .. ودَع أثرَك حاضرًا بينهم ✨
+
+donate.utq.org.sa/p/45/paynow?reff=18526`;
+  const SHARE_VIDEO_PATH = '/v_share/d2.mp4';
+  const SHARE_VIDEO_NAME = 'd2.mp4';
+  const waFallback = 'https://wa.me/?text=' + encodeURIComponent(SHARE_TEXT);
+
+  const btn = document.getElementById('amb_share_btn');
+  const labelEl = btn.querySelector('.share-cta-label');
+  const originalLabel = labelEl.textContent;
+  const setBusy = (label) => {
+    btn.disabled = true;
+    btn.setAttribute('aria-busy', 'true');
+    labelEl.textContent = label;
+  };
+  const resetBtn = () => {
+    btn.disabled = false;
+    btn.removeAttribute('aria-busy');
+    labelEl.textContent = originalLabel;
+  };
+
+  btn.addEventListener('click', async () => {
+    if (btn.disabled) return;
+    if (!navigator.canShare || !navigator.share) {
+      window.open(waFallback, '_blank', 'noopener');
+      return;
+    }
+    setBusy('جارٍ تحميل الفيديو…');
+    try {
+      const res = await fetch(SHARE_VIDEO_PATH);
+      if (!res.ok) throw new Error('fetch failed');
+
+      const total = Number(res.headers.get('Content-Length')) || 0;
+      let blob;
+      if (total && res.body && typeof res.body.getReader === 'function') {
+        const reader = res.body.getReader();
+        const chunks = [];
+        let loaded = 0;
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          chunks.push(value);
+          loaded += value.length;
+          const pct = Math.min(100, Math.round((loaded / total) * 100));
+          setBusy(`جارٍ تحميل الفيديو… ${pct}%`);
+        }
+        blob = new Blob(chunks, { type: res.headers.get('Content-Type') || 'video/mp4' });
+      } else {
+        blob = await res.blob();
+      }
+
+      const file = new File([blob], SHARE_VIDEO_NAME, { type: blob.type || 'video/mp4' });
+      if (!navigator.canShare({ files: [file] })) {
+        window.open(waFallback, '_blank', 'noopener');
+        return;
+      }
+      setBusy('جاهز للمشاركة…');
+      await navigator.share({ files: [file], text: SHARE_TEXT });
+    } catch (err) {
+      if (!err || err.name !== 'AbortError') {
+        window.open(waFallback, '_blank', 'noopener');
+      }
+    } finally {
+      resetBtn();
+    }
+  });
+})();
+</script>
+
+<%- include('../partials/foot') %>

@@ -14,6 +14,11 @@ router.get('/arafah', (req, res) => {
   res.render('public/arafah', { title: 'يوم عرفة — النقطة بنقطتين' });
 });
 
+// صفحة عامة — مشاركة رسالة النشر مع عبارات شكر
+router.get('/share', (req, res) => {
+  res.render('public/share', { title: 'شارك أثرك' });
+});
+
 // صفحات عامة بدون تسجيل دخول — قائمة المجمعات وتفاصيل كل مجمع
 router.get('/centers',  (req, res) => {
   res.render('public/centers', {
