@@ -14,7 +14,9 @@
       </div>
 
       <div class="portfolio-meta-grid">
-        <div class="portfolio-meta-item"><span>إجمالي التبرعات</span><b id="s_total">0</b></div>
+        <div class="portfolio-meta-item"><span>نقاط التبرعات</span><b id="s_total">0</b></div>
+        <div class="portfolio-meta-item" id="bonusMetaItem" hidden><span>نقاط إضافية 🎁</span><b id="s_bonus">0</b></div>
+        <div class="portfolio-meta-item"><span>إجمالي النقاط</span><b id="s_total_points">0</b></div>
         <div class="portfolio-meta-item"><span>المصروف كمكافآت</span><b id="s_paid">0</b></div>
         <div class="portfolio-meta-item"><span>الهدف القادم</span><b id="s_next">—</b></div>
         <div class="portfolio-meta-item"><span id="s_next_lbl">المتبقي</span><b id="remainingToNext">0</b></div>
@@ -98,6 +100,19 @@
           <div class="overview-stat"><span>طلبات قيد المراجعة</span><b id="ovPendingReq">0</b></div>
           <div class="overview-stat"><span>قيمة قيد المراجعة</span><b id="ovPendingAmount">0</b></div>
         </div>
+      </div>
+
+      <div class="card bonus-points-card" id="bonusCard" hidden>
+        <div class="section-head">
+          <h2>نقاطك الإضافية 🎁</h2>
+          <!-- <p class="small">نقاط مُنحت لك من الإدارة (تحفيز / مكافأة / مهمة خاصة)</p> -->
+        </div>
+        <div class="bonus-total-row">
+          <span>الإجمالي الإضافي</span>
+          <strong id="bonusTotalVal">0</strong>
+          <small>نقطة</small>
+        </div>
+        <div class="bonus-entries-list" id="bonusEntriesList"></div>
       </div>
 
       <div class="card campaign-activity-card">
@@ -261,6 +276,34 @@
   </div>
 
   <style>
+    .bonus-points-card { background: linear-gradient(135deg, #fef3c7 0%, #fef9c3 50%, #ffffff 100%); }
+    .bonus-total-row {
+      display: flex; align-items: baseline; gap: 8px;
+      padding: 10px 12px; border-radius: 12px;
+      background: rgba(255,255,255,0.7);
+      margin-bottom: 10px;
+    }
+    .bonus-total-row strong { font-size: 22px; color: #92400e; }
+    .bonus-total-row small { color: #6b7280; font-size: 12px; }
+    .bonus-total-row span { flex: 1; color: #4b5563; font-size: 13px; }
+    .bonus-entries-list {
+      display: flex; flex-direction: column; gap: 8px;
+      max-height: 280px; overflow-y: auto;
+    }
+    .bonus-entry {
+      background: #fff;
+      border: 1px solid #fde68a;
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+    .bonus-entry-head {
+      display: flex; justify-content: space-between;
+      align-items: baseline; gap: 8px; margin-bottom: 4px;
+    }
+    .bonus-entry-amount { font-weight: 700; color: #16a34a; font-size: 15px; }
+    .bonus-entry-amount.neg { color: #dc2626; }
+    .bonus-entry-date { color: #9ca3af; font-size: 11.5px; }
+    .bonus-entry-reason { color: #4b5563; font-size: 13px; word-break: break-word; }
     .prize-pick-modal {
       position: fixed;
       inset: 0;
@@ -669,6 +712,13 @@
     const smartProgress = renderSmartProgress();
 
     document.getElementById('s_total').textContent = nf(stats.totalDonations || 0);
+    const bonusVal = Number(stats.bonusPoints || 0);
+    const bonusItem = document.getElementById('bonusMetaItem');
+    const bonusEl = document.getElementById('s_bonus');
+    if (bonusEl) bonusEl.textContent = (bonusVal >= 0 ? '+' : '') + nf(bonusVal);
+    if (bonusItem) bonusItem.hidden = bonusVal === 0;
+    const totalPointsEl = document.getElementById('s_total_points');
+    if (totalPointsEl) totalPointsEl.textContent = nf(stats.totalPoints || stats.totalDonations || 0);
     document.getElementById('s_paid').textContent = nf(stats.paid || 0);
     document.getElementById('s_balance').textContent = nf(stats.availableBalance || 0);
     document.getElementById('s_next').textContent = next.name || '—';
@@ -700,7 +750,35 @@
     document.getElementById('p_balance').textContent = nf(stats.availableBalance || 0);
     document.getElementById('p_paid').textContent = nf(stats.paid || 0);
 
+    renderBonusEntries();
     renderCampaignActivity();
+  }
+
+  function renderBonusEntries() {
+    const card = document.getElementById('bonusCard');
+    const listEl = document.getElementById('bonusEntriesList');
+    const totalEl = document.getElementById('bonusTotalVal');
+    if (!card || !listEl || !totalEl) return;
+    const entries = Array.isArray(stats?.bonusEntries) ? stats.bonusEntries : [];
+    if (!entries.length) {
+      card.hidden = true;
+      return;
+    }
+    card.hidden = false;
+    totalEl.textContent = nf(stats.bonusPoints || 0);
+    listEl.innerHTML = entries.map((e) => {
+      const amount = Number(e.amount || 0);
+      const neg = amount < 0;
+      return `
+        <div class="bonus-entry">
+          <div class="bonus-entry-head">
+            <span class="bonus-entry-amount ${neg ? 'neg' : ''}">${neg ? '' : '+'}${nf(amount)} نقطة</span>
+            <span class="bonus-entry-date">${esc(df(e.createdAt))}</span>
+          </div>
+          <div class="bonus-entry-reason">${esc(e.reason || 'بدون سبب')}</div>
+        </div>
+      `;
+    }).join('');
   }
 
   function renderCampaignActivity() {

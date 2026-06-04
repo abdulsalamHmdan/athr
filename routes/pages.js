@@ -102,6 +102,10 @@ router.get('/admin/requests', (req, res) => {
   if (!req.session.adminId) return res.redirect('/admin/login');
   res.render('admin/requests', { title: 'متابعة الطلبات', active: 'requests' });
 });
+router.get('/admin/bonus-points', (req, res) => {
+  if (!req.session.adminId) return res.redirect('/admin/login');
+  res.render('admin/bonus-points', { title: 'النقاط الإضافية', active: 'bonus-points' });
+});
 router.get('/admin/notifications', (req, res) => {
   if (!req.session.adminId) return res.redirect('/admin/login');
   res.render('admin/notifications', { title: 'إرسال إشعارات', active: 'notifications' });

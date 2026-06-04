@@ -3,6 +3,7 @@ const Fund = require("../models/Fund");
 const AllFund = require("../models/AllFund");
 const Ambassador = require("../models/Ambassador");
 const AmbassadorActivity = require("../models/AmbassadorActivity");
+const BonusPoints = require("../models/BonusPoints");
 const SyncMeta = require("../models/SyncMeta");
 const { listEntities, entityName } = require("../services/entities");
 const { logAmbassadorActivity } = require("../services/activityLog");
@@ -91,6 +92,15 @@ router.get("/dashboard", async (req, res) => {
       }
     }
 
+    // النقاط الإضافية لكل سفير (مجموعة حسب السفير)
+    const bonusAgg = await BonusPoints.aggregate([
+      { $group: { _id: "$ambassador", total: { $sum: "$amount" } } },
+    ]);
+    const bonusByAmb = new Map();
+    for (const row of bonusAgg) {
+      bonusByAmb.set(String(row._id), Number(row.total) || 0);
+    }
+
     // نأخذ فقط الصناديق المعتمدة: a = مكتمل، b = نشط. نتجاهل c تماماً.
     const funds = await AllFund.find(
       { currentTotal: { $gt: 0 }, },
@@ -172,8 +182,10 @@ router.get("/dashboard", async (req, res) => {
       }
       s.ambassadors++;
       const cid = Number(a.platformProfileId);
+      const baseAmount = Number.isFinite(cid) ? totalsByClient.get(cid) || 0 : 0;
+      const bonus = bonusByAmb.get(String(a._id)) || 0;
+      s.amount += baseAmount + bonus;
       if (Number.isFinite(cid)) {
-        s.amount += totalsByClient.get(cid) || 0;
         s.funds += countByClient.get(cid) || 0;
         s.goal += goalsByClient.get(cid) || 0;
       }
@@ -215,9 +227,11 @@ router.get("/dashboard", async (req, res) => {
     const topAmbassadors = ambassadors
       .map((a) => {
         const cid = Number(a.platformProfileId);
-        const amount = Number.isFinite(cid)
+        const baseAmount = Number.isFinite(cid)
           ? totalsByClient.get(cid) || 0
           : 0;
+        const bonus = bonusByAmb.get(String(a._id)) || 0;
+        const amount = baseAmount + bonus;
         const funds = Number.isFinite(cid)
           ? countByClient.get(cid) || 0
           : 0;
@@ -381,6 +395,14 @@ router.get("/public/centers", async (req, res) => {
       }
     }
 
+    const bonusAgg = await BonusPoints.aggregate([
+      { $group: { _id: "$ambassador", total: { $sum: "$amount" } } },
+    ]);
+    const bonusByAmb = new Map();
+    for (const row of bonusAgg) {
+      bonusByAmb.set(String(row._id), Number(row.total) || 0);
+    }
+
     const stats = entities.map((e) => {
       const ambs = ambassadors.filter(
         (a) => String(a.entity || "") === String(e.id),
@@ -390,6 +412,8 @@ router.get("/public/centers", async (req, res) => {
       let completedCount = 0;
       for (const a of ambs) {
         const cid = Number(a.platformProfileId);
+        const bonus = bonusByAmb.get(String(a._id)) || 0;
+        totalDonations += bonus;
         if (!Number.isFinite(cid)) continue;
         totalDonations += totalsByClient.get(cid) || 0;
         fundsCount += countByClient.get(cid) || 0;
@@ -459,6 +483,14 @@ router.get("/public/centers/:id/board", async (req, res) => {
       }
     }
 
+    const bonusAgg = await BonusPoints.aggregate([
+      { $group: { _id: "$ambassador", total: { $sum: "$amount" } } },
+    ]);
+    const bonusByAmb = new Map();
+    for (const row of bonusAgg) {
+      bonusByAmb.set(String(row._id), Number(row.total) || 0);
+    }
+
     const centersStats = entities.map((e) => {
       const ambs = ambassadors.filter(
         (a) => String(a.entity || "") === String(e.id),
@@ -467,6 +499,8 @@ router.get("/public/centers/:id/board", async (req, res) => {
       let fundsCount = 0;
       for (const a of ambs) {
         const cid = Number(a.platformProfileId);
+        const bonus = bonusByAmb.get(String(a._id)) || 0;
+        totalDonations += bonus;
         if (!Number.isFinite(cid)) continue;
         totalDonations += totalsByClient.get(cid) || 0;
         fundsCount += countByClient.get(cid) || 0;
@@ -509,14 +543,15 @@ router.get("/public/centers/:id/board", async (req, res) => {
       .filter((a) => sameKindEntityIds.has(String(a.entity || "")))
       .map((a) => {
         const cid = Number(a.platformProfileId);
-        const total = Number.isFinite(cid) ? totalsByClient.get(cid) || 0 : 0;
+        const base = Number.isFinite(cid) ? totalsByClient.get(cid) || 0 : 0;
+        const bonus = bonusByAmb.get(String(a._id)) || 0;
         const count = Number.isFinite(cid) ? countByClient.get(cid) || 0 : 0;
         return {
           id: String(a._id),
           name: a.name,
           entityId: a.entity,
           entityName: ambassadorsByEntity.get(String(a.entity || "")) || "",
-          totalDonations: total,
+          totalDonations: base + bonus,
           fundsCount: count,
         };
       });
@@ -536,12 +571,13 @@ router.get("/public/centers/:id/board", async (req, res) => {
       .filter((a) => String(a.entity || "") === id)
       .map((a) => {
         const cid = Number(a.platformProfileId);
-        const total = Number.isFinite(cid) ? totalsByClient.get(cid) || 0 : 0;
+        const base = Number.isFinite(cid) ? totalsByClient.get(cid) || 0 : 0;
+        const bonus = bonusByAmb.get(String(a._id)) || 0;
         const count = Number.isFinite(cid) ? countByClient.get(cid) || 0 : 0;
         return {
           id: String(a._id),
           name: a.name,
-          totalDonations: total,
+          totalDonations: base + bonus,
           fundsCount: count,
         };
       });
@@ -611,16 +647,29 @@ router.get("/public/centers/:id", async (req, res) => {
       }
     }
 
+    const ambIds = ambassadors.map((a) => a._id);
+    const bonusAgg = await BonusPoints.aggregate([
+      { $match: { ambassador: { $in: ambIds } } },
+      { $group: { _id: "$ambassador", total: { $sum: "$amount" } } },
+    ]);
+    const bonusByAmb = new Map();
+    for (const row of bonusAgg) {
+      bonusByAmb.set(String(row._id), Number(row.total) || 0);
+    }
+
     const list = ambassadors.map((a) => {
       const cid = Number(a.platformProfileId);
-      const total = Number.isFinite(cid) ? totalsByClient.get(cid) || 0 : 0;
+      const base = Number.isFinite(cid) ? totalsByClient.get(cid) || 0 : 0;
+      const bonus = bonusByAmb.get(String(a._id)) || 0;
       const count = Number.isFinite(cid) ? countByClient.get(cid) || 0 : 0;
       const completed = Number.isFinite(cid) ? completedByClient.get(cid) || 0 : 0;
       return {
         id: String(a._id),
         name: a.name,
         phone: a.phone,
-        totalDonations: total,
+        totalDonations: base + bonus,
+        bonusPoints: bonus,
+        basePoints: base,
         fundsCount: count,
         completedFunds: completed,
         donationsUpdatedAt: a.donationsUpdatedAt,

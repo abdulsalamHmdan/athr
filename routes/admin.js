@@ -3,8 +3,10 @@ const Ambassador = require('../models/Ambassador');
 const PrizeRequest = require('../models/PrizeRequest');
 const AmbassadorActivity = require('../models/AmbassadorActivity');
 const Fund = require('../models/Fund');
+const AllFund = require('../models/AllFund');
 const Notification = require('../models/Notification');
 const PushSubscription = require('../models/PushSubscription');
+const BonusPoints = require('../models/BonusPoints');
 const { requireAdmin } = require('../middleware/auth');
 const { trySendWhatsapp, sendWhatsapp } = require('../services/whatsapp');
 const boardControl = require('../services/boardControl');
@@ -174,10 +176,146 @@ router.delete('/ambassadors/:id', requireAdmin, async (req, res) => {
     AmbassadorActivity.deleteMany({ ambassador: id }),
     PushSubscription.deleteMany({ ambassador: id }),
     Notification.deleteMany({ ambassador: id }),
+    BonusPoints.deleteMany({ ambassador: id }),
   ]);
   await Ambassador.deleteOne({ _id: id });
 
   res.json({ ok: true });
+});
+
+// ===== نقاط إضافية للسفراء =====
+
+// قائمة السفراء مع نقاطهم الأساسية والإضافية والإجمالي
+router.get('/bonus-points/ambassadors', requireAdmin, async (req, res) => {
+  try {
+    const ambassadors = await Ambassador.find(
+      {},
+      'name phone entity isMember platformProfileId'
+    ).lean();
+
+    const clientIds = ambassadors
+      .map((a) => Number(a.platformProfileId))
+      .filter((n) => Number.isFinite(n));
+    const funds = await AllFund.find(
+      { client_id: { $in: clientIds } },
+      'client_id currentTotal'
+    ).lean();
+
+    const totalsByClient = new Map();
+    for (const f of funds) {
+      const cid = Number(f.client_id);
+      const amount = Number(f.currentTotal) || 0;
+      totalsByClient.set(cid, (totalsByClient.get(cid) || 0) + amount);
+    }
+
+    const bonusAgg = await BonusPoints.aggregate([
+      { $group: { _id: '$ambassador', total: { $sum: '$amount' }, count: { $sum: 1 } } },
+    ]);
+    const bonusByAmb = new Map();
+    for (const row of bonusAgg) {
+      bonusByAmb.set(String(row._id), { total: row.total || 0, count: row.count || 0 });
+    }
+
+    const list = ambassadors.map((a) => {
+      const cid = Number(a.platformProfileId);
+      const basePoints = Number.isFinite(cid) ? totalsByClient.get(cid) || 0 : 0;
+      const b = bonusByAmb.get(String(a._id)) || { total: 0, count: 0 };
+      const bonusPoints = Number(b.total) || 0;
+      return {
+        _id: String(a._id),
+        name: a.name || '',
+        phone: a.phone || '',
+        isMember: !!a.isMember,
+        entity: a.entity || '',
+        basePoints: Math.round(basePoints),
+        bonusPoints: Math.round(bonusPoints),
+        totalPoints: Math.round(basePoints + bonusPoints),
+        bonusCount: b.count,
+      };
+    });
+
+    res.json({ ambassadors: list });
+  } catch (e) {
+    console.error('[admin/bonus-points/ambassadors] failed:', e.message);
+    res.status(500).json({ error: 'failed' });
+  }
+});
+
+// سجل النقاط الإضافية لسفير محدد
+router.get('/bonus-points/:ambassadorId', requireAdmin, async (req, res) => {
+  try {
+    const amb = await Ambassador.findById(req.params.ambassadorId, 'name phone').lean();
+    if (!amb) return res.status(404).json({ error: 'السفير غير موجود' });
+
+    const entries = await BonusPoints.find({ ambassador: amb._id })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const total = entries.reduce((s, e) => s + (Number(e.amount) || 0), 0);
+
+    res.json({
+      ambassador: { _id: String(amb._id), name: amb.name, phone: amb.phone },
+      entries: entries.map((e) => ({
+        _id: String(e._id),
+        amount: Number(e.amount) || 0,
+        reason: e.reason || '',
+        createdAt: e.createdAt,
+      })),
+      total: Math.round(total),
+    });
+  } catch (e) {
+    console.error('[admin/bonus-points/:ambassadorId] failed:', e.message);
+    res.status(500).json({ error: 'failed' });
+  }
+});
+
+// إضافة نقاط إضافية لسفير
+router.post('/bonus-points', requireAdmin, async (req, res) => {
+  try {
+    const ambassadorId = String((req.body && req.body.ambassadorId) || '').trim();
+    const amount = Number(req.body && req.body.amount);
+    const reason = String((req.body && req.body.reason) || '').trim().slice(0, 300);
+
+    if (!ambassadorId) return res.status(400).json({ error: 'الرجاء اختيار السفير' });
+    if (!Number.isFinite(amount) || amount === 0) {
+      return res.status(400).json({ error: 'الرجاء إدخال قيمة نقاط صحيحة' });
+    }
+
+    const amb = await Ambassador.findById(ambassadorId);
+    if (!amb) return res.status(404).json({ error: 'السفير غير موجود' });
+
+    const entry = await BonusPoints.create({
+      ambassador: amb._id,
+      amount: Math.round(amount),
+      reason,
+      addedBy: req.session.adminId || null,
+    });
+
+    res.json({
+      ok: true,
+      entry: {
+        _id: String(entry._id),
+        amount: entry.amount,
+        reason: entry.reason,
+        createdAt: entry.createdAt,
+      },
+    });
+  } catch (e) {
+    console.error('[admin/bonus-points POST] failed:', e.message);
+    res.status(500).json({ error: 'failed' });
+  }
+});
+
+// حذف سجل نقاط إضافية
+router.delete('/bonus-points/entry/:id', requireAdmin, async (req, res) => {
+  try {
+    const r = await BonusPoints.findByIdAndDelete(req.params.id);
+    if (!r) return res.status(404).json({ error: 'السجل غير موجود' });
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('[admin/bonus-points DELETE] failed:', e.message);
+    res.status(500).json({ error: 'failed' });
+  }
 });
 
 module.exports = router;

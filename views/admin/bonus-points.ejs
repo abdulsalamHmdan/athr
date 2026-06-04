@@ -1,0 +1,449 @@
+<%- include('../partials/head') %>
+<%- include('../partials/nav-admin') %>
+
+<div class="page-intro">
+  <span class="page-kicker">النقاط الإضافية</span>
+  <h3 class="page-title">إدارة النقاط الإضافية للسفراء</h3>
+  <p class="page-subtitle">أضف نقاطاً إضافية للسفراء (تحفيز، مكافأة، مهمة خاصة...) وتُحتسب مع نقاطهم الأساسية في الإجمالي.</p>
+</div>
+
+<div class="card">
+  <div class="section-head">
+    <h2>قائمة السفراء</h2>
+    <span class="list-count-badge" id="amb_count">0</span>
+  </div>
+
+  <div class="stat-grid" style="margin-bottom:10px;">
+    <div class="stat"><div class="v" id="s_total_base">0</div><div class="l">إجمالي النقاط الأساسية</div></div>
+    <div class="stat"><div class="v" id="s_total_bonus">0</div><div class="l">إجمالي النقاط الإضافية</div></div>
+    <div class="stat"><div class="v" id="s_total_all">0</div><div class="l">المجموع العام</div></div>
+    <div class="stat"><div class="v" id="s_count_with_bonus">0</div><div class="l">سفراء لديهم نقاط إضافية</div></div>
+  </div>
+
+  <div class="toolbar">
+    <div class="search">
+      <input type="search" id="amb_search" placeholder="ابحث باسم السفير أو الجوال…" autocomplete="off">
+    </div>
+    <button class="btn export" id="amb_export" type="button">تصدير Excel</button>
+  </div>
+
+  <%- include('../partials/loader', { loaderType: 'table' }) %>
+
+  <div class="table-wrap has-cards" data-content style="display:none;">
+    <table class="table-cards">
+      <thead><tr>
+        <th>#</th>
+        <th>الاسم</th>
+        <th>الجوال</th>
+        <th>النقاط الأساسية</th>
+        <th>النقاط الإضافية</th>
+        <th>الإجمالي</th>
+        <th>إجراءات</th>
+      </tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal: إضافة نقاط -->
+<div class="bp-modal" id="addBonusModal" hidden>
+  <div class="bp-modal-backdrop" data-bp-close></div>
+  <div class="bp-modal-card" role="dialog" aria-modal="true" aria-labelledby="addBonusTitle">
+    <button type="button" class="bp-modal-close" data-bp-close aria-label="إغلاق">×</button>
+    <h3 id="addBonusTitle">إضافة نقاط إضافية</h3>
+    <p class="small" id="addBonusSub">السفير: —</p>
+
+    <label for="bp_amount" class="small">عدد النقاط <span style="color:#dc2626">*</span></label>
+    <input id="bp_amount" type="number" step="1" placeholder="مثال: 500 (استخدم سالب للخصم)">
+
+    <label for="bp_reason" class="small">السبب / الملاحظة</label>
+    <textarea id="bp_reason" rows="3" placeholder="مثال: تحفيز على إنجاز خاص"></textarea>
+
+    <div class="bp-modal-actions">
+      <button type="button" class="btn secondary" data-bp-close>إلغاء</button>
+      <button type="button" class="btn ok" id="bp_save_btn">حفظ</button>
+    </div>
+    <div class="msg" id="bp_msg"></div>
+  </div>
+</div>
+
+<!-- Modal: سجل نقاط سفير -->
+<div class="bp-modal" id="historyModal" hidden>
+  <div class="bp-modal-backdrop" data-bp-close></div>
+  <div class="bp-modal-card bp-modal-card-lg" role="dialog" aria-modal="true" aria-labelledby="historyTitle">
+    <button type="button" class="bp-modal-close" data-bp-close aria-label="إغلاق">×</button>
+    <h3 id="historyTitle">سجل النقاط الإضافية</h3>
+    <p class="small" id="historySub">—</p>
+
+    <div class="bp-history-total">
+      المجموع: <b id="historyTotal">0</b> نقطة
+    </div>
+
+    <div class="bp-history-list" id="historyList"></div>
+
+    <div class="bp-modal-actions">
+      <button type="button" class="btn ok" id="historyAddBtn">إضافة سجل جديد</button>
+      <button type="button" class="btn secondary" data-bp-close>إغلاق</button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .bp-modal {
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9000; padding: 16px;
+  }
+  .bp-modal[hidden] { display: none; }
+  .bp-modal-backdrop {
+    position: absolute; inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(2px);
+  }
+  .bp-modal-card {
+    position: relative;
+    background: #fff;
+    border-radius: 18px;
+    padding: 22px 18px 18px;
+    width: 100%;
+    max-width: 460px;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.25);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .bp-modal-card-lg { max-width: 560px; }
+  .bp-modal-close {
+    position: absolute; top: 8px; inset-inline-end: 10px;
+    background: transparent; border: 0;
+    font-size: 24px; cursor: pointer; color: #6b7280;
+  }
+  .bp-modal-card h3 { margin: 0; font-size: 18px; color: #1f2937; }
+  .bp-modal-card input, .bp-modal-card textarea {
+    width: 100%; padding: 10px 12px;
+    border-radius: 10px; border: 1px solid #e5e7eb;
+    background: #f9fafb; font-size: 14px; font-family: inherit;
+    box-sizing: border-box;
+  }
+  .bp-modal-card textarea { resize: vertical; }
+  .bp-modal-actions {
+    display: flex; gap: 8px;
+    justify-content: flex-end; margin-top: 6px;
+  }
+  .bp-history-total {
+    background: #f0fdf4; color: #166534;
+    padding: 8px 12px; border-radius: 10px;
+    font-size: 14px; font-weight: 600;
+  }
+  .bp-history-list {
+    display: flex; flex-direction: column; gap: 8px;
+    max-height: 320px; overflow-y: auto;
+  }
+  .bp-history-row {
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 10px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+    background: #fff;
+  }
+  .bp-history-row .meta { flex: 1; min-width: 0; }
+  .bp-history-row .amount {
+    font-weight: 700;
+    font-size: 15px;
+    color: #16a34a;
+  }
+  .bp-history-row .amount.neg { color: #dc2626; }
+  .bp-history-row .reason {
+    color: #4b5563; font-size: 13px;
+    margin: 4px 0;
+    word-break: break-word;
+  }
+  .bp-history-row .date { color: #9ca3af; font-size: 11.5px; }
+  .bp-empty {
+    text-align: center; color: #6b7280;
+    padding: 20px; font-size: 13px;
+  }
+  .bp-bonus-badge {
+    display: inline-block;
+    background: #dbeafe; color: #1e40af;
+    padding: 2px 8px; border-radius: 999px;
+    font-size: 11.5px; font-weight: 700;
+  }
+  .bp-bonus-badge.zero { background: #f1f5f9; color: #64748b; }
+</style>
+
+<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+<script src="/js/app.js"></script>
+<script>
+let ambassadors = [];
+let currentAmbId = null;
+const esc = (v) => String(v == null ? '' : v)
+  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+function filterAmbassadors() {
+  const q = document.getElementById('amb_search').value.trim().toLowerCase();
+  if (!q) return ambassadors;
+  return ambassadors.filter((a) =>
+    (a.name || '').toLowerCase().includes(q) ||
+    (a.phone || '').includes(q)
+  );
+}
+
+function renderSummary() {
+  const nf = App.formatNumber;
+  let base = 0, bonus = 0, withBonus = 0;
+  for (const a of ambassadors) {
+    base += a.basePoints || 0;
+    bonus += a.bonusPoints || 0;
+    if ((a.bonusPoints || 0) !== 0) withBonus++;
+  }
+  document.getElementById('s_total_base').textContent = nf(base);
+  document.getElementById('s_total_bonus').textContent = nf(bonus);
+  document.getElementById('s_total_all').textContent = nf(base + bonus);
+  document.getElementById('s_count_with_bonus').textContent = nf(withBonus);
+}
+
+function renderList(list) {
+  const nf = App.formatNumber;
+  const tb = document.getElementById('tbody');
+  tb.innerHTML = '';
+  document.getElementById('amb_count').textContent = nf(list.length);
+  if (!list.length) {
+    tb.innerHTML = '<tr><td colspan="7" class="table-empty">لا يوجد سفراء</td></tr>';
+    return;
+  }
+  list.forEach((a, i) => {
+    const bonusCls = (a.bonusPoints || 0) === 0 ? 'zero' : '';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td data-label="التسلسل"><span class="table-value is-number">${i + 1}</span></td>
+      <td data-label="الاسم"><span class="table-value is-ellipsis">${esc(a.name || '-')}</span></td>
+      <td data-label="الجوال"><span class="table-value is-number">${esc(a.phone || '-')}</span></td>
+      <td data-label="النقاط الأساسية"><span class="table-value is-number">${nf(a.basePoints || 0)}</span></td>
+      <td data-label="النقاط الإضافية">
+        <span class="bp-bonus-badge ${bonusCls}">${nf(a.bonusPoints || 0)}</span>
+      </td>
+      <td data-label="الإجمالي"><span class="table-value is-number"><b>${nf(a.totalPoints || 0)}</b></span></td>
+      <td data-label="إجراءات">
+        <div class="row-actions" style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="btn ok sm" type="button" data-act="add" data-id="${esc(a._id)}" data-name="${esc(a.name || '')}">إضافة نقاط</button>
+          <button class="btn sm bordered" type="button" data-act="history" data-id="${esc(a._id)}" data-name="${esc(a.name || '')}">السجل (${a.bonusCount || 0})</button>
+        </div>
+      </td>`;
+    tb.appendChild(tr);
+  });
+}
+
+function applyFilter() {
+  renderList(filterAmbassadors());
+}
+
+async function load() {
+  App.showLoader();
+  const r = await fetch('/admin/bonus-points/ambassadors');
+  if (r.status === 401) { location.href = '/admin/login'; return; }
+  const d = await r.json();
+  ambassadors = (d.ambassadors || []).sort((a, b) => (b.totalPoints || 0) - (a.totalPoints || 0));
+  renderSummary();
+  applyFilter();
+  App.showContent();
+}
+
+// === Modal helpers ===
+function openModal(id) {
+  document.getElementById(id).hidden = false;
+  document.body.classList.add('modal-open');
+}
+function closeAllModals() {
+  document.querySelectorAll('.bp-modal').forEach((m) => { m.hidden = true; });
+  document.body.classList.remove('modal-open');
+  document.getElementById('bp_msg').textContent = '';
+}
+
+document.addEventListener('click', (e) => {
+  if (e.target.closest('[data-bp-close]')) {
+    closeAllModals();
+  }
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeAllModals();
+});
+
+// === Add bonus modal ===
+function openAddModal(ambId, ambName) {
+  currentAmbId = ambId;
+  document.getElementById('addBonusTitle').textContent = 'إضافة نقاط إضافية';
+  document.getElementById('addBonusSub').textContent = 'السفير: ' + ambName;
+  document.getElementById('bp_amount').value = '';
+  document.getElementById('bp_reason').value = '';
+  document.getElementById('bp_msg').textContent = '';
+  openModal('addBonusModal');
+  setTimeout(() => document.getElementById('bp_amount').focus(), 100);
+}
+
+document.getElementById('bp_save_btn').addEventListener('click', async () => {
+  const amount = Number(document.getElementById('bp_amount').value);
+  const reason = document.getElementById('bp_reason').value.trim();
+  const msg = document.getElementById('bp_msg');
+  msg.textContent = '';
+
+  if (!currentAmbId) { msg.textContent = 'لم يتم تحديد السفير'; return; }
+  if (!Number.isFinite(amount) || amount === 0) {
+    msg.textContent = 'الرجاء إدخال قيمة نقاط صحيحة (لا تساوي صفر)';
+    return;
+  }
+
+  const btn = document.getElementById('bp_save_btn');
+  btn.disabled = true;
+  const oldText = btn.textContent;
+  btn.textContent = 'جارٍ الحفظ...';
+
+  try {
+    const r = await fetch('/admin/bonus-points', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ambassadorId: currentAmbId, amount, reason }),
+    });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) {
+      msg.textContent = d.error || 'تعذر الحفظ';
+      return;
+    }
+    closeAllModals();
+    await load();
+    if (window.App && typeof App.notify === 'function') {
+      App.notify({
+        title: 'تمت الإضافة',
+        message: `تمت إضافة ${amount} نقطة بنجاح`,
+        type: 'success',
+        confirmText: 'حسناً',
+      });
+    }
+  } catch (err) {
+    msg.textContent = 'حدث خطأ بالشبكة';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = oldText;
+  }
+});
+
+// === History modal ===
+async function openHistoryModal(ambId, ambName) {
+  currentAmbId = ambId;
+  document.getElementById('historyTitle').textContent = 'سجل النقاط الإضافية';
+  document.getElementById('historySub').textContent = 'السفير: ' + ambName;
+  document.getElementById('historyList').innerHTML = '<div class="bp-empty">جارٍ التحميل...</div>';
+  document.getElementById('historyTotal').textContent = '0';
+  openModal('historyModal');
+  await loadHistory(ambId);
+}
+
+async function loadHistory(ambId) {
+  const r = await fetch(`/admin/bonus-points/${ambId}`);
+  if (!r.ok) {
+    document.getElementById('historyList').innerHTML = '<div class="bp-empty">تعذر تحميل السجل</div>';
+    return;
+  }
+  const d = await r.json();
+  const nf = App.formatNumber;
+  const df = App.formatDate;
+  document.getElementById('historyTotal').textContent = nf(d.total || 0);
+  const entries = d.entries || [];
+  if (!entries.length) {
+    document.getElementById('historyList').innerHTML = '<div class="bp-empty">لا توجد سجلات بعد</div>';
+    return;
+  }
+  document.getElementById('historyList').innerHTML = entries.map((e) => {
+    const neg = (e.amount || 0) < 0;
+    return `
+      <div class="bp-history-row">
+        <div class="meta">
+          <div class="amount ${neg ? 'neg' : ''}">${neg ? '' : '+'}${nf(e.amount || 0)} نقطة</div>
+          <div class="reason">${esc(e.reason || 'بدون سبب')}</div>
+          <div class="date">${esc(df(e.createdAt))}</div>
+        </div>
+        <button class="btn err sm" type="button" data-del="${esc(e._id)}">حذف</button>
+      </div>`;
+  }).join('');
+}
+
+document.getElementById('historyAddBtn').addEventListener('click', () => {
+  if (!currentAmbId) return;
+  const amb = ambassadors.find((x) => String(x._id) === String(currentAmbId));
+  closeAllModals();
+  openAddModal(currentAmbId, (amb && amb.name) || '');
+});
+
+document.getElementById('historyList').addEventListener('click', async (e) => {
+  const btn = e.target.closest('button[data-del]');
+  if (!btn) return;
+  const ok = await App.confirm({
+    title: 'تأكيد الحذف',
+    message: 'هل تريد حذف هذا السجل؟ لا يمكن التراجع.',
+    type: 'warning',
+    confirmText: 'حذف',
+    cancelText: 'إلغاء',
+  });
+  if (!ok) return;
+  btn.disabled = true;
+  const r = await fetch(`/admin/bonus-points/entry/${btn.dataset.del}`, { method: 'DELETE' });
+  if (!r.ok) {
+    btn.disabled = false;
+    if (window.App && typeof App.notify === 'function') {
+      App.notify({ title: 'خطأ', message: 'تعذر الحذف', type: 'error', confirmText: 'حسناً' });
+    }
+    return;
+  }
+  await loadHistory(currentAmbId);
+  await load();
+});
+
+// === Table actions ===
+document.getElementById('tbody').addEventListener('click', (e) => {
+  const btn = e.target.closest('button[data-act]');
+  if (!btn) return;
+  const act = btn.dataset.act;
+  const id = btn.dataset.id;
+  const name = btn.dataset.name || '';
+  if (act === 'add') openAddModal(id, name);
+  else if (act === 'history') openHistoryModal(id, name);
+});
+
+document.getElementById('amb_search').addEventListener('input', applyFilter);
+
+document.getElementById('amb_export').addEventListener('click', () => {
+  const nf = App.formatNumber;
+  const list = filterAmbassadors();
+  if (!list.length) {
+    App.notify({ title: 'لا توجد بيانات', message: 'لا توجد بيانات للتصدير', type: 'warning', confirmText: 'حسناً' });
+    return;
+  }
+  const rows = list.map((a, i) => ({
+    '#': i + 1,
+    'الاسم': a.name || '-',
+    'الجوال': a.phone || '-',
+    'منسوب': a.isMember ? 'نعم' : 'لا',
+    'النقاط الأساسية': a.basePoints || 0,
+    'النقاط الإضافية': a.bonusPoints || 0,
+    'الإجمالي': a.totalPoints || 0,
+    'عدد سجلات النقاط الإضافية': a.bonusCount || 0,
+  }));
+  const ws = XLSX.utils.json_to_sheet(rows);
+  if (!ws['!views']) ws['!views'] = [{}];
+  ws['!views'][0].RTL = true;
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'النقاط الإضافية');
+  const today = new Date().toISOString().slice(0, 10);
+  XLSX.writeFile(wb, `bonus-points-${today}.xlsx`);
+});
+
+load();
+</script>
+
+<%- include('../partials/foot') %>

@@ -3,6 +3,7 @@ const Ambassador = require('../models/Ambassador');
 const PrizeRequest = require('../models/PrizeRequest');
 const Fund = require('../models/Fund');
 const AllFund = require('../models/AllFund');
+const BonusPoints = require('../models/BonusPoints');
 const { requireAmbassador } = require('../middleware/auth');
 const { logAmbassadorActivity } = require('../services/activityLog');
 const { trySendWhatsapp } = require('../services/whatsapp');
@@ -48,13 +49,30 @@ async function getStats(amb) {
     console.error(`[getStats] failed to read funds for ${amb.phone}:`, e.message);
   }
 
+  let bonusPoints = 0;
+  let bonusEntries = [];
+  try {
+    const entries = await BonusPoints.find({ ambassador: amb._id }).sort({ createdAt: -1 }).lean();
+    bonusPoints = entries.reduce((s, e) => s + (Number(e.amount) || 0), 0);
+    bonusEntries = entries.map((e) => ({
+      _id: String(e._id),
+      amount: Number(e.amount) || 0,
+      reason: e.reason || '',
+      createdAt: e.createdAt,
+    }));
+  } catch (e) {
+    console.error(`[getStats] failed to read bonus points for ${amb.phone}:`, e.message);
+  }
+
+  const totalPoints = totalDonations + bonusPoints;
+
   const approved = await PrizeRequest.find({ ambassador: amb._id, status: { $in: ['approved', 'paid'] } });
   const paid = approved.reduce((s, r) => s + r.amount, 0);
   const pending = await PrizeRequest.find({ ambassador: amb._id, status: 'pending' });
   const pendingAmount = pending.reduce((s, r) => s + r.amount, 0);
 
   const claimedAmount = paid + pendingAmount;
-  const availableBalance = Math.max(0, totalDonations - claimedAmount);
+  const availableBalance = Math.max(0, totalPoints - claimedAmount);
 
   const sortedTiers = [...PRIZE_TIERS].sort((a, b) => a.amount - b.amount);
   const tiers = sortedTiers.map((t) => ({
@@ -67,6 +85,9 @@ async function getStats(amb) {
 
   return {
     totalDonations,
+    bonusPoints,
+    bonusEntries,
+    totalPoints,
     orderCount,
     paid,
     pendingAmount,

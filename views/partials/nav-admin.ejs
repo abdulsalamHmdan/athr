@@ -2,6 +2,7 @@
   <nav class="nav">
     <a href="/admin/dashboard" class="<%= active==='dashboard' ? 'active' : '' %>">الإحصائيات</a>
     <a href="/admin/requests" class="<%= active==='requests' ? 'active' : '' %>">متابعة الطلبات</a>
+    <a href="/admin/bonus-points" class="<%= active==='bonus-points' ? 'active' : '' %>">نقاط إضافية</a>
     <a href="/admin/notifications" class="<%= active==='notifications' ? 'active' : '' %>">إرسال إشعارات</a>
     <a href="#" data-logout>خروج</a>
   </nav>
@@ -25,6 +26,14 @@
         <path d="M8 13h8"></path>
       </svg>
       <span>الطلبات</span>
+    </a>
+    <a href="/admin/bonus-points" class="<%= active==='bonus-points' ? 'active' : '' %>">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <path d="M12 3v18"></path>
+        <path d="M3 12h18"></path>
+        <circle cx="12" cy="12" r="9"></circle>
+      </svg>
+      <span>نقاط إضافية</span>
     </a>
     <a href="/admin/notifications" class="<%= active==='notifications' ? 'active' : '' %>">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
