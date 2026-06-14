@@ -1422,45 +1422,46 @@ donate.utq.org.sa/p/45/paynow?reff=18526`;
   }
 })();
 
-(function showShareCtaHint() {
-  const KEY = 'share_cta_hint_seen_v1';
-  try {
-    if (localStorage.getItem(KEY)) return;
-  } catch (e) {}
-  setTimeout(() => {
-    if (!window.App || typeof App.notify !== 'function') return;
-    App.notify({
-      title: 'جديد: رسالة النشر',
-      message:
-        'أضفنا لك زر "رسالة النشر" في الأعلى. بضغطة واحدة يفتح واتساب جاهزًا برسالة الحملة ومقطع الفيديو لمشاركته مع معارفك.',
-      type: 'info',
-      confirmText: 'فهمت',
-    }).then(() => {
-      try { localStorage.setItem(KEY, '1'); } catch (e) {}
-    });
-  }, 800);
-})();
+// (function showShareCtaHint() {
+//   const KEY = 'share_cta_hint_seen_v1';
+//   try {
+//     if (localStorage.getItem(KEY)) return;
+//   } catch (e) {}
+//   setTimeout(() => {
+//     if (!window.App || typeof App.notify !== 'function') return;
+//     App.notify({
+//       title: 'جديد: رسالة النشر',
+//       message:
+//         'أضفنا لك زر "رسالة النشر" في الأعلى. بضغطة واحدة يفتح واتساب جاهزًا برسالة الحملة ومقطع الفيديو لمشاركته مع معارفك.',
+//       type: 'info',
+//       confirmText: 'فهمت',
+//     }).then(() => {
+//       try { localStorage.setItem(KEY, '1'); } catch (e) {}
+//     });
+//   }, 800);
+// })();
 
-(function showArafahDoubleNotice() {
-  const KEY = 'arafah_2x_notice_seen_v1';
-  try {
-    if (localStorage.getItem(KEY)) return;
-  } catch (e) {}
-  setTimeout(() => {
-    if (!window.App || typeof App.confirm !== 'function') return;
-    App.confirm({
-      title: 'يوم عرفة: النقطة بنقطتين (2x)',
-      message:
-        'الحسبة تغيّرت والتحفيز زاد! احتساباً لفضل هذا اليوم العظيم، كل نقطة تكسبها تُحتسب بنقطتين. ضاعِف أثرك وضاعِف أجرك في يومٍ لا يُعدله يوم..',
-      type: 'info',
-      confirmText: 'اعرف التفاصيل',
-      cancelText: 'لاحقاً',
-    }).then((ok) => {
-      try { localStorage.setItem(KEY, '1'); } catch (e) {}
-      if (ok) window.location.href = '/arafah';
-    });
-  }, 1200);
-})();
+// (function showArafahDoubleNotice() {
+//   const KEY = 'arafah_2x_notice_seen_v1';
+//   try {
+//     if (localStorage.getItem(KEY)) return;
+//   } catch (e) {}
+//   setTimeout(() => {
+//     if (!window.App || typeof App.confirm !== 'function') return;
+//     App.confirm({
+//       title: 'يوم عرفة: النقطة بنقطتين (2x)',
+//       message:
+//         'الحسبة تغيّرت والتحفيز زاد! احتساباً لفضل هذا اليوم العظيم، كل نقطة تكسبها تُحتسب بنقطتين. ضاعِف أثرك وضاعِف أجرك في يومٍ لا يُعدله يوم..',
+//       type: 'info',
+//       confirmText: 'اعرف التفاصيل',
+//       cancelText: 'لاحقاً',
+//     }).then((ok) => {
+//       try { localStorage.setItem(KEY, '1'); } catch (e) {}
+//       if (ok) window.location.href = '/arafah';
+//     });
+//   }, 1200);
+// })();
+
 </script>
 
 <%- include('../partials/foot') %>

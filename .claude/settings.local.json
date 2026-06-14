@@ -53,7 +53,8 @@
       "PowerShell(\"stopped\")",
       "Bash(ls -la .claude/)",
       "PowerShell(Rename-Item \"C:\\\\Users\\\\asus\\\\Desktop\\\\athr piont\\\\views\\\\public\\\\mbarkh.EJS\" \"mbarkh.ejs\")",
-      "Bash(node -e \"require\\('./server.js'\\); setTimeout\\(\\(\\) => process.exit\\(0\\), 2500\\);\")"
+      "Bash(node -e \"require\\('./server.js'\\); setTimeout\\(\\(\\) => process.exit\\(0\\), 2500\\);\")",
+      "Bash(dir \"C:\\\\Users\\\\asus\\\\Desktop\\\\athr piont\")"
     ]
   }
 }
