@@ -7,7 +7,7 @@
   <div class="page-intro">
     <span class="page-kicker">معرض الجوائز</span>
     <h3 class="page-title">استعرض جوائز المنصة</h3>
-    <p class="page-subtitle">جوائز تكريمية متدرّجة بثلاث فئات (برونزية، فضية، ذهبية). هذه الصفحة للاستعراض فقط، ولطلب الجائزة يرجى الانتقال لصفحة طلب الجوائز.</p>
+    <p class="page-subtitle">جوائز تكريمية متدرّجة بأربع فئات (برونزية، فضية، ذهبية، ماسية). هذه الصفحة للاستعراض فقط، ولطلب الجائزة يرجى الانتقال لصفحة طلب الجوائز.</p>
   </div>
 
   <div class="card">
@@ -17,6 +17,7 @@
     </div>
     <div class="filters" id="prizeFilters">
       <a href="#" class="filter active" data-tier="all">الكل</a>
+      <a href="#" class="filter" data-tier="diamond">ماسية</a>
       <a href="#" class="filter" data-tier="gold">ذهبية</a>
       <a href="#" class="filter" data-tier="silver">فضية</a>
       <a href="#" class="filter" data-tier="bronze">برونزية</a>
@@ -75,6 +76,7 @@
 .prize-tier-badge.bronze { background: linear-gradient(135deg, #e09a5b, #b87333); }
 .prize-tier-badge.silver { background: linear-gradient(135deg, #d6dadd, #9aa1a8); color:#3a3f45; }
 .prize-tier-badge.gold   { background: linear-gradient(135deg, #f5d166, #d4a017); color:#5a4400; }
+.prize-tier-badge.diamond { background: linear-gradient(135deg, #7cc3e8, #3e96c8); }
 .prize-card-body {
   padding: 12px 14px 14px;
   display: flex;
@@ -131,7 +133,7 @@
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   const nf = App.formatNumber;
-  const tierLabel = { bronze: 'برونزية', silver: 'فضية', gold: 'ذهبية' };
+  const tierLabel = { bronze: 'برونزية', silver: 'فضية', gold: 'ذهبية', diamond: 'ماسية' };
 
   let prizes = [];
   let currentTier = 'all';

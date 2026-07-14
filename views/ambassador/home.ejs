@@ -403,7 +403,10 @@
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
   const statusMap = { pending: 'قيد المراجعة', approved: 'مقبولة', rejected: 'مرفوضة', paid: 'تم الصرف' };
-  const tierNameByAmount = { 2000: 'برونزية', 5000: 'فضية', 10000: 'ذهبية' };
+  const tierNameById = { bronze: 'برونزية', silver: 'فضية', gold: 'ذهبية', diamond: 'ماسية' };
+  // الطلبات الأقدم (قبل حفظ معرف التصنيف) تُسمى بحسب قيمها التاريخية
+  const legacyTierNameByAmount = { 2000: 'برونزية', 5000: 'فضية', 10000: 'ذهبية' };
+  const requestTierName = (r) => tierNameById[r.tier] || legacyTierNameByAmount[r.amount] || '-';
 
   let stats = null;
   let goalsList = [];
@@ -600,7 +603,7 @@
       return;
     }
     for (const r of requestsList) {
-      const tierName = tierNameByAmount[r.amount] || '-';
+      const tierName = requestTierName(r);
       const prizeLabel = r.prizeName ? `${r.prizeName} (${tierName})` : tierName;
       const note = r.note || '-';
       const tr = document.createElement('tr');
@@ -826,7 +829,7 @@
   }
 
   let prizeCatalog = [];
-  const tierLabel = { bronze: 'برونزية', silver: 'فضية', gold: 'ذهبية' };
+  const tierLabel = { bronze: 'برونزية', silver: 'فضية', gold: 'ذهبية', diamond: 'ماسية' };
 
   async function loadPrizeCatalog() {
     prizeCatalog = [];

@@ -40,7 +40,10 @@
 <script src="/js/app.js"></script>
 <script>
 const statusMap = { pending: 'قيد المراجعة', approved: 'مقبولة', rejected: 'مرفوضة', paid: 'تم الصرف' };
-const tierNameByAmount = { 2000: 'برونزية', 5000: 'فضية', 10000: 'ذهبية' };
+const tierNameById = { bronze: 'برونزية', silver: 'فضية', gold: 'ذهبية', diamond: 'ماسية' };
+// الطلبات الأقدم (قبل حفظ معرف التصنيف) تُسمى بحسب قيمها التاريخية
+const legacyTierNameByAmount = { 2000: 'برونزية', 5000: 'فضية', 10000: 'ذهبية' };
+const requestTierName = (r) => tierNameById[r.tier] || legacyTierNameByAmount[r.amount] || '-';
 const esc = (v) => String(v == null ? '' : v)
   .replace(/&/g, '&amp;')
   .replace(/</g, '&lt;')
@@ -79,7 +82,7 @@ async function load() {
     tb.innerHTML = '<tr><td colspan="5" class="table-empty">لا توجد طلبات بعد</td></tr>';
   } else {
     for (const r of rd.requests) {
-      const tierName = tierNameByAmount[r.amount] || '-';
+      const tierName = requestTierName(r);
       const note = r.note || '-';
       const tr = document.createElement('tr');
       tr.innerHTML = `

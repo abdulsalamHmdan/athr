@@ -15,10 +15,19 @@ const BonusPointsSchema = new mongoose.Schema(
       ref: 'Admin',
       default: null,
     },
+    // مصدر النقاط: admin = أضافها المشرف، pass = مكافأة خريطة الرحلة من التطبيق
+    source: { type: String, enum: ['admin', 'pass'], default: 'admin' },
+    // معرف مرحلة خريطة الرحلة (box-1..15 / ring-1..3 / complex) — يمنع تكرار الاستلام
+    passNodeId: { type: String, default: null },
   },
   { timestamps: true }
 );
 
 BonusPointsSchema.index({ createdAt: -1 });
+// استلام واحد لكل مرحلة لكل سفير
+BonusPointsSchema.index(
+  { ambassador: 1, passNodeId: 1 },
+  { unique: true, partialFilterExpression: { passNodeId: { $type: 'string' } } }
+);
 
 module.exports = mongoose.model('BonusPoints', BonusPointsSchema);

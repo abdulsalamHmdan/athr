@@ -8,6 +8,7 @@ const { requireAmbassador } = require('../middleware/auth');
 const { logAmbassadorActivity } = require('../services/activityLog');
 const { trySendWhatsapp } = require('../services/whatsapp');
 const { ENTITIES, entityName, listEntities } = require('../services/entities');
+const { NODE_BY_ID } = require('../services/passMap');
 
 const NON_MEMBER_ENTITY = '550';
 
@@ -18,9 +19,10 @@ const NON_MEMBER_ENTITY = '550';
 const router = express.Router();
 
 const PRIZE_TIERS = [
-  { id: 'bronze', name: 'الجائزة البرونزية', amount: 2000 },
-  { id: 'silver', name: 'الجائزة الفضية', amount: 5000 },
-  { id: 'gold', name: 'الجائزة الذهبية', amount: 10000 },
+  { id: 'bronze', name: 'الجائزة البرونزية', amount: 1000 },
+  { id: 'silver', name: 'الجائزة الفضية', amount: 3000 },
+  { id: 'gold', name: 'الجائزة الذهبية', amount: 5000 },
+  { id: 'diamond', name: 'الجائزة الماسية', amount: 10000 },
 ];
 const TIER_BY_ID = Object.fromEntries(PRIZE_TIERS.map((t) => [t.id, t]));
 
@@ -51,6 +53,7 @@ async function getStats(amb) {
 
   let bonusPoints = 0;
   let bonusEntries = [];
+  let passClaimedIds = [];
   try {
     const entries = await BonusPoints.find({ ambassador: amb._id }).sort({ createdAt: -1 }).lean();
     bonusPoints = entries.reduce((s, e) => s + (Number(e.amount) || 0), 0);
@@ -59,7 +62,9 @@ async function getStats(amb) {
       amount: Number(e.amount) || 0,
       reason: e.reason || '',
       createdAt: e.createdAt,
+      ...(e.passNodeId ? { passNodeId: e.passNodeId } : {}),
     }));
+    passClaimedIds = entries.filter((e) => e.passNodeId).map((e) => e.passNodeId);
   } catch (e) {
     console.error(`[getStats] failed to read bonus points for ${amb.phone}:`, e.message);
   }
@@ -87,6 +92,7 @@ async function getStats(amb) {
     totalDonations,
     bonusPoints,
     bonusEntries,
+    passClaimedIds,
     totalPoints,
     orderCount,
     paid,
@@ -319,6 +325,7 @@ router.post('/requests', requireAmbassador, async (req, res) => {
   const reqDoc = await PrizeRequest.create({
     ambassador: amb._id,
     amount: tier.amount,
+    tier: tier.id,
     status: 'pending',
     prizeId,
     prizeName,
@@ -340,6 +347,52 @@ router.post('/requests', requireAmbassador, async (req, res) => {
   );
 
   res.json({ ok: true, request: reqDoc });
+});
+
+// ===== خريطة الرحلة — استلام مكافأة مرحلة (تُصرف كنقاط إضافية في قاعدة البيانات) =====
+router.post('/pass/claim', requireAmbassador, async (req, res) => {
+  const amb = await Ambassador.findById(req.session.ambassadorId);
+  if (!amb) return res.status(404).json({ error: 'غير موجود' });
+
+  const nodeId = String((req.body && req.body.nodeId) || '').trim();
+  const node = NODE_BY_ID[nodeId];
+  if (!node) return res.status(400).json({ error: 'مرحلة غير صالحة' });
+
+  let stats = await getStats(amb);
+  if (stats.passClaimedIds.includes(node.id)) {
+    return res.status(400).json({ error: 'استلمت مكافأة هذه المرحلة من قبل', stats });
+  }
+  if (stats.totalPoints < node.threshold) {
+    return res.status(400).json({ error: 'لم تصل نقاطك لهذه المرحلة بعد', stats });
+  }
+
+  try {
+    await BonusPoints.create({
+      ambassador: amb._id,
+      amount: node.reward,
+      reason: `مكافأة خريطة الرحلة — ${node.title}`,
+      source: 'pass',
+      passNodeId: node.id,
+    });
+  } catch (e) {
+    // فهرس فريد (ambassador + passNodeId) — طلبان متزامنان لنفس المرحلة
+    if (e && e.code === 11000) {
+      return res.status(400).json({ error: 'استلمت مكافأة هذه المرحلة من قبل', stats });
+    }
+    console.error('[ambassador/pass/claim] failed:', e.message);
+    return res.status(500).json({ error: 'تعذر استلام المكافأة' });
+  }
+
+  await logAmbassadorActivity({
+    ambassadorId: amb._id,
+    action: 'claim_pass_reward',
+    details: { nodeId: node.id, title: node.title, reward: node.reward },
+    source: 'server',
+    path: '/ambassador/pass/claim',
+  });
+
+  stats = await getStats(amb);
+  res.json({ ok: true, claimed: { nodeId: node.id, reward: node.reward, title: node.title }, stats });
 });
 
 module.exports = router;

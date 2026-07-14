@@ -739,6 +739,7 @@ body:not(.has-bottom-nav):not(:has(.bottom-nav)) .wa-fab {
 .tier.bronze::before { background: linear-gradient(90deg, #b87333, #e09a5b); }
 .tier.silver::before { background: linear-gradient(90deg, #9aa1a8, #d6dadd); }
 .tier.gold::before   { background: linear-gradient(90deg, #d4a017, #f5d166); }
+.tier.diamond::before { background: linear-gradient(90deg, #3e96c8, #7cc3e8); }
 .tier:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-brand);
