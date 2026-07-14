@@ -7,6 +7,7 @@ const BonusPoints = require("../models/BonusPoints");
 const SyncMeta = require("../models/SyncMeta");
 const { listEntities, entityName } = require("../services/entities");
 const { logAmbassadorActivity } = require("../services/activityLog");
+const { getCatalog } = require("../services/prizeCatalog");
 const boardControl = require("../services/boardControl");
 const router = express.Router();
 const cache = require("memory-cache");
@@ -33,6 +34,17 @@ let cacheM = (duration) => {
 };
 
 // ===== Public APIs (لا تتطلب تسجيل دخول) =====
+
+// كتالوج متجر الجوائز من قاعدة البيانات — بنفس شكل ملف prizes3.json القديم
+router.get("/prizes", async (req, res) => {
+  try {
+    const prizes = await getCatalog();
+    res.json({ prizes });
+  } catch (e) {
+    console.error("[api/prizes] failed:", e.message);
+    res.status(500).json({ prizes: [], error: "failed" });
+  }
+});
 
 // ===== Dashboard (شاشة العمليات) — يجمّع كل المؤشرات من قاعدة البيانات =====
 function classifyEntityKind(entity) {

@@ -10,6 +10,7 @@ const bcrypt = require("bcryptjs");
 const Ambassador = require("./models/Ambassador");
 const Admin = require("./models/Admin");
 const { syncStale } = require("./services/platformSync");
+const { seedFromLegacyJsonIfEmpty } = require("./services/prizeCatalog");
 const syncAll = require("./scripts/syncAll");
 
 const authRoutes = require("./routes/auth");
@@ -26,6 +27,10 @@ mongoose
   .connect(process.env.MONGO_URI)
   .then(async () => {
     console.log("MongoDB connected");
+    // ترحيل متجر الجوائز: تعبئة من prizes3.json عند أول تشغيل فقط
+    await seedFromLegacyJsonIfEmpty().catch((e) =>
+      console.error("prize seed error:", e.message),
+    );
   })
   .catch((err) => console.error("Mongo error:", err));
 

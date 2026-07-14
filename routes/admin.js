@@ -7,6 +7,7 @@ const AllFund = require('../models/AllFund');
 const Notification = require('../models/Notification');
 const PushSubscription = require('../models/PushSubscription');
 const BonusPoints = require('../models/BonusPoints');
+const Prize = require('../models/Prize');
 const { requireAdmin } = require('../middleware/auth');
 const { trySendWhatsapp, sendWhatsapp } = require('../services/whatsapp');
 const boardControl = require('../services/boardControl');
@@ -314,6 +315,118 @@ router.delete('/bonus-points/entry/:id', requireAdmin, async (req, res) => {
     res.json({ ok: true });
   } catch (e) {
     console.error('[admin/bonus-points DELETE] failed:', e.message);
+    res.status(500).json({ error: 'failed' });
+  }
+});
+
+// ===== إدارة متجر الجوائز (الكتالوج في قاعدة البيانات) =====
+
+const PRIZE_TIER_IDS = ['bronze', 'silver', 'gold', 'diamond'];
+
+function sanitizePrizeInput(body) {
+  const name = String(body?.name || '').trim().slice(0, 200);
+  const description = String(body?.description || '').trim().slice(0, 1000);
+  const image = String(body?.image || '').trim().slice(0, 500);
+  const tier = String(body?.tier || '').trim();
+  const stock = Math.max(0, Math.round(Number(body?.stock) || 0));
+  const order = Math.round(Number(body?.order) || 0);
+  const active = body?.active !== false && body?.active !== 'false';
+  return { name, description, image, tier, stock, order, active };
+}
+
+// توليد معرف جديد بنمط المعرفات القديمة: b7, s8, d1...
+async function nextPrizeKey(tier) {
+  const prefix = tier === 'diamond' ? 'd' : tier[0];
+  const rx = new RegExp(`^${prefix}(\\d+)$`);
+  const existing = await Prize.find({ key: rx }, 'key').lean();
+  let max = 0;
+  for (const p of existing) {
+    const m = String(p.key).match(rx);
+    if (m) max = Math.max(max, Number(m[1]));
+  }
+  return `${prefix}${max + 1}`;
+}
+
+// قائمة الجوائز كاملة (تشمل المخفية) مع عدد الموزَّع من كل جائزة
+router.get('/prizes/list', requireAdmin, async (req, res) => {
+  try {
+    const [prizes, distRows] = await Promise.all([
+      Prize.find({}).sort({ tier: 1, order: 1, key: 1 }).lean(),
+      PrizeRequest.aggregate([
+        { $match: { status: { $in: ['pending', 'approved', 'paid'] }, prizeId: { $nin: ['', null] } } },
+        { $group: { _id: '$prizeId', count: { $sum: 1 } } },
+      ]),
+    ]);
+    const distributed = {};
+    for (const r of distRows) distributed[r._id] = r.count;
+    res.json({
+      prizes: prizes.map((p) => ({
+        _id: String(p._id),
+        key: p.key,
+        name: p.name,
+        description: p.description || '',
+        image: p.image || '',
+        tier: p.tier,
+        stock: Number(p.stock) || 0,
+        active: p.active !== false,
+        order: Number(p.order) || 0,
+        distributed: distributed[p.key] || 0,
+      })),
+    });
+  } catch (e) {
+    console.error('[admin/prizes/list] failed:', e.message);
+    res.status(500).json({ error: 'failed' });
+  }
+});
+
+// إضافة جائزة جديدة
+router.post('/prizes', requireAdmin, async (req, res) => {
+  try {
+    const data = sanitizePrizeInput(req.body);
+    if (!data.name) return res.status(400).json({ error: 'اسم الجائزة مطلوب' });
+    if (!PRIZE_TIER_IDS.includes(data.tier)) {
+      return res.status(400).json({ error: 'تصنيف الجائزة غير صالح' });
+    }
+    let key = String(req.body?.key || '').trim().slice(0, 60);
+    if (!key) key = await nextPrizeKey(data.tier);
+    const exists = await Prize.findOne({ key }).lean();
+    if (exists) return res.status(400).json({ error: `المعرف ${key} مستخدم من قبل` });
+
+    const prize = await Prize.create({ key, ...data });
+    res.json({ ok: true, prize });
+  } catch (e) {
+    console.error('[admin/prizes POST] failed:', e.message);
+    res.status(500).json({ error: 'failed' });
+  }
+});
+
+// تعديل جائزة
+router.post('/prizes/:id', requireAdmin, async (req, res) => {
+  try {
+    const prize = await Prize.findById(req.params.id);
+    if (!prize) return res.status(404).json({ error: 'الجائزة غير موجودة' });
+    const data = sanitizePrizeInput(req.body);
+    if (!data.name) return res.status(400).json({ error: 'اسم الجائزة مطلوب' });
+    if (!PRIZE_TIER_IDS.includes(data.tier)) {
+      return res.status(400).json({ error: 'تصنيف الجائزة غير صالح' });
+    }
+    Object.assign(prize, data);
+    await prize.save();
+    res.json({ ok: true, prize });
+  } catch (e) {
+    console.error('[admin/prizes UPDATE] failed:', e.message);
+    res.status(500).json({ error: 'failed' });
+  }
+});
+
+// حذف جائزة نهائياً (سجل الطلبات السابقة يحتفظ باسم الجائزة نصاً فلا يتأثر)
+router.delete('/prizes/:id', requireAdmin, async (req, res) => {
+  try {
+    const r = await Prize.findByIdAndDelete(req.params.id);
+    if (!r) return res.status(404).json({ error: 'الجائزة غير موجودة' });
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('[admin/prizes DELETE] failed:', e.message);
     res.status(500).json({ error: 'failed' });
   }
 });

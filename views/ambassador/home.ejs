@@ -835,7 +835,7 @@
     prizeCatalog = [];
     try {
       const [catalogRes, stockRes] = await Promise.all([
-        fetch('/data/prizes3.json', { cache: 'no-cache' }),
+        fetch('/api/prizes', { cache: 'no-cache' }),
         fetch('/ambassador/prize-stock', { cache: 'no-cache' }),
       ]);
       const data = await catalogRes.json();

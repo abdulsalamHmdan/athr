@@ -4,6 +4,7 @@ const PrizeRequest = require('../models/PrizeRequest');
 const Fund = require('../models/Fund');
 const AllFund = require('../models/AllFund');
 const BonusPoints = require('../models/BonusPoints');
+const Prize = require('../models/Prize');
 const { requireAmbassador } = require('../middleware/auth');
 const { logAmbassadorActivity } = require('../services/activityLog');
 const { trySendWhatsapp } = require('../services/whatsapp');
@@ -320,7 +321,24 @@ router.post('/requests', requireAmbassador, async (req, res) => {
     return res.status(400).json({ error: 'رصيدك غير كافٍ لطلب هذه الجائزة' });
   }
   const prizeId = String((req.body && req.body.prizeId) || '').slice(0, 60);
-  const prizeName = String((req.body && req.body.prizeName) || '').slice(0, 200);
+  let prizeName = String((req.body && req.body.prizeName) || '').slice(0, 200);
+
+  // الكتالوج في قاعدة البيانات — نتحقق من الجائزة ومخزونها على الخادم
+  if (prizeId) {
+    const prize = await Prize.findOne({ key: prizeId, active: true }).lean();
+    if (!prize) return res.status(400).json({ error: 'الجائزة غير متوفرة حالياً' });
+    if (prize.tier !== tier.id) {
+      return res.status(400).json({ error: 'الجائزة لا تنتمي لهذا التصنيف' });
+    }
+    const taken = await PrizeRequest.countDocuments({
+      prizeId,
+      status: { $in: ['pending', 'approved', 'paid'] },
+    });
+    if (taken >= (Number(prize.stock) || 0)) {
+      return res.status(400).json({ error: 'نفد مخزون هذه الجائزة' });
+    }
+    prizeName = prize.name; // الاسم الرسمي من الكتالوج
+  }
 
   const reqDoc = await PrizeRequest.create({
     ambassador: amb._id,

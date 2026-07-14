@@ -3,6 +3,7 @@
     <a href="/admin/dashboard" class="<%= active==='dashboard' ? 'active' : '' %>">الإحصائيات</a>
     <a href="/admin/requests" class="<%= active==='requests' ? 'active' : '' %>">متابعة الطلبات</a>
     <a href="/admin/bonus-points" class="<%= active==='bonus-points' ? 'active' : '' %>">نقاط إضافية</a>
+    <a href="/admin/prizes" class="<%= active==='prizes' ? 'active' : '' %>">إدارة الجوائز</a>
     <a href="/admin/notifications" class="<%= active==='notifications' ? 'active' : '' %>">إرسال إشعارات</a>
     <a href="#" data-logout>خروج</a>
   </nav>
@@ -34,6 +35,16 @@
         <circle cx="12" cy="12" r="9"></circle>
       </svg>
       <span>نقاط إضافية</span>
+    </a>
+    <a href="/admin/prizes" class="<%= active==='prizes' ? 'active' : '' %>">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <path d="M20 12v10H4V12"></path>
+        <path d="M2 7h20v5H2z"></path>
+        <path d="M12 22V7"></path>
+        <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path>
+        <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path>
+      </svg>
+      <span>الجوائز</span>
     </a>
     <a href="/admin/notifications" class="<%= active==='notifications' ? 'active' : '' %>">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
