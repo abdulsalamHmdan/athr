@@ -26,6 +26,7 @@ async function getCatalog() {
     image: p.image || '',
     tier: p.tier,
     stock: Number(p.stock) || 0,
+    pointCost: p.pointCost || ({ bronze: 1000, silver: 3000, gold: 5000, diamond: 10000 }[p.tier]),
   }));
 }
 

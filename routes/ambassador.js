@@ -80,12 +80,15 @@ async function getStats(amb) {
   const claimedAmount = paid + pendingAmount;
   const availableBalance = Math.max(0, totalPoints - claimedAmount);
 
+  const catalog = await Prize.find({ active: true }).lean();
   const sortedTiers = [...PRIZE_TIERS].sort((a, b) => a.amount - b.amount);
   const tiers = sortedTiers.map((t) => ({
     id: t.id,
     name: t.name,
     amount: t.amount,
     canClaim: availableBalance >= t.amount,
+    minimumProductCost: catalog.some(p => p.tier === t.id) ? Math.min(...catalog.filter(p => p.tier === t.id).map(p => p.pointCost || t.amount)) : t.amount,
+    canClaimProduct: catalog.some(p => p.tier === t.id && availableBalance >= (p.pointCost || t.amount)),
   }));
   const nextTier = sortedTiers.find((t) => t.amount > availableBalance) || sortedTiers[sortedTiers.length - 1];
 
@@ -312,59 +315,18 @@ router.get('/requests', requireAmbassador, async (req, res) => {
 });
 
 router.post('/requests', requireAmbassador, async (req, res) => {
-  const amb = await Ambassador.findById(req.session.ambassadorId);
-  if (!amb) return res.status(404).json({ error: 'غير موجود' });
-  const tier = TIER_BY_ID[req.body && req.body.tier];
-  if (!tier) return res.status(400).json({ error: 'تصنيف الجائزة غير صالح' });
-  const stats = await getStats(amb);
-  if (stats.availableBalance < tier.amount) {
-    return res.status(400).json({ error: 'رصيدك غير كافٍ لطلب هذه الجائزة' });
-  }
-  const prizeId = String((req.body && req.body.prizeId) || '').slice(0, 60);
-  let prizeName = String((req.body && req.body.prizeName) || '').slice(0, 200);
-
-  // الكتالوج في قاعدة البيانات — نتحقق من الجائزة ومخزونها على الخادم
-  if (prizeId) {
-    const prize = await Prize.findOne({ key: prizeId, active: true }).lean();
-    if (!prize) return res.status(400).json({ error: 'الجائزة غير متوفرة حالياً' });
-    if (prize.tier !== tier.id) {
-      return res.status(400).json({ error: 'الجائزة لا تنتمي لهذا التصنيف' });
+  try {
+    const { redeem } = require('../services/sharedWallet');
+    const result = await redeem({ ambassadorID: req.session.ambassadorId,
+      productID: String(req.body.prizeId || '').slice(0,60), tier: req.body.tier,
+      key: req.get('Idempotency-Key') || undefined });
+    if (!result.replayed) {
+      const amb = await Ambassador.findById(req.session.ambassadorId);
+      await logAmbassadorActivity({ ambassadorId: amb._id, action: 'request_prize', details: { tier: result.order.tier, amount: result.order.amount, prizeId: result.order.prizeId, prizeName: result.order.prizeName }, source: 'server', path: '/ambassador/requests' });
+      await trySendWhatsapp(amb.phone, `مرحباً ${amb.name} 👋\nتم استلام طلب جائزتك بقيمة ${result.order.amount} نقطة.\nسيتم مراجعة الطلب والتواصل معك.`, 'prize-request');
     }
-    const taken = await PrizeRequest.countDocuments({
-      prizeId,
-      status: { $in: ['pending', 'approved', 'paid'] },
-    });
-    if (taken >= (Number(prize.stock) || 0)) {
-      return res.status(400).json({ error: 'نفد مخزون هذه الجائزة' });
-    }
-    prizeName = prize.name; // الاسم الرسمي من الكتالوج
-  }
-
-  const reqDoc = await PrizeRequest.create({
-    ambassador: amb._id,
-    amount: tier.amount,
-    tier: tier.id,
-    status: 'pending',
-    prizeId,
-    prizeName,
-  });
-
-  await logAmbassadorActivity({
-    ambassadorId: amb._id,
-    action: 'request_prize',
-    details: { tier: tier.id, amount: tier.amount, prizeId, prizeName },
-    source: 'server',
-    path: '/ambassador/requests',
-  });
-
-  const prizeLine = prizeName ? `\nالجائزة المختارة: ${prizeName}` : '';
-  await trySendWhatsapp(
-    amb.phone,
-    `مرحباً ${amb.name} 👋\nتم استلام طلبك لـ${tier.name} بقيمة ${tier.amount} ريال.${prizeLine}\nسيتم مراجعة الطلب قريباً، وعند تغيّر حالة الطلب سيتم التواصل معك بشكل مباشر.`,
-    'prize-request'
-  );
-
-  res.json({ ok: true, request: reqDoc });
+    res.json({ ok: true, request: result.order });
+  } catch (e) { res.status(e.status || 500).json({ error: e.status ? e.message : 'تعذّر إتمام الطلب' }); }
 });
 
 // ===== خريطة الرحلة — استلام مكافأة مرحلة (تُصرف كنقاط إضافية في قاعدة البيانات) =====
