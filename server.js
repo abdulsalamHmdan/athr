@@ -27,6 +27,7 @@ mongoose
   .connect(process.env.MONGO_URI)
   .then(async () => {
     console.log("MongoDB connected");
+    await require("./services/sharedWallet").startHeartbeat();
     // ترحيل متجر الجوائز: تعبئة من prizes3.json عند أول تشغيل فقط
     await seedFromLegacyJsonIfEmpty().catch((e) =>
       console.error("prize seed error:", e.message),

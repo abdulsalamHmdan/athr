@@ -585,11 +585,11 @@
     const grid = document.getElementById('tierGridHome');
     const tiers = Array.isArray(stats?.tiers) ? stats.tiers : [];
     grid.innerHTML = tiers.map((t) => `
-      <div class="tier ${t.id} ${t.canClaim ? '' : 'locked'}">
+      <div class="tier ${t.id} ${t.canClaimProduct ? '' : 'locked'}">
         <div class="tier-name">${t.name}</div>
-        <div class="tier-amount">${nf(t.amount)} <span>نقطة</span></div>
-        <button class="btn block ok" data-tier="${t.id}" ${t.canClaim ? '' : 'disabled'}>
-          ${t.canClaim ? 'طلب الصرف' : 'الرصيد غير كافٍ'}
+        <div class="tier-amount">ابتداءً من ${nf(t.minimumProductCost)} <span>نقطة</span></div>
+        <button class="btn block ok" data-tier="${t.id}" ${t.canClaimProduct ? '' : 'disabled'}>
+          ${t.canClaimProduct ? 'طلب الصرف' : 'الرصيد غير كافٍ'}
         </button>
       </div>
     `).join('');
@@ -857,12 +857,16 @@
       body.prizeId = prize.id;
       body.prizeName = prize.name;
     }
+    const pendingKey = 'athar.web.order.' + JSON.stringify(body);
+    const operationKey = sessionStorage.getItem(pendingKey) || crypto.randomUUID();
+    sessionStorage.setItem(pendingKey, operationKey);
     const r = await fetch('/ambassador/requests', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Idempotency-Key': operationKey },
       body: JSON.stringify(body),
     });
     const d = await r.json().catch(() => ({}));
+    if (r.ok || (r.status >= 400 && r.status < 500 && ![408,429].includes(r.status))) sessionStorage.removeItem(pendingKey);
     if (!r.ok) {
       return { ok: false, error: d.error || 'تعذر إرسال الطلب.' };
     }
@@ -901,7 +905,7 @@
 
       subEl.textContent = `الجوائز ${tierLabel[tier] || ''} المتوفرة (${list.length})`;
       select.innerHTML = list.map((p) => `
-        <option value="${p.id}">${p.name} — المخزون ${p.stock}</option>
+        <option value="${esc(p.id)}">${esc(p.name)} — ${nf(p.pointCost)} نقطة — المخزون ${p.stock}</option>
       `).join('');
 
       function refreshPreview() {
@@ -916,7 +920,8 @@
         nameEl.textContent = p.name || '';
         descEl.textContent = p.description || '';
         const stock = Number(p.stock || 0);
-        stockEl.textContent = `المخزون المتاح: ${stock}`;
+        stockEl.textContent = `التكلفة: ${nf(p.pointCost)} نقطة — المخزون المتاح: ${stock}`;
+        confirmBtn.disabled = Number(stats.availableBalance || 0) < p.pointCost;
         stockEl.classList.toggle('low', stock > 0 && stock <= 3);
       }
 
