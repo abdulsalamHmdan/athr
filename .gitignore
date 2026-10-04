@@ -3,3 +3,10 @@
 .wwebjs_cache
 node_modules
 .env
+
+.DS_Store
+**/xcuserdata/
+**/DerivedData/
+output/
+.env.*
+!.env.example

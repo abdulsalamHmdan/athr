@@ -37,6 +37,7 @@ mongoose
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
+app.use("/admin/athar", express.json({ limit: "1mb" }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
@@ -51,6 +52,8 @@ app.use(
   }),
 );
 
+app.use("/v1", require("./routes/atharMobile").router);
+app.use("/admin/athar", require("./routes/atharAdmin"));
 app.use("/auth", authRoutes);
 app.use("/ambassador", ambassadorRoutes);
 app.use("/admin", adminRoutes);

@@ -36,13 +36,13 @@ function buildStatusMessage(status, reqDoc, note) {
 }
 
 async function updateRequestStatus(req, res, status) {
-  const note = (req.body && req.body.note) || '';
-  const r = await PrizeRequest.findByIdAndUpdate(
-    req.params.id,
-    { status, note },
-    { new: true }
-  ).populate('ambassador', 'name phone');
-  if (!r) return res.status(404).json({ error: 'غير موجود' });
+  let r;
+  const note = String(req.body?.note || '').slice(0,500);
+  try {
+    const { setOrderStatus } = require('../services/atharCore');
+    r = await setOrderStatus(req.params.id, status, note, req.session.adminId);
+    await r.populate('ambassador', 'name phone');
+  } catch (e) { return res.status(e.status || 500).json({ error: e.status ? e.message : 'تعذّر تحديث الطلب' }); }
 
   if (r.ambassador && r.ambassador.phone) {
     const message = buildStatusMessage(status, r, note);
@@ -285,11 +285,11 @@ router.post('/bonus-points', requireAdmin, async (req, res) => {
     const amb = await Ambassador.findById(ambassadorId);
     if (!amb) return res.status(404).json({ error: 'السفير غير موجود' });
 
-    const entry = await BonusPoints.create({
-      ambassador: amb._id,
-      amount: Math.round(amount),
-      reason,
-      addedBy: req.session.adminId || null,
+    const entry = await require('mongoose').connection.transaction(async session => {
+      const { lockAmbassador, balance, fail } = require('../services/atharCore');
+      await lockAmbassador(amb._id, session);
+      if (amount < 0 && (await balance(amb, session)).available < -Math.round(amount)) fail(409, 'لا يمكن خصم نقاط محجوزة لطلبات');
+      return (await BonusPoints.create([{ ambassador: amb._id, amount: Math.round(amount), reason, addedBy: req.session.adminId || null }], { session }))[0];
     });
 
     res.json({
@@ -310,7 +310,15 @@ router.post('/bonus-points', requireAdmin, async (req, res) => {
 // حذف سجل نقاط إضافية
 router.delete('/bonus-points/entry/:id', requireAdmin, async (req, res) => {
   try {
-    const r = await BonusPoints.findByIdAndDelete(req.params.id);
+    const r = await require('mongoose').connection.transaction(async session => {
+      const { lockAmbassador, balance, fail } = require('../services/atharCore');
+      const entry = await BonusPoints.findOne({ _id: req.params.id, source: 'admin' }).session(session);
+      if (!entry) return null;
+      const amb = await lockAmbassador(entry.ambassador, session);
+      if (entry.amount > 0 && (await balance(amb, session)).available < entry.amount) fail(409, 'النقاط مرتبطة بطلبات قائمة ولا يمكن حذفها');
+      await entry.deleteOne({ session });
+      return entry;
+    });
     if (!r) return res.status(404).json({ error: 'السجل غير موجود' });
     res.json({ ok: true });
   } catch (e) {

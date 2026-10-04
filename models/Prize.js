@@ -4,6 +4,9 @@ const mongoose = require('mongoose');
 // key هو المعرف العام (b1, s3, g5...) نفسه المحفوظ في PrizeRequest.prizeId.
 const PrizeSchema = new mongoose.Schema(
   {
+    pointCost: { type: Number, min: 1, default: null },
+    requiresShipping: { type: Boolean, default: true },
+    atharRevision: { type: Number, default: 0 },
     key: { type: String, required: true, unique: true, trim: true },
     name: { type: String, required: true, trim: true, maxlength: 200 },
     description: { type: String, default: '', trim: true, maxlength: 1000 },

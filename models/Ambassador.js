@@ -2,6 +2,8 @@ const mongoose = require('mongoose');
 
 const AmbassadorSchema = new mongoose.Schema(
   {
+    atharRevision: { type: Number, default: 0 },
+    appSuspended: { type: Boolean, default: false },
     name: { type: String, required: true },
     phone: { type: String, required: true, unique: true },
     password: { type: String, required: true },

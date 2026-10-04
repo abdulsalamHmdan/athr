@@ -1,0 +1,460 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A00000000000000000000001 /* AtharQuestApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000001 /* AtharQuestApp.swift */; };
+		A00000000000000000000002 /* AppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000002 /* AppEnvironment.swift */; };
+		A00000000000000000000003 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000003 /* AppModel.swift */; };
+		A00000000000000000000004 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000004 /* RootView.swift */; };
+		A00000000000000000000005 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000005 /* Theme.swift */; };
+		A00000000000000000000006 /* SharedComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000006 /* SharedComponents.swift */; };
+		A00000000000000000000007 /* OasisArtwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000007 /* OasisArtwork.swift */; };
+		A00000000000000000000008 /* AmbassadorModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000008 /* AmbassadorModels.swift */; };
+		A00000000000000000000009 /* AmbassadorAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000009 /* AmbassadorAPI.swift */; };
+		A0000000000000000000000A /* AuthTokenStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000000A /* AuthTokenStore.swift */; };
+		A0000000000000000000000B /* Haptics.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000000B /* Haptics.swift */; };
+		A0000000000000000000000C /* MockAmbassadorAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000000C /* MockAmbassadorAPI.swift */; };
+		A0000000000000000000000D /* PersistenceStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000000D /* PersistenceStore.swift */; };
+		A0000000000000000000000E /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000000E /* OnboardingView.swift */; };
+		A0000000000000000000000F /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000000F /* HomeView.swift */; };
+		A00000000000000000000010 /* MissionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000010 /* MissionsView.swift */; };
+		A00000000000000000000011 /* BoxesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000011 /* BoxesView.swift */; };
+		A00000000000000000000012 /* StoreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000012 /* StoreView.swift */; };
+		A00000000000000000000013 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000013 /* ProfileView.swift */; };
+		A00000000000000000000014 /* PipePuzzle.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000014 /* PipePuzzle.swift */; };
+		A00000000000000000000015 /* PipeTileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000015 /* PipeTileView.swift */; };
+		A00000000000000000000016 /* GameHubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000016 /* GameHubView.swift */; };
+		A00000000000000000000017 /* OasisGameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000017 /* OasisGameView.swift */; };
+		A00000000000000000000018 /* GameAudio.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000018 /* GameAudio.swift */; };
+		A00000000000000000000019 /* CompetitionModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000019 /* CompetitionModels.swift */; };
+		A0000000000000000000001A /* RewardPoolAllocator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000001A /* RewardPoolAllocator.swift */; };
+		A0000000000000000000001B /* CompetitionEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000001B /* CompetitionEngine.swift */; };
+		A0000000000000000000001C /* CompetitionHubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000001C /* CompetitionHubView.swift */; };
+		A0000000000000000000001D /* LiveCompetitionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000001D /* LiveCompetitionView.swift */; };
+		A10000000000000000000001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000001 /* Assets.xcassets */; };
+		A10000000000000000000002 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000002 /* PrivacyInfo.xcprivacy */; };
+		A10000000000000000000003 /* pipe-tap.wav in Resources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000004 /* pipe-tap.wav */; };
+		A10000000000000000000004 /* oasis-success.wav in Resources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000005 /* oasis-success.wav */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		B00000000000000000000001 /* AtharQuestApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtharQuestApp.swift; sourceTree = "<group>"; };
+		B00000000000000000000002 /* AppEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/AppEnvironment.swift; sourceTree = "<group>"; };
+		B00000000000000000000003 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/AppModel.swift; sourceTree = "<group>"; };
+		B00000000000000000000004 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/RootView.swift; sourceTree = "<group>"; };
+		B00000000000000000000005 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Design/Theme.swift; sourceTree = "<group>"; };
+		B00000000000000000000006 /* SharedComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Design/SharedComponents.swift; sourceTree = "<group>"; };
+		B00000000000000000000007 /* OasisArtwork.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Design/OasisArtwork.swift; sourceTree = "<group>"; };
+		B00000000000000000000008 /* AmbassadorModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/AmbassadorModels.swift; sourceTree = "<group>"; };
+		B00000000000000000000009 /* AmbassadorAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/AmbassadorAPI.swift; sourceTree = "<group>"; };
+		B0000000000000000000000A /* AuthTokenStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/AuthTokenStore.swift; sourceTree = "<group>"; };
+		B0000000000000000000000B /* Haptics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/Haptics.swift; sourceTree = "<group>"; };
+		B0000000000000000000000C /* MockAmbassadorAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/MockAmbassadorAPI.swift; sourceTree = "<group>"; };
+		B0000000000000000000000D /* PersistenceStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/PersistenceStore.swift; sourceTree = "<group>"; };
+		B0000000000000000000000E /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Onboarding/OnboardingView.swift; sourceTree = "<group>"; };
+		B0000000000000000000000F /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Home/HomeView.swift; sourceTree = "<group>"; };
+		B00000000000000000000010 /* MissionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Missions/MissionsView.swift; sourceTree = "<group>"; };
+		B00000000000000000000011 /* BoxesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Boxes/BoxesView.swift; sourceTree = "<group>"; };
+		B00000000000000000000012 /* StoreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Store/StoreView.swift; sourceTree = "<group>"; };
+		B00000000000000000000013 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Profile/ProfileView.swift; sourceTree = "<group>"; };
+		B00000000000000000000014 /* PipePuzzle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Game/PipePuzzle.swift; sourceTree = "<group>"; };
+		B00000000000000000000015 /* PipeTileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Game/PipeTileView.swift; sourceTree = "<group>"; };
+		B00000000000000000000016 /* GameHubView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Game/GameHubView.swift; sourceTree = "<group>"; };
+		B00000000000000000000017 /* OasisGameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Game/OasisGameView.swift; sourceTree = "<group>"; };
+		B00000000000000000000018 /* GameAudio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/GameAudio.swift; sourceTree = "<group>"; };
+		B00000000000000000000019 /* CompetitionModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Competition/CompetitionModels.swift; sourceTree = "<group>"; };
+		B0000000000000000000001A /* RewardPoolAllocator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Competition/RewardPoolAllocator.swift; sourceTree = "<group>"; };
+		B0000000000000000000001B /* CompetitionEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Competition/CompetitionEngine.swift; sourceTree = "<group>"; };
+		B0000000000000000000001C /* CompetitionHubView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Competition/CompetitionHubView.swift; sourceTree = "<group>"; };
+		B0000000000000000000001D /* LiveCompetitionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Competition/LiveCompetitionView.swift; sourceTree = "<group>"; };
+		B10000000000000000000001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Resources/Assets.xcassets; sourceTree = "<group>"; };
+		B10000000000000000000002 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = Resources/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		B10000000000000000000003 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Resources/Info.plist; sourceTree = "<group>"; };
+		B10000000000000000000004 /* pipe-tap.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Resources/Sounds/pipe-tap.wav; sourceTree = "<group>"; };
+		B10000000000000000000005 /* oasis-success.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Resources/Sounds/oasis-success.wav; sourceTree = "<group>"; };
+		B20000000000000000000001 /* AtharQuest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AtharQuest.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D00000000000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		C00000000000000000000001 = {
+			isa = PBXGroup;
+			children = (
+				C00000000000000000000002 /* AtharQuest */,
+				C00000000000000000000003 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		C00000000000000000000002 /* AtharQuest */ = {
+			isa = PBXGroup;
+			children = (
+				B00000000000000000000001 /* AtharQuestApp.swift */,
+				B00000000000000000000002 /* AppEnvironment.swift */,
+				B00000000000000000000003 /* AppModel.swift */,
+				B00000000000000000000004 /* RootView.swift */,
+				B00000000000000000000005 /* Theme.swift */,
+				B00000000000000000000006 /* SharedComponents.swift */,
+				B00000000000000000000007 /* OasisArtwork.swift */,
+				B00000000000000000000008 /* AmbassadorModels.swift */,
+				B00000000000000000000009 /* AmbassadorAPI.swift */,
+				B0000000000000000000000A /* AuthTokenStore.swift */,
+				B0000000000000000000000B /* Haptics.swift */,
+				B0000000000000000000000C /* MockAmbassadorAPI.swift */,
+				B0000000000000000000000D /* PersistenceStore.swift */,
+				B0000000000000000000000E /* OnboardingView.swift */,
+				B0000000000000000000000F /* HomeView.swift */,
+				B00000000000000000000010 /* MissionsView.swift */,
+				B00000000000000000000011 /* BoxesView.swift */,
+				B00000000000000000000012 /* StoreView.swift */,
+				B00000000000000000000013 /* ProfileView.swift */,
+				B00000000000000000000014 /* PipePuzzle.swift */,
+				B00000000000000000000015 /* PipeTileView.swift */,
+				B00000000000000000000016 /* GameHubView.swift */,
+				B00000000000000000000017 /* OasisGameView.swift */,
+				B00000000000000000000018 /* GameAudio.swift */,
+				B00000000000000000000019 /* CompetitionModels.swift */,
+				B0000000000000000000001A /* RewardPoolAllocator.swift */,
+				B0000000000000000000001B /* CompetitionEngine.swift */,
+				B0000000000000000000001C /* CompetitionHubView.swift */,
+				B0000000000000000000001D /* LiveCompetitionView.swift */,
+				B10000000000000000000001 /* Assets.xcassets */,
+				B10000000000000000000002 /* PrivacyInfo.xcprivacy */,
+				B10000000000000000000003 /* Info.plist */,
+				B10000000000000000000004 /* pipe-tap.wav */,
+				B10000000000000000000005 /* oasis-success.wav */,
+			);
+			path = AtharQuest;
+			sourceTree = "<group>";
+		};
+		C00000000000000000000003 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				B20000000000000000000001 /* AtharQuest.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		111111111111111111111111 /* AtharQuest */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F00000000000000000000002 /* Build configuration list for PBXNativeTarget "AtharQuest" */;
+			buildPhases = (
+				D00000000000000000000002 /* Sources */,
+				D00000000000000000000001 /* Frameworks */,
+				D00000000000000000000003 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = AtharQuest;
+			productName = AtharQuest;
+			productReference = B20000000000000000000001 /* AtharQuest.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		000000000000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1600;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					111111111111111111111111 = {
+						CreatedOnToolsVersion = 16.0;
+					};
+				};
+			};
+			buildConfigurationList = F00000000000000000000001 /* Build configuration list for PBXProject "AtharQuest" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = ar;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				ar,
+				en,
+				Base,
+			);
+			mainGroup = C00000000000000000000001;
+			productRefGroup = C00000000000000000000003 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				111111111111111111111111 /* AtharQuest */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		D00000000000000000000003 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000000000000000000001 /* Assets.xcassets in Resources */,
+				A10000000000000000000002 /* PrivacyInfo.xcprivacy in Resources */,
+				A10000000000000000000003 /* pipe-tap.wav in Resources */,
+				A10000000000000000000004 /* oasis-success.wav in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		D00000000000000000000002 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A00000000000000000000001 /* AtharQuestApp.swift in Sources */,
+				A00000000000000000000002 /* AppEnvironment.swift in Sources */,
+				A00000000000000000000003 /* AppModel.swift in Sources */,
+				A00000000000000000000004 /* RootView.swift in Sources */,
+				A00000000000000000000005 /* Theme.swift in Sources */,
+				A00000000000000000000006 /* SharedComponents.swift in Sources */,
+				A00000000000000000000007 /* OasisArtwork.swift in Sources */,
+				A00000000000000000000008 /* AmbassadorModels.swift in Sources */,
+				A00000000000000000000009 /* AmbassadorAPI.swift in Sources */,
+				A0000000000000000000000A /* AuthTokenStore.swift in Sources */,
+				A0000000000000000000000B /* Haptics.swift in Sources */,
+				A0000000000000000000000C /* MockAmbassadorAPI.swift in Sources */,
+				A0000000000000000000000D /* PersistenceStore.swift in Sources */,
+				A0000000000000000000000E /* OnboardingView.swift in Sources */,
+				A0000000000000000000000F /* HomeView.swift in Sources */,
+				A00000000000000000000010 /* MissionsView.swift in Sources */,
+				A00000000000000000000011 /* BoxesView.swift in Sources */,
+				A00000000000000000000012 /* StoreView.swift in Sources */,
+				A00000000000000000000013 /* ProfileView.swift in Sources */,
+				A00000000000000000000014 /* PipePuzzle.swift in Sources */,
+				A00000000000000000000015 /* PipeTileView.swift in Sources */,
+				A00000000000000000000016 /* GameHubView.swift in Sources */,
+				A00000000000000000000017 /* OasisGameView.swift in Sources */,
+				A00000000000000000000018 /* GameAudio.swift in Sources */,
+				A00000000000000000000019 /* CompetitionModels.swift in Sources */,
+				A0000000000000000000001A /* RewardPoolAllocator.swift in Sources */,
+				A0000000000000000000001B /* CompetitionEngine.swift in Sources */,
+				A0000000000000000000001C /* CompetitionHubView.swift in Sources */,
+				A0000000000000000000001D /* LiveCompetitionView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		E00000000000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		E00000000000000000000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		E00000000000000000000003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = N94QFQXA38;
+				CURRENT_PROJECT_VERSION = 2;
+				DEAD_CODE_STRIPPING = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = AtharQuest/Resources/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 2.0;
+				ATHAR_API_MODE = live;
+				ATHAR_API_BASE_URL = "https://sfeer.site";
+				PRODUCT_BUNDLE_IDENTIFIER = com.zeyadalsaloum.atharquest;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		E00000000000000000000004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = N94QFQXA38;
+				CURRENT_PROJECT_VERSION = 2;
+				DEAD_CODE_STRIPPING = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = AtharQuest/Resources/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 2.0;
+				ATHAR_API_MODE = live;
+				ATHAR_API_BASE_URL = "https://sfeer.site";
+				PRODUCT_BUNDLE_IDENTIFIER = com.zeyadalsaloum.atharquest;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		F00000000000000000000001 /* Build configuration list for PBXProject "AtharQuest" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E00000000000000000000001 /* Debug */,
+				E00000000000000000000002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F00000000000000000000002 /* Build configuration list for PBXNativeTarget "AtharQuest" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E00000000000000000000003 /* Debug */,
+				E00000000000000000000004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 000000000000000000000001 /* Project object */;
+}

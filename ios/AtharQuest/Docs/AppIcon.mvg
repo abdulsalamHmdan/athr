@@ -1,0 +1,37 @@
+viewbox 0 0 1024 1024
+push graphic-context
+fill '#176B57'
+rectangle 0,0 1024,1024
+fill '#229171'
+path 'M 0,0 L 1024,0 L 1024,310 C 760,420 410,210 0,520 Z'
+fill '#ffffff18'
+circle 512,512 850,512
+fill '#DDF6F8'
+path 'M 378,184 C 292,274 250,365 250,420 C 250,491 307,548 378,548 C 449,548 506,491 506,420 C 506,365 464,274 378,184 Z'
+fill '#70CCE0'
+path 'M 278,430 C 300,505 390,535 454,475 C 425,540 338,572 278,510 Z'
+fill '#D9F2B3'
+path 'M 390,684 C 491,506 663,440 807,475 C 792,651 683,804 477,814 C 432,816 393,790 373,751 C 358,721 366,697 390,684 Z'
+stroke '#176B57'
+stroke-width 44
+stroke-linecap round
+fill none
+path 'M 435,757 C 529,660 624,591 747,525'
+stroke-width 35
+path 'M 536,668 C 563,688 582,713 594,747'
+path 'M 631,597 C 653,615 674,642 687,674'
+stroke none
+fill '#F4E2B7'
+circle 805,276 861,276
+stroke '#F4E2B7'
+stroke-width 24
+stroke-linecap round
+line 805,180 805,136
+line 805,416 805,372
+line 901,276 945,276
+line 665,276 709,276
+line 873,208 905,176
+line 705,376 737,344
+line 873,344 905,376
+line 705,176 737,208
+pop graphic-context

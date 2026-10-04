@@ -1,5 +1,6 @@
 <div class="nav-wrap">
   <nav class="nav">
+    <a href="/admin/athar" class="<%= active==='athar' ? 'active' : '' %>">إدارة تطبيق أثر</a>
     <a href="/admin/dashboard" class="<%= active==='dashboard' ? 'active' : '' %>">الإحصائيات</a>
     <a href="/admin/requests" class="<%= active==='requests' ? 'active' : '' %>">متابعة الطلبات</a>
     <a href="/admin/bonus-points" class="<%= active==='bonus-points' ? 'active' : '' %>">نقاط إضافية</a>
@@ -11,6 +12,10 @@
 
 <nav class="bottom-nav" aria-label="التنقل السفلي للإدارة">
   <div class="bottom-nav-inner">
+    <a href="/admin/athar" class="<%= active==='athar' ? 'active' : '' %>">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M8 3h8v6a4 4 0 0 1-8 0V3ZM8 5H4v3a4 4 0 0 0 4 4M16 5h4v3a4 4 0 0 1-4 4M12 13v6M7 21h10"/></svg>
+      <span>تطبيق أثر</span>
+    </a>
     <a href="/admin/dashboard" class="<%= active==='dashboard' ? 'active' : '' %>">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
         <path d="M3 13h8V3H3z"></path>

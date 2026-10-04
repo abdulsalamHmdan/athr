@@ -1,0 +1,24 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="128" y1="64" x2="896" y2="960" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#229171"/>
+      <stop offset="1" stop-color="#123D34"/>
+    </linearGradient>
+    <linearGradient id="water" x1="260" y1="250" x2="760" y2="820" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#DDF6F8"/>
+      <stop offset="1" stop-color="#70CCE0"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="28" stdDeviation="30" flood-color="#09251F" flood-opacity="0.28"/>
+    </filter>
+  </defs>
+  <rect width="1024" height="1024" rx="224" fill="url(#bg)"/>
+  <circle cx="512" cy="512" r="338" fill="#FFFFFF" fill-opacity="0.09"/>
+  <path d="M292 274C292 274 250 365 250 420C250 491 307 548 378 548C449 548 506 491 506 420C506 365 464 274 378 184C292 274 292 274 292 274Z" fill="url(#water)" filter="url(#shadow)"/>
+  <path d="M390 684C491 506 663 440 807 475C792 651 683 804 477 814C432 816 393 790 373 751C358 721 366 697 390 684Z" fill="#D9F2B3" filter="url(#shadow)"/>
+  <path d="M435 757C529 660 624 591 747 525" stroke="#176B57" stroke-width="44" stroke-linecap="round"/>
+  <path d="M536 668C563 688 582 713 594 747" stroke="#176B57" stroke-width="35" stroke-linecap="round"/>
+  <path d="M631 597C653 615 674 642 687 674" stroke="#176B57" stroke-width="35" stroke-linecap="round"/>
+  <circle cx="805" cy="276" r="56" fill="#F4E2B7"/>
+  <path d="M805 180V136M805 416V372M901 276H945M665 276H709M873 208L905 176M705 376L737 344M873 344L905 376M705 176L737 208" stroke="#F4E2B7" stroke-width="24" stroke-linecap="round"/>
+</svg>
